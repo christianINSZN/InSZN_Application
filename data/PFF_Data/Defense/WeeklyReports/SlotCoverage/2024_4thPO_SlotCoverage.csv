@@ -1,0 +1,18 @@
+player,player_id,position,team_name,player_game_count,coverage_snaps,coverage_snaps_per_reception,coverage_snaps_per_target,franchise_id,interceptions,qb_rating_against,receptions,targets,touchdowns,yards,yards_after_catch,yards_per_coverage_snap
+Christian Gray,128036,CB,NOTRE DAME,1,1,,1.0,258,0,39.6,0,1,0,0,0,0.0
+Nick Kubitz,106811,LB,N DAK ST,1,8,,8.0,250,0,39.6,0,1,0,0,0,0.0
+Caleb Downs,172375,S,OHIO STATE,1,15,7.5,7.5,260,0,93.8,2,2,0,13,16,0.87
+Jordan Hancock,145067,S,OHIO STATE,1,22,7.3,5.5,260,0,156.3,3,4,1,53,11,2.41
+Logan Kopp,148170,LB,N DAK ST,1,13,6.5,6.5,250,0,118.8,2,2,0,34,13,2.62
+Sonny Styles,162876,LB,OHIO STATE,1,13,6.5,6.5,260,0,95.8,2,2,0,14,10,1.08
+Miles Jackson,147676,CB,MONTANA ST,1,12,6.0,6.0,233,0,97.9,2,2,0,15,2,1.25
+Jordan Clark,97324,CB,NOTRE DAME,1,20,5.0,5.0,258,0,82.3,4,4,0,15,8,0.75
+Cody Simon,129757,LB,OHIO STATE,1,5,5.0,5.0,260,0,79.2,1,1,0,-4,0,-0.8
+Rod Heard II,97237,S,NOTRE DAME,1,4,4.0,4.0,258,0,118.8,1,1,0,19,12,4.75
+Adon Shuler,171098,S,NOTRE DAME,1,4,4.0,4.0,258,0,118.8,1,1,0,15,18,3.75
+Rylan Ortt,101877,S,MONTANA ST,1,3,3.0,3.0,233,0,95.8,1,1,0,7,0,2.33
+Jaylin Crumby,174410,S,N DAK ST,1,3,3.0,1.5,250,0,122.9,1,2,1,19,0,6.33
+Lorenzo Styles Jr.,147474,CB,OHIO STATE,1,2,2.0,2.0,260,0,112.5,1,1,0,11,6,5.5
+Dru Polidore Jr.,155951,S,MONTANA ST,1,1,1.0,1.0,233,0,118.8,1,1,0,22,0,22.0
+Leonard Moore,189882,CB,NOTRE DAME,1,1,1.0,1.0,258,0,95.8,1,1,0,7,2,7.0
+Simeon Woodard,155294,CB,MONTANA ST,1,1,1.0,1.0,233,0,118.8,1,1,0,38,3,38.0
