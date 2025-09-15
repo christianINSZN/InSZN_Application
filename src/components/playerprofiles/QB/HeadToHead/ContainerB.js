@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import Chart from 'chart.js/auto';
-import { WeeklyGradesContext } from '/Users/christianberry/Desktop/Perennial Data/perennial-data-app/src/components/playerprofiles/QB/HeadToHead.js'; // Correct import
+import { WeeklyGradesContext } from '../HeadToHead';
 import Select from 'react-select';
 
 const ContainerB = ({ player1, player2 }) => {
