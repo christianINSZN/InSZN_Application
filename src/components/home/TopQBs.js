@@ -62,13 +62,13 @@ function TopQBs() {
     setIsLoading(true);
     setData([]);
 
-    fetch(`${process.env.REACT_APP_API_URL}/api/players/ppa/${year}/top-qbs`, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      }
-    })
+fetch(`${process.env.REACT_APP_API_URL || 'https://inszn-application-backend-1-1.onrender.com'}/api/players/ppa/${year}/top-qbs`, {
+  method: 'GET',
+  headers: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json'
+  }
+})
       .then(response => {
         console.log('API response status:', response.status, response.statusText);
         if (!response.ok) {

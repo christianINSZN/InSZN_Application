@@ -3,9 +3,22 @@ const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
 const axios = require('axios');
 const xml2js = require('xml2js');
+const fs = require('fs');
 const app = express();
 const port = process.env.PORT || 3001;
-const db = new sqlite3.Database(process.env.SQLITE_DB_PATH || './data/db/cfb_database.db', (err) => {
+
+const dbPath = process.env.SQLITE_DB_PATH || './data/db/cfb_database.db';
+if (!fs.existsSync(dbPath)) {
+  console.error(`Database file not found at: ${dbPath}`);
+} else {
+  const stats = fs.statSync(dbPath);
+  console.log(`Database file found at: ${dbPath}, size: ${stats.size} bytes`);
+  if (stats.size === 0) {
+    console.error('Database file is empty');
+  }
+}
+
+const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error('Database connection error:', err.message);
   } else {
@@ -19,15 +32,14 @@ const db = new sqlite3.Database(process.env.SQLITE_DB_PATH || './data/db/cfb_dat
     });
   }
 });
+
 app.use(cors());
 app.use(express.json());
 
-// Root route
 app.get('/', (req, res) => {
   res.json({ message: 'API server is running' });
 });
 
-// Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Server error:', err.stack);
   res.status(500).json({ error: 'Internal server error', details: err.message });
