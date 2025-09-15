@@ -27,7 +27,7 @@ const ContainerB = ({ player1, player2 }) => {
         setLoading(true);
         try {
           // Fetch team games for player1
-          const gamesResponse = await fetch(`http://localhost:3001/api/player_games/${player1.year}/${player1.playerId}`);
+          const gamesResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/player_games/${player1.year}/${player1.playerId}`);
           if (!gamesResponse.ok) throw new Error('Failed to fetch team games');
           const gamesData = await gamesResponse.json();
           console.log('Team games:', gamesData);
@@ -36,7 +36,7 @@ const ContainerB = ({ player1, player2 }) => {
           // Fetch metrics from weekly endpoint (use first available game)
           if (gamesData && gamesData.length > 0) {
             const { week, seasonType } = gamesData[0];
-            const statsResponse = await fetch(`http://localhost:3001/api/player_passing_weekly_all/${player1.playerId}/${player1.year}/${week}/${seasonType}`);
+            const statsResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/player_passing_weekly_all/${player1.playerId}/${player1.year}/${week}/${seasonType}`);
             if (!statsResponse.ok) throw new Error('Failed to fetch weekly stats data');
             const statsData = await statsResponse.json();
             console.log('Player 1 weekly stats:', statsData);

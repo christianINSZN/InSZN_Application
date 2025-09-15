@@ -38,7 +38,7 @@ function PlayersComponent() {
     let isMounted = true;
     setIsLoading(true); // Reset isLoading on every year change
     setPlayersData([]); // Clear previous data
-    fetch(`http://localhost:3001/api/playerdashboard/${selectedYear}`, {
+    fetch(`${process.env.REACT_APP_API_URL}/api/playerdashboard/${selectedYear}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

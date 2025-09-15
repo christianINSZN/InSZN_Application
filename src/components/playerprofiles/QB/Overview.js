@@ -30,19 +30,19 @@ function OverviewQB() {
       setLoading(true);
       try {
         const [gradesResponse, basicResponse, gamesResponse, percentilesResponse] = await Promise.all([
-          fetch(`http://localhost:3001/api/player_headline/${year}/${playerId}`, {
+          fetch(`${process.env.REACT_APP_API_URL}/api/player_headline/${year}/${playerId}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
           }),
-          fetch(`http://localhost:3001/api/player_metadata/${year}/${playerId}`, {
+          fetch(`${process.env.REACT_APP_API_URL}/api/player_metadata/${year}/${playerId}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
           }),
-          fetch(`http://localhost:3001/api/player_games/${year}/${playerId}`, {
+          fetch(`${process.env.REACT_APP_API_URL}/api/player_games/${year}/${playerId}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
           }),
-          fetch(`http://localhost:3001/api/player_percentiles_QB/${playerId}/${year}`, {
+          fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_QB/${playerId}/${year}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
           }),
@@ -76,7 +76,7 @@ function OverviewQB() {
         }
         // Fetch grades with startDate-based matching
         const gradesPromises = gamesData.map(game => {
-          const url = `http://localhost:3001/api/player_passing_weekly_all/${playerId}/${year}/${game.week}/${game.seasonType}`;
+          const url = `${process.env.REACT_APP_API_URL}/api/player_passing_weekly_all/${playerId}/${year}/${game.week}/${game.seasonType}`;
           return fetch(url, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },

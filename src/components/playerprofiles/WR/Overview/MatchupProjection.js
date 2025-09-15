@@ -17,7 +17,7 @@ const MatchupProjection = ({ teamId, year }) => {
         return;
       }
       try {
-        const response = await fetch(`http://localhost:3001/api/teams/${teamId}/${year}/matchups`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/teams/${teamId}/${year}/matchups`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
         });

@@ -11,7 +11,7 @@ const Header = ({ firstName, lastName, school, position, jersey, height, weight,
         setLoading(true);
         setError(null);
         try {
-          const response = await fetch(`http://localhost:3001/api/player_metadata_qb/${playerId}`);
+          const response = await fetch(`${process.env.REACT_APP_API_URL}/api/player_metadata_qb/${playerId}`);
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }

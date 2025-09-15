@@ -62,7 +62,7 @@ function TopQBs() {
     setIsLoading(true);
     setData([]);
 
-    fetch(`http://localhost:3001/api/players/ppa/${year}/top-qbs`, {
+    fetch(`${process.env.REACT_APP_API_URL}/api/players/ppa/${year}/top-qbs`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',

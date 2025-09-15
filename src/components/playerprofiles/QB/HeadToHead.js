@@ -24,19 +24,19 @@ function HeadToHeadQB() {
       setLoading(true);
       try {
         const [gradesResponse, basicResponse, gamesResponse, percentilesResponse] = await Promise.all([
-          fetch(`http://localhost:3001/api/player_headline/${year}/${playerId}`, {
+          fetch(`${process.env.REACT_APP_API_URL}/api/player_headline/${year}/${playerId}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
           }),
-          fetch(`http://localhost:3001/api/player_metadata/${year}/${playerId}`, {
+          fetch(`${process.env.REACT_APP_API_URL}/api/player_metadata/${year}/${playerId}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
           }),
-          fetch(`http://localhost:3001/api/player_games/${year}/${playerId}`, {
+          fetch(`${process.env.REACT_APP_API_URL}/api/player_games/${year}/${playerId}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
           }),
-          fetch(`http://localhost:3001/api/player_percentiles_QB/${playerId}/${year}`, {
+          fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_QB/${playerId}/${year}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
           }),
@@ -69,7 +69,7 @@ function HeadToHeadQB() {
         }
 
         const gradesPromises = gamesData.map(game => {
-          const url = `http://localhost:3001/api/player_passing_weekly_all/${playerId}/${year}/${game.week}/${game.seasonType}`;
+          const url = `${process.env.REACT_APP_API_URL}/api/player_passing_weekly_all/${playerId}/${year}/${game.week}/${game.seasonType}`;
           console.log(`Fetching grades for player1: ${url}`);
           return fetch(url, {
             method: 'GET',
@@ -123,7 +123,7 @@ function HeadToHeadQB() {
         const player2Id = comparisonPlayers.player2.playerId;
         const player2Year = comparisonPlayers.player2.year;
         try {
-          const gamesResponse = await fetch(`http://localhost:3001/api/player_games/${player2Year}/${player2Id}`);
+          const gamesResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/player_games/${player2Year}/${player2Id}`);
           if (!gamesResponse.ok) throw new Error(`Failed to fetch team games data for player2: ${await gamesResponse.text()}`);
           const gamesData = await gamesResponse.json();
           console.log('Player 2 teamGames:', gamesData);
@@ -133,7 +133,7 @@ function HeadToHeadQB() {
             return;
           }
           const gradesPromises = gamesData.map(game => {
-            const url = `http://localhost:3001/api/player_passing_weekly_all/${player2Id}/${player2Year}/${game.week}/${game.seasonType}`;
+            const url = `${process.env.REACT_APP_API_URL}/api/player_passing_weekly_all/${player2Id}/${player2Year}/${game.week}/${game.seasonType}`;
             console.log(`Fetching grades for player2: ${url}`);
             return fetch(url, {
               method: 'GET',

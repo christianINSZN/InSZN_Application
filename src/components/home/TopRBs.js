@@ -62,7 +62,7 @@ function TopRBs() {
     setIsLoading(true);
     setData([]);
 
-    fetch(`http://localhost:3001/api/players/ppa/${year}/top-rbs`, {
+    fetch(`${process.env.REACT_APP_API_URL}/api/players/ppa/${year}/top-rbs`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',

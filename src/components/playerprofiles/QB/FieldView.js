@@ -33,15 +33,15 @@ function FieldViewInterface() {
       setLoading(true);
       try {
         const [gradesResponse, basicResponse, gamesResponse] = await Promise.all([
-          fetch(`http://localhost:3001/api/player_headline/${year}/${playerId}`, {
+          fetch(`${process.env.REACT_APP_API_URL}/api/player_headline/${year}/${playerId}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
           }),
-          fetch(`http://localhost:3001/api/player_metadata/${year}/${playerId}`, {
+          fetch(`${process.env.REACT_APP_API_URL}/api/player_metadata/${year}/${playerId}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
           }),
-          fetch(`http://localhost:3001/api/player_games/${year}/${playerId}`, {
+          fetch(`${process.env.REACT_APP_API_URL}/api/player_games/${year}/${playerId}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
           })
@@ -61,7 +61,7 @@ function FieldViewInterface() {
 
         // Fetch passing depth data for each game
         const gradesPromises = gamesData.map(game => {
-          const url = `http://localhost:3001/api/player_passing_weekly_all/${playerId}/${year}/${game.week}/${game.seasonType}`;
+          const url = `${process.env.REACT_APP_API_URL}/api/player_passing_weekly_all/${playerId}/${year}/${game.week}/${game.seasonType}`;
           console.log(`Fetching passing depth for game ${game.week} (${game.startDate}, ${game.seasonType}): ${url}`);
           return fetch(url, {
             method: 'GET',
@@ -95,7 +95,7 @@ function FieldViewInterface() {
     const fetchDepthData = async () => {
       if (playerId && year) {
         try {
-          const response = await fetch(`http://localhost:3001/api/player_passing_season_depth/${playerId}/${year}`, {
+          const response = await fetch(`${process.env.REACT_APP_API_URL}/api/player_passing_season_depth/${playerId}/${year}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
           });

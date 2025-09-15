@@ -11,7 +11,7 @@ const TeamNewsfeed = ({ teamData, year }) => {
       console.log('Fetching newsfeed for teamId:', teamData.id, 'year:', year); // Debug log
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:3001/api/teams/${teamData.id}/${year}/newsfeed`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/teams/${teamData.id}/${year}/newsfeed`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
         });

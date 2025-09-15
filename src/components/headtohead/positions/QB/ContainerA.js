@@ -13,7 +13,7 @@ const ContainerA = ({ title = 'Affinity', player1, player2 }) => {
       if (player) {
         setLoading(true);
         try {
-          const response = await fetch(`http://localhost:3001/api/player_percentiles_QB/${player.playerId}/${player.year}`);
+          const response = await fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_QB/${player.playerId}/${player.year}`);
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }

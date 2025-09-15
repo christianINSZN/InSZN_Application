@@ -98,7 +98,7 @@ function TopTeams() {
     setIsLoading(true);
     setData([]);
 
-    fetch(`http://localhost:3001/api/teams/rankings/${year}/${week}`, {
+    fetch(`${process.env.REACT_APP_API_URL}/api/teams/rankings/${year}/${week}`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',

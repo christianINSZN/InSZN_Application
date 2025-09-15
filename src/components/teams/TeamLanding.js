@@ -22,7 +22,7 @@ const TeamLanding = () => {
     const fetchTeamData = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:3001/api/teams/${id}/${year}`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/teams/${id}/${year}`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
         });

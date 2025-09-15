@@ -66,7 +66,7 @@ const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlaye
     if (!checkedPlayers[metricId][selectedPlayerId]) {
       try {
         const gradesPromises = teamGames.map(game =>
-          fetch(`http://localhost:3001/api/player_passing_weekly_all/${selectedPlayerId}/${year}/${game.week}/${game.seasonType}`, {
+          fetch(`${process.env.REACT_APP_API_URL}/api/player_passing_weekly_all/${selectedPlayerId}/${year}/${game.week}/${game.seasonType}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
           }).then(response => {

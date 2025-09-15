@@ -7,7 +7,7 @@ const FieldView = ({ playerId, year, onZoneSelect, colLabels = ['Left', 'Center'
 
   useEffect(() => {
     if (playerId && year) {
-      fetch(`http://localhost:3001/api/player_passing_season_depth/${playerId}/${year}`)
+      fetch(`${process.env.REACT_APP_API_URL}/api/player_passing_season_depth/${playerId}/${year}`)
         .then(response => {
           if (!response.ok) throw new Error('Network response was not ok');
           return response.json();

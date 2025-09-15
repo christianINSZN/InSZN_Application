@@ -80,7 +80,7 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
       };
       setCustomMetrics(prev => [...prev, newMetric]);
       if (player1 && year1) {
-        fetch(`http://localhost:3001/api/player_percentiles_QB/${urlPlayerId}/${year1}`)
+        fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_QB/${urlPlayerId}/${year1}`)
           .then(response => response.json())
           .then(statsData => {
             if (statsData && Object.keys(statsData).length > 0) {
@@ -94,7 +94,7 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
           .catch(error => console.error(`Error fetching Player 1 data for custom metric ${newMetric.field}:`, error));
       }
       if (player2 && year2) {
-        fetch(`http://localhost:3001/api/player_percentiles_QB/${player2.value}/${year2}`)
+        fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_QB/${player2.value}/${year2}`)
           .then(response => response.json())
           .then(statsData => {
             if (statsData && Object.keys(statsData).length > 0) {
@@ -134,7 +134,7 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
   useEffect(() => {
     const fetchPlayers = async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/player_qb_list');
+        const response = await fetch('${process.env.REACT_APP_API_URL}/api/player_qb_list');
         const data = await response.json();
         // Deduplicate by playerId
         const uniquePlayers = Array.from(
@@ -161,8 +161,8 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
       if (player1 && year1 && player2 && year2) {
         try {
           const [statsResponse1, statsResponse2] = await Promise.all([
-            fetch(`http://localhost:3001/api/player_percentiles_QB/${urlPlayerId}/${year1}`),
-            fetch(`http://localhost:3001/api/player_percentiles_QB/${player2.value}/${year2}`),
+            fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_QB/${urlPlayerId}/${year1}`),
+            fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_QB/${player2.value}/${year2}`),
           ]);
           if (!statsResponse1.ok) throw new Error(`Failed to fetch stats data for Player 1: ${await statsResponse1.text()}`);
           if (!statsResponse2.ok) throw new Error(`Failed to fetch stats data for Player 2: ${await statsResponse2.text()}`);
@@ -188,7 +188,7 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
         setLoading(true);
         try {
           console.log(`Fetching data for Player 1 ID: ${urlPlayerId}, Year: ${year1}`);
-          const metadataResponse = await fetch(`http://localhost:3001/api/player_metadata_qb/${urlPlayerId}`);
+          const metadataResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/player_metadata_qb/${urlPlayerId}`);
           if (!metadataResponse.ok) throw new Error(`HTTP error! status: ${metadataResponse.status}`);
           const metadataData = await metadataResponse.json();
           if (!Array.isArray(metadataData)) throw new Error('API response is not an array');
@@ -198,7 +198,7 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
           setYear1(uniqueYears.includes(Number(year1)) ? Number(year1) : uniqueYears[0] || null);
           const latestYearData = metadataData.find(item => item.year === Number(year1)) || metadataData[0];
           setHeadshotUrl1(latestYearData?.headshotURL || null);
-          const statsResponse = await fetch(`http://localhost:3001/api/player_percentiles_QB/${urlPlayerId}/${year1}`);
+          const statsResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_QB/${urlPlayerId}/${year1}`);
           if (!statsResponse.ok) throw new Error(`Failed to fetch stats data for Player 1: ${await statsResponse.text()}`);
           const statsData = await statsResponse.json();
           console.log('Stats data for Player 1:', statsData);
@@ -234,7 +234,7 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
         setLoading(true);
         try {
           console.log(`Fetching data for Player 2 ID: ${player2.value}, Year: ${year2}`);
-          const metadataResponse = await fetch(`http://localhost:3001/api/player_metadata_qb/${player2.value}`);
+          const metadataResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/player_metadata_qb/${player2.value}`);
           if (!metadataResponse.ok) throw new Error(`HTTP error! status: ${metadataResponse.status}`);
           const metadataData = await metadataResponse.json();
           if (!Array.isArray(metadataData)) throw new Error('API response is not an array');
@@ -243,7 +243,7 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
           setYearOptions2(uniqueYears.map(y => ({ value: y, label: y.toString() })));
           const latestYearData = metadataData.find(item => item.year === Number(year2)) || metadataData[0];
           setHeadshotUrl2(latestYearData?.headshotURL || null);
-          const statsResponse = await fetch(`http://localhost:3001/api/player_percentiles_QB/${player2.value}/${year2}`);
+          const statsResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_QB/${player2.value}/${year2}`);
           if (!statsResponse.ok) throw new Error(`Failed to fetch stats data for Player 2: ${await statsResponse.text()}`);
           const statsData = await statsResponse.json();
           console.log('Stats data for Player 2:', statsData);
