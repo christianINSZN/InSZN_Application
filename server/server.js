@@ -4,18 +4,24 @@ const cors = require('cors');
 const axios = require('axios');
 const xml2js = require('xml2js');
 const fs = require('fs');
+const path = require('path');
 const app = express();
 const port = process.env.PORT || 3001;
 
 const dbPath = process.env.SQLITE_DB_PATH || './data/db/cfb_database.db';
-if (!fs.existsSync(dbPath)) {
-  console.error(`Database file not found at: ${dbPath}`);
-} else {
-  const stats = fs.statSync(dbPath);
-  console.log(`Database file found at: ${dbPath}, size: ${stats.size} bytes`);
-  if (stats.size === 0) {
-    console.error('Database file is empty');
-  }
+const repoDbPath = path.join(__dirname, 'data/db/cfb_database.db');
+
+// Copy database from repo to disk if empty or missing
+if (!fs.existsSync(dbPath) || fs.statSync(dbPath).size === 0) {
+  console.log(`Copying database from ${repoDbPath} to ${dbPath}`);
+  fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+  fs.copyFileSync(repoDbPath, dbPath);
+}
+
+const stats = fs.statSync(dbPath);
+console.log(`Database file at: ${dbPath}, size: ${stats.size} bytes`);
+if (stats.size === 0) {
+  console.error('Database file is empty');
 }
 
 const db = new sqlite3.Database(dbPath, (err) => {
@@ -785,5 +791,5 @@ app.get('/api/teams/rankings/:year/:week', (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+  console.log(`Server running on port ${port}`);
 });
