@@ -44,7 +44,7 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange }) => {
   useEffect(() => {
     const fetchPlayers = async () => {
       try {
-        const response = await fetch('${process.env.REACT_APP_API_URL}/api/player_qb_list');
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/player_qb_list`);
         const data = await response.json();
         const options = data.map(player => ({
           value: player.playerId,

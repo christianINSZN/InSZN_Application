@@ -134,7 +134,7 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
   useEffect(() => {
     const fetchPlayers = async () => {
       try {
-        const response = await fetch('${process.env.REACT_APP_API_URL}/api/player_qb_list');
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/player_qb_list`);
         const data = await response.json();
         // Deduplicate by playerId
         const uniquePlayers = Array.from(
