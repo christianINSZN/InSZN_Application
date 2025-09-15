@@ -1,14 +1,11 @@
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
-const app = express();
-const port = 3001;
-const db = new sqlite3.Database('/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/db/cfb_database.db');
-
 const axios = require('axios');
 const xml2js = require('xml2js');
-
-// Enable CORS
+const app = express();
+const port = process.env.PORT || 3001;
+const db = new sqlite3.Database(process.env.SQLITE_DB_PATH || './data/db/cfb_database.db');
 app.use(cors());
 app.use(express.json());
 
