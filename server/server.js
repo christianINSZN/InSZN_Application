@@ -5,15 +5,32 @@ const axios = require('axios');
 const xml2js = require('xml2js');
 const app = express();
 const port = process.env.PORT || 3001;
-const db = new sqlite3.Database(process.env.SQLITE_DB_PATH || './data/db/cfb_database.db');
+const db = new sqlite3.Database(process.env.SQLITE_DB_PATH || './data/db/cfb_database.db', (err) => {
+  if (err) {
+    console.error('Database connection error:', err.message);
+  } else {
+    console.log('Connected to SQLite database');
+    db.all('SELECT name FROM sqlite_master WHERE type="table"', [], (err, rows) => {
+      if (err) {
+        console.error('Error querying tables:', err.message);
+      } else {
+        console.log('Available tables:', rows.map(row => row.name));
+      }
+    });
+  }
+});
 app.use(cors());
 app.use(express.json());
 
-// Helper function to get default year from App.js prop or fallback
-const getDefaultYear = () => 2024; // Align with App.js default, update to 2025 when needed
-
+// Root route
 app.get('/', (req, res) => {
   res.json({ message: 'API server is running' });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Server error:', err.stack);
+  res.status(500).json({ error: 'Internal server error', details: err.message });
 });
 
 /* Players */
