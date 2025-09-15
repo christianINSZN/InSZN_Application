@@ -12,6 +12,9 @@ app.use(express.json());
 // Helper function to get default year from App.js prop or fallback
 const getDefaultYear = () => 2024; // Align with App.js default, update to 2025 when needed
 
+app.get('/', (req, res) => {
+  res.json({ message: 'API server is running' });
+});
 
 /* Players */
 /* Players Dashboard */
