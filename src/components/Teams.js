@@ -29,7 +29,7 @@ function TeamsComponent({ year = '2025' }) {
   useEffect(() => {
     let isMounted = true;
     if (isLoading) {
-      fetch('${process.env.REACT_APP_API_URL}/api/teams', {
+      fetch(`${process.env.REACT_APP_API_URL}/api/teams`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
