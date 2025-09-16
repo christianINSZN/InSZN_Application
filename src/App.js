@@ -30,7 +30,7 @@ import { useState } from 'react';
 
 function App() {
   const [isOpen, setIsOpen] = useState(true);
-  const [defaultYear, setDefaultYear] = useState(2024); // Global default year, update to 2025 when season starts
+  const [defaultYear, setDefaultYear] = useState(2025); // Global default year, update to 2025 when season starts
 
   return (
     <BrowserRouter>

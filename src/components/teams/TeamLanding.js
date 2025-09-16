@@ -11,7 +11,7 @@ import TeamTopPerformers from './teams_components/TeamTopPerformers';
 import TeamNewsfeed from './teams_components/TeamNewsFeed';
 
 const TeamLanding = () => {
-  const { id, year = '2025' } = useParams(); // Default year to 2025
+  const { id, year = '2025' } = useParams();
   console.log('Fetching team data for id:', id, 'year:', year);
   const location = useLocation();
   const [teamData, setTeamData] = useState(null);
@@ -31,6 +31,7 @@ const TeamLanding = () => {
           throw new Error(`Failed to fetch team data: ${response.status} - ${errorText}`);
         }
         const data = await response.json();
+        console.log('Team data received:', data);
         setTeamData(data);
       } catch (err) {
         setError(err.message);
@@ -45,7 +46,8 @@ const TeamLanding = () => {
   if (error) return <div className="p-4 text-red-500">Error: {error}</div>;
   if (!teamData) return <div className="p-4 text-black">No team data available</div>;
 
-  const { school, abbreviation, mascot } = teamData;
+  const { school, abbreviation, mascot, logo_main } = teamData;
+  console.log('Logo_main:', logo_main);
   const isOverviewActive = location.pathname === `/teams/${id}/${year}`;
   const isRosterActive = location.pathname === `/teams/${id}/${year}/roster`;
   const isStatsActive = location.pathname === `/teams/${id}/${year}/stats`;
@@ -53,11 +55,25 @@ const TeamLanding = () => {
 
   return (
     <div className="w-full p-0 shadow-xl rounded-lg">
-      <div className=" py-6" style={{ boxSizing: 'border-box' }}>
+      <div className="py-6" style={{ boxSizing: 'border-box' }}>
         {/* Header Container */}
         <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
-          <h2 className="flex items-center justify-center text-3xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[80px] rounded">{school} {mascot}</h2>
-          <div className="p-0">
+          <div className="flex items-center justify-center bg-white shadow-lg border-b border-[#235347] h-[80px] rounded">
+            {logo_main ? (
+              <div className="text-center">
+                <img
+                  src={logo_main}
+                  alt={`${school} logo`}
+                  className="w-16 h-16 mx-auto"
+                  onError={(e) => console.error(`Failed to load logo: ${logo_main}`)}
+                />
+              </div>
+            ) : (
+              <div className="text-center w-16 h-16 flex items-center justify-center">
+                <span className="text-gray-500">No Logo</span>
+              </div>
+            )}
+            <h2 className="text-3xl font-bold text-gray-700 ml-4">{school} {mascot}</h2>
           </div>
         </div>
         {/* Nav Bar */}
