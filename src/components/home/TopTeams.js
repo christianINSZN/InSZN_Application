@@ -8,7 +8,7 @@ function TopTeams() {
   const [error, setError] = useState(null);
   const [showComingSoon, setShowComingSoon] = useState(false);
   const year = 2025;
-  const week = 3;
+  const week = 4;
   const navigate = useNavigate();
 
   const columnHelper = createColumnHelper();
