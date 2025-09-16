@@ -589,17 +589,32 @@ app.get('/api/teams', (req, res) => {
 });
 
 app.get('/api/teams/:id/:year', (req, res) => {
-  const { id, year } = req.params;
-  db.get('SELECT * FROM Teams WHERE id = ?', [id], (err, row) => {
-    if (err) {
-      console.error('Database error:', err.message);
-      return res.status(500).json({ error: 'Internal server error' });
+    const { id, year } = req.params;
+    if (isNaN(id) || isNaN(year)) {
+        console.log(`Invalid parameters: id=${id}, year=${year}`);
+        return res.status(400).json({ error: 'Invalid id or year parameter' });
     }
-    if (!row) {
-      return res.status(404).json({ error: 'Team not found' });
-    }
-    res.json(row);
-  });
+    console.log(`Fetching team: id=${id}, year=${year}`);
+    db.get('SELECT * FROM Teams WHERE id = ? AND year = ?', [id, year], (err, row) => {
+        if (err) {
+            console.error('Database error:', err.message);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+        if (!row) {
+            console.log(`No team found for id=${id}, year=${year}`);
+            return res.status(404).json({ error: 'Team not found' });
+        }
+        // Parse JSON fields if needed
+        if (row.logos && typeof row.logos === 'string') {
+            try {
+                row.logos = JSON.parse(row.logos.replace(/'/g, '"'));
+            } catch (e) {
+                console.error('Error parsing logos:', e.message);
+                row.logos = [];
+            }
+        }
+        res.json(row);
+    });
 });
 
 app.get('/api/teams/records/:year', (req, res) => {
