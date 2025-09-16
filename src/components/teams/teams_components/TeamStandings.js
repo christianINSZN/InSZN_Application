@@ -1,4 +1,3 @@
-// In src/components/teams/teams_components/TeamStandings.js
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -9,7 +8,7 @@ const TeamStandings = ({ teamData, year, currentTeamId }) => {
 
   useEffect(() => {
     const fetchStandings = async () => {
-      console.log('Fetching standings for year:', year, 'conference:', teamData.conference); // Debug log
+      console.log('Fetching standings for year:', year, 'conference:', teamData.conference);
       try {
         setLoading(true);
         const response = await fetch(`${process.env.REACT_APP_API_URL}/api/teams/records/${year}`, {
@@ -21,26 +20,35 @@ const TeamStandings = ({ teamData, year, currentTeamId }) => {
           throw new Error(`Failed to fetch standings: ${response.status} - ${errorText}`);
         }
         const data = await response.json();
-        console.log('Standings data received:', data); // Debug log
-        // Filter by conference and sort client-side
+        console.log('Standings data received:', data);
+        // Filter by conference and sort by conference record
         const conferenceStandings = data
           .filter(record => record.conference === teamData.conference)
           .sort((a, b) => {
-            if (b.conferenceGames_wins !== a.conferenceGames_wins) return b.conferenceGames_wins - a.conferenceGames_wins;
-            return a.conferenceGames_losses - b.conferenceGames_losses;
+            if (b.conferenceGames_wins !== a.conferenceGames_wins) {
+              return b.conferenceGames_wins - a.conferenceGames_wins; // Sort by wins descending
+            }
+            return a.conferenceGames_losses - b.conferenceGames_losses; // Tiebreak by losses ascending
           });
         setStandings(conferenceStandings);
       } catch (err) {
+        console.error('Fetch error:', err.message);
         setError(err.message);
       } finally {
         setLoading(false);
       }
     };
-    fetchStandings();
+    if (teamData?.conference) {
+      fetchStandings();
+    } else {
+      setError('No conference data available');
+      setLoading(false);
+    }
   }, [teamData, year]);
 
   if (loading) return <div className="p-2 text-gray-500">Loading standings...</div>;
   if (error) return <div className="p-2 text-red-500">Error: {error}</div>;
+  if (standings.length === 0) return <div className="p-2 text-gray-500">No standings available for {teamData.conference}</div>;
 
   const formatRecord = (wins, losses, ties) => `${wins}-${losses}${ties > 0 ? `-${ties}` : ''}`;
 

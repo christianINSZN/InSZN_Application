@@ -58,7 +58,7 @@ const TeamLanding = () => {
       <div className="py-6" style={{ boxSizing: 'border-box' }}>
         {/* Header Container */}
         <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
-          <div className="flex items-center justify-center bg-white shadow-lg border-b border-[#235347] h-[80px] rounded">
+          <div className="flex items-center justify-between bg-white shadow-lg border-b border-[#235347] h-[80px] rounded px-4">
             {logo_main ? (
               <div className="text-center">
                 <img
@@ -73,7 +73,8 @@ const TeamLanding = () => {
                 <span className="text-gray-500">No Logo</span>
               </div>
             )}
-            <h2 className="text-3xl font-bold text-gray-700 ml-4">{school} {mascot}</h2>
+            <h2 className="text-3xl font-bold text-gray-700 flex-1 text-center">{school} {mascot}</h2>
+            <div className="w-16 h-16"></div> {/* Spacer for symmetry */}
           </div>
         </div>
         {/* Nav Bar */}
@@ -101,14 +102,6 @@ const TeamLanding = () => {
                 className={`text-black hover:text-gray-900 pb-2 border-b-2 ${isStatsActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
               >
                 Stats
-              </Link>
-            </li>
-            <li>
-              <Link
-                to={`/teams/${id}/${year}/schedule`}
-                className={`text-black hover:text-gray-900 pb-2 border-b-2 ${isScheduleActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
-              >
-                Schedule
               </Link>
             </li>
           </ul>

@@ -13,7 +13,7 @@ try:
     with open(CONFIG_FILE, 'r') as f:
         config = json.load(f)
     API_KEY = config.get("api_key", "xPVVHT3+7AMkH/gk2Rbnpin03CxVlm6HyGgL2yNiPL1riWLPRUQGS5nE1AXEBMmV")
-    YEARS = config.get("years", [2024])  # Default to [2024] if not specified
+    YEARS = config.get("years", [2025])  # Default to [2024] if not specified
 except FileNotFoundError:
     print(f"Error: Config file not found at {CONFIG_FILE}")
     sys.exit(1)
