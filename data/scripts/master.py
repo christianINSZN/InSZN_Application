@@ -5,7 +5,7 @@ import json
 import sqlite3
 
 # Database connection
-DB_FILE = Path("/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/db/cfb_database.db")
+DB_FILE = Path("/Users/christianberry/Desktop/Perennial Data/perennial-data-app/server/data/db/cfb_database.db")
 conn = sqlite3.connect(DB_FILE)
 cursor = conn.cursor()
 
@@ -18,14 +18,14 @@ year = config.get("years", [2025])[0]
 
 script_order = [
     ### Need to check this properly updates ###
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/teams/populate_teams_games.py",
+    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/teams/populate_teams_games.py", Ok i think this is fine just ensure week stuff is good
 
     ## Populate Players Basic Info and Grades ###
     #  "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/players/populate_players_basic.py",
-    #  "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/players/populate_players_basic_grades.py",
+    #  "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/players/populate_players_basic_grades.py", #no need for all teams
     
     ## PASSING SEASON DATA ####
-    # Passing Concepts Season
+    #Passing Concepts Season
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/passing/season/populate_passing_concept_season.py",
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/passing/season/populate_passing_depth_season.py",
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/passing/season/populate_passing_grades_season.py",
@@ -39,43 +39,43 @@ script_order = [
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/passing/weekly/populate_passing_pressure_weekly.py",
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/passing/weekly/populate_passing_time_in_pocket_weekly.py",
 
-    # # Team Passing Concepts Weekly
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/passing/weekly/populate_team_passing_concept_weekly.py",
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/passing/weekly/populate_team_passing_depth_weekly.py",
-     "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/passing/weekly/populate_team_passing_grades_weekly.py",
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/passing/weekly/populate_team_passing_pressure_weekly.py",
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/passing/weekly/populate_team_passing_time_in_pocket_weekly.py",
+    # # # Team Passing Concepts Weekly
+    #  "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/passing/weekly/populate_team_passing_concept_weekly.py",
+    #  "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/passing/weekly/populate_team_passing_depth_weekly.py",
+    #  "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/passing/weekly/populate_team_passing_grades_weekly.py",
+    #  "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/passing/weekly/populate_team_passing_pressure_weekly.py",
+    #  "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/passing/weekly/populate_team_passing_time_in_pocket_weekly.py",
    
-    # ### RUSHING SEASON DATA ####
-    # # Rushing Concepts Season
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/rushing/season/populate_rushing_grades_season.py",
+    # # ### RUSHING SEASON DATA ####
+    # # # Rushing Concepts Season
+    #  "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/rushing/season/populate_rushing_grades_season.py",
     
-    # # Rushing Concepts Weekly
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/rushing/weekly/populate_rushing_grades_weekly.py",
+    # # # Rushing Concepts Weekly
+    #  "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/rushing/weekly/populate_rushing_grades_weekly.py",
 
-    # # Team Rushing Concepts Weekly
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/rushing/weekly/populate_team_rushing_grades_weekly.py",
+    # # # Team Rushing Concepts Weekly
+    #  "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/rushing/weekly/populate_team_rushing_grades_weekly.py",
     
-    # #### RECEIVING SEASON DATA ####
-    # # Receiving Concepts Season
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/season/populate_receiving_concept_season.py",
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/season/populate_receiving_depth_season.py",
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/season/populate_receiving_grades_season.py",
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/season/populate_receiving_scheme_season.py",
+    # # #### RECEIVING SEASON DATA ####
+    # # # Receiving Concepts Season
+    #  "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/season/populate_receiving_concept_season.py",
+    #  "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/season/populate_receiving_depth_season.py",
+    #  "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/season/populate_receiving_grades_season.py",
+    #  "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/season/populate_receiving_scheme_season.py",
     
-    # # Receiving Concepts Weekly
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/weekly/populate_receiving_concept_weekly.py",
+    # # # Receiving Concepts Weekly
+    #  "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/weekly/populate_receiving_concept_weekly.py",
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/weekly/populate_receiving_depth_weekly.py",
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/weekly/populate_receiving_grades_weekly.py",
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/weekly/populate_receiving_scheme_weekly.py",
 
-    # # Team Receiving Concepts Weekly
+    # # # Team Receiving Concepts Weekly
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/weekly/populate_team_receiving_concept_weekly.py",
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/weekly/populate_team_receiving_depth_weekly.py",
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/weekly/populate_team_receiving_grades_weekly.py",
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/weekly/populate_team_receiving_scheme_weekly.py",
     
-    # #### BLOCKING SEASON DATA ####
+    # # #### BLOCKING SEASON DATA ####
     # # Blocking Concepts Season
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/blocking/season/populate_blocking_grades_season.py",
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/blocking/season/populate_pass_blocking_season.py",
@@ -116,8 +116,8 @@ script_order = [
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/defense/weekly/populate_team_run_defense_weekly.py",
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/defense/weekly/populate_team_slot_coverage_weekly.py",
 
-    ### PERCENTILES ####
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/passing/season/populate_full_percentiles_qb.py",
+    # ## PERCENTILES ####
+     "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/passing/season/populate_full_percentiles_qb.py",
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/rushing/season/populate_full_percentiles_rb.py",
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/season/populate_full_percentiles_rb.py",
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/season/populate_full_percentiles_te.py",

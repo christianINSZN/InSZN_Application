@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 
 # Database connection
-DB_FILE = Path("/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/db/cfb_database.db")
+DB_FILE = Path("/Users/christianberry/Desktop/Perennial Data/perennial-data-app/server/data/db/cfb_database.db")
 conn = sqlite3.connect(DB_FILE)
 cursor = conn.cursor()
 
@@ -122,13 +122,32 @@ try:
     existing_cols = {row[1] for row in cursor.fetchall()}
     valid_metric_cols = {col for col in BASE_METRIC_COLS if col in existing_cols}
     print(f"Valid metrics: {valid_metric_cols}")
+
+    # Insert new rows or update existing rows (excluding playerId, year, name, team)
     for key, data in pff_data.items():
-        values = [data['playerId'], data['year'], data['name'], data['team'], data.get('attempts')] + [data.get(col) for col in valid_metric_cols]
-        query = f"""
-            INSERT OR IGNORE INTO {TABLE_NAME} (playerId, year, name, team, attempts, {', '.join(valid_metric_cols)})
-            VALUES ({', '.join('?' for _ in range(len(values)))})
-        """
-        cursor.execute(query, values)
+        # Check if row exists
+        cursor.execute(f"SELECT 1 FROM {TABLE_NAME} WHERE playerId = ? AND year = ?", (data['playerId'], data['year']))
+        exists = cursor.fetchone()
+
+        if exists:
+            # Update existing row (attempts and metric columns only)
+            update_cols = ['attempts'] + list(valid_metric_cols)
+            update_query = f"""
+                UPDATE {TABLE_NAME}
+                SET {', '.join(f'{col} = ?' for col in update_cols)}
+                WHERE playerId = ? AND year = ?
+            """
+            update_values = [data.get(col) for col in update_cols] + [data['playerId'], data['year']]
+            cursor.execute(update_query, update_values)
+        else:
+            # Insert new row
+            insert_cols = ['playerId', 'year', 'name', 'team', 'attempts'] + list(valid_metric_cols)
+            insert_values = [data['playerId'], data['year'], data['name'], data['team'], data.get('attempts')] + [data.get(col) for col in valid_metric_cols]
+            insert_query = f"""
+                INSERT INTO {TABLE_NAME} ({', '.join(insert_cols)})
+                VALUES ({', '.join('?' for _ in range(len(insert_values)))})
+            """
+            cursor.execute(insert_query, insert_values)
 
     # Calculate percentiles per year
     cursor.execute(f"SELECT DISTINCT year FROM {TABLE_NAME}")
@@ -139,7 +158,7 @@ try:
         if total_qualified_players == 0:
             print(f"Skipping percentiles for year {year}: no players meet attempts threshold")
             continue
-        for metric in valid_metric_cols:
+        for metric in valid_metric_cols | {'attempts'}:  # Include attempts for percentile calculation
             cursor.execute(f"""
                 WITH Stats AS (
                     SELECT MIN({metric}) AS min_value, MAX({metric}) AS max_value

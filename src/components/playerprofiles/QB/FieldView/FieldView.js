@@ -3,8 +3,7 @@ import React, { useState, useEffect } from 'react';
 const FieldView = ({ playerId, year, onZoneSelect, colLabels = ['Left', 'Center', 'Right'] }) => {
   const [selectedZone, setSelectedZone] = useState(null);
   const [depthData, setDepthData] = useState(null);
-  const [selectedMetric, setSelectedMetric] = useState('grades_pass');
-
+  const [selectedMetric, setSelectedMetric] = useState(''); // Default to empty string for placeholder
   useEffect(() => {
     if (playerId && year) {
       fetch(`${process.env.REACT_APP_API_URL}/api/player_passing_season_depth/${playerId}/${year}`)
@@ -26,12 +25,13 @@ const FieldView = ({ playerId, year, onZoneSelect, colLabels = ['Left', 'Center'
     ['left_short', 'center_short', 'right_short'],
     ['left_behind_los', 'center_behind_los', 'right_behind_los'],
   ];
-
   const rowLabels = ['Deep', 'Medium', 'Short', 'BLOS'];
 
   const handleZoneClick = (zone) => {
     setSelectedZone(zone);
-    if (onZoneSelect) onZoneSelect({ zone, metric: selectedMetric });
+    if (onZoneSelect && selectedMetric) { // Only call if a valid metric is selected
+      onZoneSelect({ zone, metric: selectedMetric });
+    }
   };
 
   const getAvailableMetrics = () => {
@@ -45,13 +45,14 @@ const FieldView = ({ playerId, year, onZoneSelect, colLabels = ['Left', 'Center'
   };
 
   const formatMetric = (metric) => {
+    if (!metric) return 'Select Metric'; // Handle placeholder
     return metric
       .split('_')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
   };
 
-   const formatZone = (zone) => {
+  const formatZone = (zone) => {
     if (!zone) return 'None';
     const [position, distance] = zone.split('_');
     const formattedPosition = position.charAt(0).toUpperCase() + position.slice(1);
@@ -60,7 +61,7 @@ const FieldView = ({ playerId, year, onZoneSelect, colLabels = ['Left', 'Center'
   };
 
   const getValue = (zone) => {
-    if (!depthData) return null;
+    if (!depthData || !selectedMetric) return null; // Handle no metric selected
     const valueKey = `${zone}_${selectedMetric}`;
     const value = depthData[valueKey];
     console.log(`Value for ${zone} with ${selectedMetric}: ${value}`);
@@ -68,7 +69,7 @@ const FieldView = ({ playerId, year, onZoneSelect, colLabels = ['Left', 'Center'
   };
 
   const getMetricRange = () => {
-    if (!depthData) return { min: 0, max: 100 };
+    if (!depthData || !selectedMetric) return { min: 0, max: 100 };
     const values = zones.flat().map(zone => getValue(zone)).filter(v => v !== null);
     return values.length > 0 ? { min: Math.min(...values), max: Math.max(...values) } : { min: 0, max: 100 };
   };
@@ -83,8 +84,7 @@ const FieldView = ({ playerId, year, onZoneSelect, colLabels = ['Left', 'Center'
 
   return (
     <div className="bg-white rounded-lg shadow h-full">
-    <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">FieldView</h2>
-
+      <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">FieldView</h2>
       {/* Metric Dropdown */}
       <div className="mb-2 mt-2">
         <label htmlFor="metric-select" className="text-gray-700 ml-36"></label>
@@ -94,6 +94,7 @@ const FieldView = ({ playerId, year, onZoneSelect, colLabels = ['Left', 'Center'
           onChange={(e) => setSelectedMetric(e.target.value)}
           className="p-2 border border-gray-300 rounded text-center"
         >
+          <option value="" disabled>Select Metric</option>
           {getAvailableMetrics().map(metric => (
             <option key={metric} value={metric}>{formatMetric(metric)}</option>
           ))}

@@ -4,7 +4,7 @@ import csv
 from pathlib import Path
 
 # Database connection
-DB_FILE = Path("/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/db/cfb_database.db")
+DB_FILE = Path("/Users/christianberry/Desktop/Perennial Data/perennial-data-app/server/data/db/cfb_database.db")
 try:
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
