@@ -190,7 +190,7 @@ function TopRBs() {
       </div>
       <div className="p-1 text-center text-sm">
         <Link
-          to="http://localhost:3000/players"
+          to="https://inszn-application-static.onrender.com/players"
           className="text-black hover:text-gray-900 underline underline-offset-2 inline-block cursor-pointer"
           style={{ display: 'inline-block' }}
         >
