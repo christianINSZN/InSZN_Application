@@ -25,7 +25,7 @@ const MatchupProjection = ({ teamId, year }) => {
         const matchups = await response.json();
         const nextMatchup = matchups
           .filter(m => m.status === 'scheduled')
-          .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))[0];
+          .sort((a, b) => new Date(b.startDate) - new Date(a.startDate))[0]; // Changed to descending order
         if (!nextMatchup) throw new Error('No scheduled matchups found');
         setMatchup(nextMatchup);
       } catch (err) {
