@@ -11,6 +11,9 @@ const port = process.env.PORT || 3001;
 const dbPath = process.env.SQLITE_DB_PATH || './data/db/cfb_database.db';
 const repoDbPath = path.join(__dirname, 'data/db/cfb_database.db');
 
+const getDefaultYear = () => 2025; // Align with App.js default, update to 2025 when needed
+
+
 // Ensure database directory exists and copy database from repo to disk
 console.log(`Copying database from ${repoDbPath} to ${dbPath}`);
 fs.mkdirSync(path.dirname(dbPath), { recursive: true });
@@ -39,6 +42,8 @@ const db = new sqlite3.Database(dbPath, (err) => {
 
 app.use(cors());
 app.use(express.json());
+
+
 app.get('/', (req, res) => {
   res.json({ message: 'API server is running' });
 });
