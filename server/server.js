@@ -11,6 +11,8 @@ const port = process.env.PORT || 3001;
 const dbPath = process.env.SQLITE_DB_PATH || './data/db/cfb_database.db';
 const repoDbPath = path.join(__dirname, 'data/db/cfb_database.db');
 
+const getDefaultYear = () => 2025; // Align with App.js default, update to 2025 when needed
+
 // Copy database from repo to disk if empty or missing
 if (!fs.existsSync(dbPath) || fs.statSync(dbPath).size === 0) {
   console.log(`Copying database from ${repoDbPath} to ${dbPath}`);
