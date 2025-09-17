@@ -110,8 +110,8 @@ const TeamLanding = () => {
         <div className="flex flex-col md:flex-row w-full gap-4" style={{ alignItems: 'flex-start', boxSizing: 'border-box' }}>
           {/* Left Container: Conference Standings */}
           <div className="p-0 bg-gray-0 rounded-lg shadow-xl" style={{ flexBasis: '25%', minWidth: '25%', boxSizing: 'border-box' }}>
-            <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Standings</h2>
-            <div className="p-4">
+            <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">{year} {teamData.conference} Standings</h2>
+            <div className="p-0">
               <TeamStandings teamData={teamData} year={year} currentTeamId={id} />
             </div>
           </div>
@@ -120,7 +120,7 @@ const TeamLanding = () => {
             {/* Middle Container: Season Game Log */}
             <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
               <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Game Log</h2>
-              <div className="p-4">
+              <div className="p-0">
                 <TeamGameLog teamData={teamData} year={year} />
               </div>
             </div>

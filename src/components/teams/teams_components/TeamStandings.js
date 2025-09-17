@@ -54,9 +54,8 @@ const TeamStandings = ({ teamData, year, currentTeamId }) => {
 
   return (
     <div>
-      <h3 className="text-md font-semibold mb-2">{year} {teamData.conference} Standings</h3>
       <table className="w-full text-left border-collapse">
-        <thead className="bg-gray-300">
+        <thead className="bg-white">
           <tr>
             <th className="p-1 text-xs font-semibold border-b border-gray-400">TEAM</th>
             <th className="p-1 text-xs font-semibold border-b border-gray-400">CONF</th>
@@ -65,11 +64,11 @@ const TeamStandings = ({ teamData, year, currentTeamId }) => {
         </thead>
         <tbody>
           {standings.map((team) => (
-            <tr key={team.teamId} className={team.teamId === parseInt(currentTeamId) ? 'font-bold' : ''}>
+            <tr key={team.teamId} className={team.teamId === parseInt(currentTeamId) ? 'font-bold bg-[#235347]/20' : ''}>
               <td className="p-1 text-xs border-b border-gray-300">
                 <Link
                   to={`/teams/${team.teamId}/${year}`}
-                  className="text-blue-500 hover:text-blue-700 underline"
+                  className="text-[#235347] hover:text-[#235347]/50 underline"
                 >
                   {team.team}
                 </Link>

@@ -588,6 +588,36 @@ app.get('/api/teams', (req, res) => {
   });
 });
 
+// Grades endpoint
+app.get('/api/teams/:id/:year/grades', (req, res) => {
+    const { id, year } = req.params;
+    const idNum = parseInt(id);
+    const yearNum = parseInt(year);
+    if (isNaN(idNum) || isNaN(yearNum)) {
+        console.log(`Invalid parameters: id=${id}, year=${year}`);
+        return res.status(400).json({ error: 'Invalid id or year parameter' });
+    }
+    console.log(`Fetching grades for team: id=${idNum}, year=${yearNum}`);
+    db.all('SELECT * FROM Teams_Grades WHERE team_id = ? AND season = ?', [idNum, yearNum], (err, rows) => {
+        if (err) {
+            console.error('Database error:', err.message);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+        if (!rows.length) {
+            console.log(`No grades found for team id=${idNum}, year=${yearNum}`);
+            return res.status(404).json({ error: 'No grades found for this team and year' });
+        }
+        res.json(rows);
+    });
+});
+
+// Other endpoints (e.g., /api/teams/:id/:year, /api/teams/records/:year, etc.)
+// ... (your existing endpoints)
+
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+});
+
 app.get('/api/teams/records/:year', (req, res) => {
   const { year } = req.params;
   if (isNaN(year)) {
@@ -638,6 +668,26 @@ app.get('/api/teams/:id/:year', (req, res) => {
 });
 
 app.get('/api/teams/:id/:year/games', (req, res) => {
+  const { id, year } = req.params;
+  console.log(`Fetching games for teamId: ${id}, year: ${year}`); // Debug log
+  db.all(
+    'SELECT * FROM Teams_Games WHERE season = ? AND (homeId = ? OR awayId = ?)',
+    [year, id, id],
+    (err, rows) => {
+      if (err) {
+        console.error('Database error:', err.message);
+        return res.status(500).json({ error: err.message });
+      }
+      if (!rows.length) {
+        console.log(`No games found for teamId: ${id}, year: ${year}`);
+        return res.status(404).json({ error: 'No games found for this team and year' });
+      }
+      res.json(rows);
+    }
+  );
+});
+
+app.get('/api/teams/:id/:year/gamesGrades', (req, res) => {
   const { id, year } = req.params;
   console.log(`Fetching games for teamId: ${id}, year: ${year}`); // Debug log
   db.all(
