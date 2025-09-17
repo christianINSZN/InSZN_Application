@@ -611,6 +611,28 @@ app.get('/api/teamsGrades/:id/:year/grades', (req, res) => {
     });
 });
 
+app.get('/api/teams_stats/:id/:year/stats', (req, res) => {
+    const { id, year } = req.params;
+    const idNum = parseInt(id);
+    const yearNum = parseInt(year);
+    if (isNaN(idNum) || isNaN(yearNum)) {
+        console.log(`Invalid parameters: id=${id}, year=${year}`);
+        return res.status(400).json({ error: 'Invalid id or year parameter' });
+    }
+    console.log(`Fetching stats for team: id=${idNum}, year=${yearNum}`);
+    db.all('SELECT * FROM Teams_Games_Stats WHERE team_id = ? AND season = ?', [idNum, yearNum], (err, rows) => {
+        if (err) {
+            console.error('Database error:', err.message);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+        if (!rows.length) {
+            console.log(`No stats found for team id=${idNum}, year=${yearNum}`);
+            return res.status(404).json({ error: 'No stats found for this team and year' });
+        }
+        res.json(rows);
+    });
+});
+
 app.get('/api/teams/records/:year', (req, res) => {
   const { year } = req.params;
   if (isNaN(year)) {
@@ -680,25 +702,6 @@ app.get('/api/teams/:id/:year/games', (req, res) => {
   );
 });
 
-app.get('/api/teams/:id/:year/gamesGrades', (req, res) => {
-  const { id, year } = req.params;
-  console.log(`Fetching games for teamId: ${id}, year: ${year}`); // Debug log
-  db.all(
-    'SELECT * FROM Teams_Games WHERE season = ? AND (homeId = ? OR awayId = ?)',
-    [year, id, id],
-    (err, rows) => {
-      if (err) {
-        console.error('Database error:', err.message);
-        return res.status(500).json({ error: err.message });
-      }
-      if (!rows.length) {
-        console.log(`No games found for teamId: ${id}, year: ${year}`);
-        return res.status(404).json({ error: 'No games found for this team and year' });
-      }
-      res.json(rows);
-    }
-  );
-});
 
 app.get('/api/teams/:id/:year/stats', (req, res) => {
   const { id, year } = req.params;

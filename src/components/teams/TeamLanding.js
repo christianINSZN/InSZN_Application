@@ -109,14 +109,14 @@ const TeamLanding = () => {
         {/* Main Containers with Three-Column Layout */}
         <div className="flex flex-col md:flex-row w-full gap-4" style={{ alignItems: 'flex-start', boxSizing: 'border-box' }}>
           {/* Left Container: Conference Standings */}
-          <div className="p-0 bg-gray-0 rounded-lg shadow-xl" style={{ flexBasis: '25%', minWidth: '25%', boxSizing: 'border-box' }}>
+          <div className="p-0 bg-gray-0 rounded-lg shadow-xl" style={{ flexBasis: '20%', minWidth: '20%', boxSizing: 'border-box' }}>
             <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">{year} {teamData.conference} Standings</h2>
             <div className="p-0">
               <TeamStandings teamData={teamData} year={year} currentTeamId={id} />
             </div>
           </div>
           {/* Middle Column: Game Log and Newsfeed */}
-          <div className="flex flex-col" style={{ flexBasis: '45%', minWidth: '45%', boxSizing: 'border-box' }}>
+          <div className="flex flex-col" style={{ flexBasis: '60%', minWidth: '60%', boxSizing: 'border-box' }}>
             {/* Middle Container: Season Game Log */}
             <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
               <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Game Log</h2>
@@ -133,7 +133,7 @@ const TeamLanding = () => {
             </div>
           </div>
           {/* Right Column: Stat Leaders and Top Performers */}
-          <div className="flex flex-col" style={{ flexBasis: '28%', minWidth: '28%', boxSizing: 'border-box' }}>
+          <div className="flex flex-col" style={{ flexBasis: '18%', minWidth: '18%', boxSizing: 'border-box' }}>
             {/* Right Container: Stat Leaders */}
             <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
               <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Stat Leaders</h2>
