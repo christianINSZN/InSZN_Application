@@ -589,7 +589,7 @@ app.get('/api/teams', (req, res) => {
 });
 
 // Grades endpoint
-app.get('/api/teams/:id/:year/grades', (req, res) => {
+app.get('/api/teamsGrades/:id/:year/grades', (req, res) => {
     const { id, year } = req.params;
     const idNum = parseInt(id);
     const yearNum = parseInt(year);

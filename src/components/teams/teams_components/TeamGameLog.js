@@ -32,7 +32,7 @@ const TeamGameLog = ({ teamData, year }) => {
         console.log('Games data received:', gamesData);
 
         // Fetch grades
-        const gradesResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/teams/${teamData.id}/${year}/grades`, {
+        const gradesResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/teamsGrades/${teamData.id}/${year}/grades`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
         });
