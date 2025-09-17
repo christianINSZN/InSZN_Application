@@ -1,153 +1,215 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useReactTable, getCoreRowModel, getSortedRowModel, createColumnHelper, flexRender } from '@tanstack/react-table';
 import TeamHeader from './teams_components/TeamHeader';
-import TeamStats from './teams_components/TeamStats';
-import TeamSchedule from './teams_components/TeamSchedule';
-import TeamStandings from './teams_components/TeamStandings';
-import TeamGameLog from './teams_components/TeamGameLog';
-import TeamFeed from './teams_components/TeamFeed';
-import TeamTopPerformers from './teams_components/TeamTopPerformers';
-import TeamNewsfeed from './teams_components/TeamNewsFeed';
 
 const TeamRoster = () => {
   const { id, year = '2025' } = useParams();
-  console.log('Fetching team data for id:', id, 'year:', year);
-  const location = useLocation();
+  const navigate = useNavigate();
   const [teamData, setTeamData] = useState(null);
+  const [rosterData, setRosterData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [filterPlayerName, setFilterPlayerName] = useState('');
+  const [filterPosition, setFilterPosition] = useState('');
 
   useEffect(() => {
-    const fetchTeamData = async () => {
+    const fetchTeamAndRoster = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/teams/${id}/${year}`, {
+        // Fetch team data
+        const teamResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/teams/${id}/${year}`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
         });
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Failed to fetch team data: ${response.status} - ${errorText}`);
+        if (!teamResponse.ok) {
+          const errorText = await teamResponse.text();
+          throw new Error(`Failed to fetch team data: ${teamResponse.status} - ${errorText}`);
         }
-        const data = await response.json();
-        console.log('Team data received:', data);
-        setTeamData(data);
+        const teamData = await teamResponse.json();
+        console.log('Team data received:', teamData);
+
+        // Fetch roster data
+        const rosterResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/teams_roster/${id}/${year}`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        if (!rosterResponse.ok) {
+          const errorText = await rosterResponse.text();
+          throw new Error(`Failed to fetch roster data: ${rosterResponse.status} - ${errorText}`);
+        }
+        const rosterData = await rosterResponse.json();
+        console.log('Roster data received:', rosterData);
+
+        setTeamData(teamData);
+        setRosterData(rosterData);
       } catch (err) {
         setError(err.message);
       } finally {
         setLoading(false);
       }
     };
-    fetchTeamData();
+    fetchTeamAndRoster();
   }, [id, year]);
 
-  if (loading) return <div className="p-4 text-black">Loading...</div>;
-  if (error) return <div className="p-4 text-red-500">Error: {error}</div>;
-  if (!teamData) return <div className="p-4 text-black">No team data available</div>;
+  const uniquePositions = useMemo(() => {
+    return [...new Set(rosterData.map(player => player.position).filter(Boolean))].sort();
+  }, [rosterData]);
 
-  const { school, abbreviation, mascot, logo_main } = teamData;
-  console.log('Logo_main:', logo_main);
-  const isOverviewActive = location.pathname === `/teams/${id}/${year}`;
-  const isRosterActive = location.pathname === `/teams/${id}/${year}/roster`;
-  const isStatsActive = location.pathname === `/teams/${id}/${year}/stats`;
-  const isScheduleActive = location.pathname === `/teams/${id}/${year}/schedule`;
+  const filteredRosterData = useMemo(() => {
+    return rosterData.filter(player => {
+      const nameMatch = !filterPlayerName || player.name.toLowerCase().includes(filterPlayerName.toLowerCase());
+      const positionMatch = !filterPosition || player.position === filterPosition;
+      return nameMatch && positionMatch;
+    });
+  }, [rosterData, filterPlayerName, filterPosition]);
+
+  const columnHelper = createColumnHelper();
+  const columns = useMemo(() => [
+    columnHelper.accessor('name', {
+      id: 'Player Name',
+      enableSorting: true,
+      cell: ({ row }) => (
+        <Link
+          to={`/players/${row.original.position.toLowerCase()}/${row.original.playerId}`}
+          state={{ year }}
+          className="text-blue-500 hover:text-blue-700 underline underline-offset-2"
+          onClick={(e) => {
+            e.preventDefault();
+            navigate(`/players/${row.original.position.toLowerCase()}/${row.original.playerId}`, { state: { year } });
+          }}
+        >
+          {row.original.name || 'No Name'}
+        </Link>
+      ),
+    }),
+    columnHelper.accessor('position', {
+      id: 'Position',
+      enableSorting: true,
+      cell: info => info.getValue() || 'N/A',
+    }),
+    columnHelper.accessor('player_game_count', {
+      id: 'GP',
+      enableSorting: true,
+      cell: info => info.getValue() !== null ? info.getValue() : 'N/A',
+    }),
+    columnHelper.accessor('yards', {
+      id: 'Yards',
+      enableSorting: true,
+      cell: info => info.getValue() !== null ? info.getValue() : 'N/A',
+    }),
+    columnHelper.accessor('touchdowns', {
+      id: 'TDs',
+      enableSorting: true,
+      cell: info => info.getValue() !== null ? info.getValue() : 'N/A',
+    }),
+    columnHelper.accessor('grades_pass', {
+      id: 'Pass Grade',
+      enableSorting: true,
+      cell: info => info.getValue() !== null ? info.getValue().toFixed(1) : 'N/A',
+    }),
+    columnHelper.accessor('grades_run', {
+      id: 'Run Grade',
+      enableSorting: true,
+      cell: info => info.getValue() !== null ? info.getValue().toFixed(1) : 'N/A',
+    }),
+    columnHelper.accessor('grades_pass_route', {
+      id: 'Pass Route Grade',
+      enableSorting: true,
+      cell: info => info.getValue() !== null ? info.getValue().toFixed(1) : 'N/A',
+    }),
+  ], [year, navigate]);
+
+  const table = useReactTable({
+    data: filteredRosterData,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    initialState: {
+      sorting: [{ id: 'Yards', desc: true }],
+    },
+  });
+
+  if (loading) return <div className="p-4 text-gray-500 text-xs">Loading roster...</div>;
+  if (error) return <div className="p-4 text-red-500 text-xs">Error: {error}</div>;
+  if (!teamData) return <div className="p-4 text-gray-500 text-xs">No team data available</div>;
 
   return (
-    <div className="w-full p-0 shadow-xl rounded-lg">
-      <div className="py-6" style={{ boxSizing: 'border-box' }}>
-        {/* Header Container */}
-        <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
-          <div className="flex items-center justify-between bg-white shadow-lg border-b border-[#235347] h-[80px] rounded px-4">
-            {logo_main ? (
-              <div className="text-center">
-                <img
-                  src={logo_main}
-                  alt={`${school} logo`}
-                  className="w-16 h-16 mx-auto"
-                  onError={(e) => console.error(`Failed to load logo: ${logo_main}`)}
-                />
-              </div>
-            ) : (
-              <div className="text-center w-16 h-16 flex items-center justify-center">
-                <span className="text-gray-500">No Logo</span>
-              </div>
-            )}
-            <h2 className="text-3xl font-bold text-gray-700 flex-1 text-center">{school} {mascot}</h2>
-            <div className="w-16 h-16"></div> {/* Spacer for symmetry */}
+    <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
+      <TeamHeader teamData={teamData} year={year} activeTab="roster" />
+      <div className="p-4">
+        <header className="mb-4 flex flex-wrap gap-4 items-end bg-gray-200 p-2 rounded-lg shadow-xl">
+          <div className="w-full md:w-auto flex-1">
+            <label htmlFor="playerNameFilter" className="block text-sm font-medium text-gray-700">
+              Filter by Player Name
+            </label>
+            <input
+              id="playerNameFilter"
+              value={filterPlayerName}
+              onChange={(e) => setFilterPlayerName(e.target.value)}
+              className="w-full p-2 border rounded text-xs"
+              placeholder="Type to filter..."
+            />
           </div>
-        </div>
-        {/* Nav Bar */}
-        <div className="border-b border-[#235347] mb-4">
-          <ul className="flex gap-4 justify-center p-4">
-            <li>
-              <Link
-                to={`/teams/${id}/${year}`}
-                className={`text-black hover:text-gray-900 pb-2 border-b-2 ${isOverviewActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
-              >
-                Overview
-              </Link>
-            </li>
-            <li>
-              <Link
-                to={`/teams/${id}/${year}/roster`}
-                className={`text-black hover:text-gray-900 pb-2 border-b-2 ${isRosterActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
-              >
-                Roster
-              </Link>
-            </li>
-            <li>
-              <Link
-                to={`/teams/${id}/${year}/stats`}
-                className={`text-black hover:text-gray-900 pb-2 border-b-2 ${isStatsActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
-              >
-                Stats
-              </Link>
-            </li>
-          </ul>
-        </div>
-        {/* Main Containers with Three-Column Layout */}
-        <div className="flex flex-col md:flex-row w-full gap-4" style={{ alignItems: 'flex-start', boxSizing: 'border-box' }}>
-          {/* Left Container: Conference Standings */}
-          <div className="p-0 bg-gray-0 rounded-lg shadow-xl" style={{ flexBasis: '20%', minWidth: '20%', boxSizing: 'border-box' }}>
-            <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">{year} {teamData.conference} Standings</h2>
-            <div className="p-0">
-              <TeamStandings teamData={teamData} year={year} currentTeamId={id} />
-            </div>
+          <div className="w-full md:w-auto flex-1">
+            <label htmlFor="positionFilter" className="block text-sm font-medium text-gray-700">
+              Filter by Position
+            </label>
+            <select
+              id="positionFilter"
+              value={filterPosition}
+              onChange={(e) => setFilterPosition(e.target.value)}
+              className="w-full p-2 border rounded text-xs"
+            >
+              <option value="">All Positions</option>
+              {uniquePositions.map((pos, index) => (
+                <option key={index} value={pos}>{pos}</option>
+              ))}
+            </select>
           </div>
-          {/* Middle Column: Game Log and Newsfeed */}
-          <div className="flex flex-col" style={{ flexBasis: '58%', minWidth: '58%', boxSizing: 'border-box' }}>
-            {/* Middle Container: Season Game Log */}
-            <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
-              <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Game Log</h2>
-              <div className="p-0">
-                <TeamGameLog teamData={teamData} year={year} />
-              </div>
-            </div>
-            {/* Newsfeed Container */}
-            <div className="p-0 bg-gray-0 rounded-lg shadow-xl mt-4">
-              <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Featured Contributors</h2>
-              <div className="p-0">
-                <TeamNewsfeed teamData={teamData} year={year} />
-              </div>
-            </div>
-          </div>
-          {/* Right Column: Stat Leaders and Top Performers */}
-          <div className="flex flex-col" style={{ flexBasis: '20%', minWidth: '20%', boxSizing: 'border-box' }}>
-           {/* Top Performers Container */}
-            <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
-              <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Key Performers</h2>
-              <div className="p-0">
-                <TeamTopPerformers teamData={teamData} year={year} />
-              </div>
-            </div>
-            {/* Right Container: Stat Leaders */}
-            <div className="p-0 bg-gray-0 rounded-lg shadow-xl mt-4">
-              <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Team Feed</h2>
-              <div className="p-0">
-                <TeamFeed teamData={teamData} year={year} />
-              </div>
-            </div>
-          </div>
+        </header>
+        <h3 className="text-md font-semibold mb-2 bg-[#235347] text-white p-2 rounded-t">Team Roster</h3>
+        <div className="h-[362px] overflow-y-auto">
+          <table className="w-full text-left border-collapse">
+            <thead className="sticky top-0 bg-white z-10">
+              {table.getHeaderGroups().map(headerGroup => (
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map(column => (
+                    <th
+                      key={column.id}
+                      className="p-1 text-xs font-semibold border-b border-gray-400 text-gray-800 cursor-pointer"
+                      style={{ textAlign: column.id === 'Player Name' ? 'left' : 'center', verticalAlign: 'middle', lineHeight: '1.2' }}
+                      onClick={() => {
+                        const sorting = table.getState().sorting;
+                        const currentSort = sorting.find(s => s.id === column.id);
+                        table.setSorting([{ id: column.id, desc: !currentSort?.desc }]);
+                      }}
+                    >
+                      {column.id}
+                      {table.getState().sorting.find(s => s.id === column.id) && (
+                        table.getState().sorting.find(s => s.id === column.id).desc ? ' ▼' : ' ▲'
+                      )}
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody>
+              {table.getRowModel().rows.map((row, index) => (
+                <tr key={row.id} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-gray-200'}>
+                  {row.getVisibleCells().map(cell => (
+                    <td
+                      key={cell.id}
+                      className="p-1 text-xs text-left border-b border-gray-300"
+                      style={{ textAlign: cell.column.id === 'Player Name' ? 'left' : 'center', verticalAlign: 'middle', lineHeight: '1.2' }}
+                    >
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
