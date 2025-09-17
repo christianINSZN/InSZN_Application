@@ -588,6 +588,26 @@ app.get('/api/teams', (req, res) => {
   });
 });
 
+app.get('/api/teams/records/:year', (req, res) => {
+  const { year } = req.params;
+  if (isNaN(year)) {
+    console.log(`Invalid year parameter: ${year}`);
+    return res.status(400).json({ error: 'Invalid year parameter' });
+  }
+  console.log(`Received request for /api/teams/records/${year}`); // Debug log
+  db.all('SELECT * FROM Teams_Records WHERE year = ?', [year], (err, rows) => {
+    if (err) {
+      console.error('Database error:', err.message);
+      return res.status(500).json({ error: err.message });
+    }
+    if (!rows.length) {
+      console.log(`No records found for year: ${year}`); // Debug log
+      return res.status(404).json({ error: 'No records found for this year' });
+    }
+    res.json(rows);
+  });
+});
+
 app.get('/api/teams/:id/:year', (req, res) => {
     const { id, year } = req.params;
     if (isNaN(id) || isNaN(year)) {
@@ -615,26 +635,6 @@ app.get('/api/teams/:id/:year', (req, res) => {
         }
         res.json(row);
     });
-});
-
-app.get('/api/teams/records/:year', (req, res) => {
-  const { year } = req.params;
-  if (isNaN(year)) {
-    console.log(`Invalid year parameter: ${year}`);
-    return res.status(400).json({ error: 'Invalid year parameter' });
-  }
-  console.log(`Received request for /api/teams/records/${year}`); // Debug log
-  db.all('SELECT * FROM Teams_Records WHERE year = ?', [year], (err, rows) => {
-    if (err) {
-      console.error('Database error:', err.message);
-      return res.status(500).json({ error: err.message });
-    }
-    if (!rows.length) {
-      console.log(`No records found for year: ${year}`); // Debug log
-      return res.status(404).json({ error: 'No records found for this year' });
-    }
-    res.json(rows);
-  });
 });
 
 app.get('/api/teams/:id/:year/games', (req, res) => {
