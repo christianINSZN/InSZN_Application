@@ -862,7 +862,7 @@ app.get('/api/teams_roster/:id/:year', (req, res) => {
         return res.status(400).json({ error: 'Invalid id or year parameter' });
     }
     console.log(`Fetching roster for team id=${idNum}, year=${yearNum}`);
-    db.all('SELECT playerId, name, position, school, teamID, gamesPlayed AS player_game_count, yards, touchdowns, grades_pass, grades_run, grades_pass_route FROM Players_Basic_Grades WHERE teamID = ? AND year = ?', [idNum, yearNum], (err, rows) => {
+    db.all('SELECT playerId, name, position, school, teamID player_game_count, yards, touchdowns, grades_pass, grades_run, grades_pass_route FROM Players_Basic_Grades WHERE teamID = ? AND year = ?', [idNum, yearNum], (err, rows) => {
         if (err) {
             console.error('Database error:', err.message);
             return res.status(500).json({ error: 'Internal server error' });
