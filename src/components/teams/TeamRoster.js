@@ -9,7 +9,7 @@ import TeamFeed from './teams_components/TeamFeed';
 import TeamTopPerformers from './teams_components/TeamTopPerformers';
 import TeamNewsfeed from './teams_components/TeamNewsFeed';
 
-const TeamLanding = () => {
+const TeamRoster = () => {
   const { id, year = '2025' } = useParams();
   console.log('Fetching team data for id:', id, 'year:', year);
   const location = useLocation();
@@ -154,4 +154,4 @@ const TeamLanding = () => {
   );
 };
 
-export default TeamLanding;
+export default TeamRoster;
