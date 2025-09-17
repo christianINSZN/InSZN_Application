@@ -598,7 +598,7 @@ app.get('/api/teams/:id/:year/grades', (req, res) => {
         return res.status(400).json({ error: 'Invalid id or year parameter' });
     }
     console.log(`Fetching grades for team: id=${idNum}, year=${yearNum}`);
-    db.all('SELECT * FROM Teams_Grades WHERE team_id = ? AND season = ?', [idNum, yearNum], (err, rows) => {
+    db.all('SELECT * FROM Teams_Game_Grades WHERE team_id = ? AND season = ?', [idNum, yearNum], (err, rows) => {
         if (err) {
             console.error('Database error:', err.message);
             return res.status(500).json({ error: 'Internal server error' });
