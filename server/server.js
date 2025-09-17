@@ -853,6 +853,73 @@ app.get('/api/teams/rankings/:year/:week', (req, res) => {
   );
 });
 
+// Tweets endpoint
+app.get('/api/teams_feeds/:id', async (req, res) => {
+    const { id } = req.params;
+    const idNum = parseInt(id);
+    if (isNaN(idNum)) {
+        console.log(`Invalid parameter: id=${id}`);
+        return res.status(400).json({ error: 'Invalid id parameter' });
+    }
+    try {
+        // Fetch Twitter handle from Teams table
+        const team = await new Promise((resolve, reject) => {
+            db.get('SELECT twitter FROM Teams WHERE id = ?', [idNum], (err, row) => {
+                if (err) {
+                    console.error('Database error:', err.message);
+                    reject(new Error('Internal server error'));
+                }
+                if (!row) {
+                    console.log(`No team found for id=${idNum}`);
+                    reject(new Error('Team not found'));
+                }
+                resolve(row);
+            });
+        });
+        const twitterHandle = team.twitter;
+        if (!twitterHandle) {
+            console.log(`No Twitter handle found for team id=${idNum}`);
+            return res.status(404).json({ error: 'No Twitter account found for this team' });
+        }
+        const username = twitterHandle.startsWith('@') ? twitterHandle.slice(1) : twitterHandle;
+
+        // Fetch user ID from X API
+        const userResponse = await axios.get(`https://api.twitter.com/2/users/by/username/${username}`, {
+            headers: {
+                Authorization: `Bearer ${process.env.X_BEARER_TOKEN}`,
+            },
+            params: {
+                'user.fields': 'name',
+            },
+        });
+        const twitterUserId = userResponse.data.data.id;
+        const twitterUserName = userResponse.data.data.name;
+
+        // Fetch tweets
+        console.log(`Fetching tweets for team id=${idNum}, Twitter user=${username}`);
+        const tweetsResponse = await axios.get(`https://api.twitter.com/2/users/${twitterUserId}/tweets`, {
+            headers: {
+                Authorization: `Bearer ${process.env.X_BEARER_TOKEN}`,
+            },
+            params: {
+                'tweet.fields': 'created_at',
+                max_results: 100,
+            },
+        });
+        const tweets = tweetsResponse.data.data || [];
+        const formattedTweets = tweets.map(tweet => ({
+            id: tweet.id,
+            text: tweet.text,
+            user: { name: twitterUserName },
+            link: `https://x.com/${username}/status/${tweet.id}`,
+        }));
+        res.json(formattedTweets);
+    } catch (err) {
+        console.error('Error fetching tweets:', err.message);
+        res.status(err.response?.status === 404 ? 404 : 500).json({ error: 'Failed to fetch tweets' });
+    }
+});
+
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
