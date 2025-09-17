@@ -611,13 +611,6 @@ app.get('/api/teams/:id/:year/grades', (req, res) => {
     });
 });
 
-// Other endpoints (e.g., /api/teams/:id/:year, /api/teams/records/:year, etc.)
-// ... (your existing endpoints)
-
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
-});
-
 app.get('/api/teams/records/:year', (req, res) => {
   const { year } = req.params;
   if (isNaN(year)) {
