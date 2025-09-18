@@ -10,7 +10,6 @@ function TopTeams() {
   const year = 2025;
   const week = 4;
   const navigate = useNavigate();
-
   const columnHelper = createColumnHelper();
   const columns = useMemo(() => [
     columnHelper.accessor('school', {
@@ -31,6 +30,46 @@ function TopTeams() {
           </Link>
         );
       },
+    }),
+    columnHelper.accessor('record', {
+      id: 'OVR',
+      enableSorting: false,
+      cell: info => info.getValue() || '0-0',
+    }),
+    columnHelper.accessor('home_record', {
+      id: 'HOME',
+      enableSorting: false,
+      cell: info => info.getValue() || '0-0',
+    }),
+    columnHelper.accessor('away_record', {
+      id: 'AWAY',
+      enableSorting: false,
+      cell: info => info.getValue() || '0-0',
+    }),
+    columnHelper.accessor('neutral_record', {
+      id: 'NEU',
+      enableSorting: false,
+      cell: info => info.getValue() || '0-0',
+    }),
+    columnHelper.accessor('quad1_record', {
+      id: 'QUAD 1',
+      enableSorting: false,
+      cell: info => info.getValue() || '0-0',
+    }),
+    columnHelper.accessor('quad2_record', {
+      id: 'QUAD 2',
+      enableSorting: false,
+      cell: info => info.getValue() || '0-0',
+    }),
+    columnHelper.accessor('quad3_record', {
+      id: 'QUAD 3',
+      enableSorting: false,
+      cell: info => info.getValue() || '0-0',
+    }),
+    columnHelper.accessor('quad4_record', {
+      id: 'QUAD 4',
+      enableSorting: false,
+      cell: info => info.getValue() || '0-0',
     }),
     columnHelper.accessor('SP_Rating', {
       id: 'SP+ Rating',
@@ -97,7 +136,6 @@ function TopTeams() {
     let isMounted = true;
     setIsLoading(true);
     setData([]);
-
     fetch(`${process.env.REACT_APP_API_URL}/api/teams/rankings/${year}/${week}`, {
       method: 'GET',
       headers: {
@@ -137,7 +175,6 @@ function TopTeams() {
           setIsLoading(false);
         }
       });
-
     return () => {
       isMounted = false;
     };
@@ -184,8 +221,8 @@ function TopTeams() {
     <div className="p-0 shadow-xl rounded-lg h-full border-b border-[#235347]">
       <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Top-25 Team Rankings</h2>
       <div className="h-[420px] overflow-y-auto border-b border-[#235347]">
-        <table className="w-full text-center border-collapse ">
-          <thead className="sticky top-0 bg-white  z-500">
+        <table className="w-full text-center border-collapse">
+          <thead className="sticky top-0 bg-white z-500">
             {tableInstance.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id} className="bg-gray-0">
                 {headerGroup.headers.map(column => (
@@ -255,7 +292,7 @@ function TopTeams() {
           <div className="bg-white p-6 rounded-lg shadow-xl">
             <p className="text-lg font-semibold text-black">Coming Soon</p>
             <button
-              className="mt-4 px-4 py-2 text-center bg-[#235347] text-white rounded hover:bg-[#1b3e32] "
+              className="mt-4 px-4 py-2 text-center bg-[#235347] text-white rounded hover:bg-[#1b3e32]"
               onClick={() => setShowComingSoon(false)}
             >
               Close
