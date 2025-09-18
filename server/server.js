@@ -836,7 +836,7 @@ app.get('/api/teams/rankings/:year/:week', (req, res) => {
                SP_Ranking, SP_Rating, SP_Off_Ranking, SP_Off_Rating, 
                SP_Def_Ranking, SP_Def_Rating, ELO_Rating, SOR, FPI_Ranking, 
                SOS, record, home_record, away_record, neutral_record, 
-               quad1_record, quad2_record, quad3_record, quad4_record
+               quad1_record, quad2_record, quad3_record, quad4_record, conference
         FROM Teams_Rankings
         WHERE year = ? AND week = ?
         ORDER BY ap_poll_rank ASC
@@ -867,7 +867,7 @@ app.get('/api/teams/rankings_full/:year/:week', (req, res) => {
                SP_Ranking, SP_Rating, SP_Off_Ranking, SP_Off_Rating,
                SP_Def_Ranking, SP_Def_Rating, ELO_Rating, SOR, FPI_Ranking,
                SOS, record, home_record, away_record, neutral_record,
-               quad1_record, quad2_record, quad3_record, quad4_record
+               quad1_record, quad2_record, quad3_record, quad4_record, conference
         FROM Teams_Rankings
         WHERE year = ? AND week = ? AND FPI_Ranking IS NOT NULL
         ORDER BY FPI_Ranking ASC

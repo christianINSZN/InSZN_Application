@@ -30,7 +30,8 @@ new_columns = [
     ("quad1_record", "TEXT"),
     ("quad2_record", "TEXT"),
     ("quad3_record", "TEXT"),
-    ("quad4_record", "TEXT")
+    ("quad4_record", "TEXT"),
+    ("conference", "TEXT")  # New conference column
 ]
 for col_name, col_type in new_columns:
     if col_name not in columns:
@@ -43,6 +44,7 @@ CREATE TABLE IF NOT EXISTS Teams_Rankings (
     year INTEGER NOT NULL,
     week INTEGER NOT NULL,
     school TEXT NOT NULL,
+    conference TEXT,
     coaches_poll_rank TEXT,
     ap_poll_rank TEXT,
     SP_Ranking INTEGER,
@@ -237,9 +239,9 @@ def save_rankings(year, week):
     fpi_data = fetch_fpi_ratings(year, week)
     count = 0
 
-    # Fetch all teams from Teams table
-    cursor.execute("SELECT id, school FROM Teams WHERE year = ?", (year,))
-    teams = {str(row[0]): row[1] for row in cursor.fetchall()}
+    # Fetch all teams from Teams table, including conference
+    cursor.execute("SELECT id, school, conference FROM Teams WHERE year = ?", (year,))
+    teams = {str(row[0]): {'school': row[1], 'conference': row[2]} for row in cursor.fetchall()}
     print(f"Teams from database: {teams}")
 
     # Initialize rankings dictionaries
@@ -299,7 +301,9 @@ def save_rankings(year, week):
                 print(f"Processed FPI for team {team_name}: {fpi_ratings[team_name]}")
 
     # Insert or update rankings for each team
-    for team_id, school in teams.items():
+    for team_id, team_info in teams.items():
+        school = team_info['school']
+        conference = team_info['conference']
         coaches_rank = coaches_poll.get(team_id, "NR")
         ap_rank = ap_poll.get(team_id, "NR")
         sp_data_team = sp_ratings.get(school, {})
@@ -319,21 +323,21 @@ def save_rankings(year, week):
         cursor.execute(
             """
             INSERT OR REPLACE INTO Teams_Rankings (
-                teamId, year, week, school, coaches_poll_rank, ap_poll_rank,
+                teamId, year, week, school, conference, coaches_poll_rank, ap_poll_rank,
                 SP_Ranking, SP_Rating, SP_Off_Ranking, SP_Off_Rating, SP_Def_Ranking, SP_Def_Rating,
                 ELO_Rating, SOR, FPI_Ranking, SOS, record, home_record, away_record, neutral_record,
                 quad1_record, quad2_record, quad3_record, quad4_record
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
-                team_id, year, week, school, coaches_rank, ap_rank,
+                team_id, year, week, school, conference, coaches_rank, ap_rank,
                 sp_ranking, sp_rating, sp_off_ranking, sp_off_rating, sp_def_ranking, sp_def_rating,
                 elo_rating, sor, fpi_ranking, sos, records['overall'], records['home'], records['away'],
                 records['neutral'], records['quad1'], records['quad2'], records['quad3'], records['quad4']
             )
         )
         count += cursor.rowcount
-        print(f"Saved teamId {team_id} ({school}): Coaches={coaches_rank}, AP={ap_rank}, SP={sp_ranking}, ELO={elo_rating}, FPI={fpi_ranking}, "
+        print(f"Saved teamId {team_id} ({school}): Conference={conference}, Coaches={coaches_rank}, AP={ap_rank}, SP={sp_ranking}, ELO={elo_rating}, FPI={fpi_ranking}, "
               f"Record={records['overall']}, Home={records['home']}, Away={records['away']}, Neutral={records['neutral']}, "
               f"Quad1={records['quad1']}, Quad2={records['quad2']}, Quad3={records['quad3']}, Quad4={records['quad4']}")
 

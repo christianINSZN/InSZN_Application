@@ -11,34 +11,6 @@ function TeamsRankings({ year = '2025', week = '4' }) {
   const navigate = useNavigate();
   const columnHelper = createColumnHelper();
 
-  // Custom sorting function for W-L records
-  const recordSortingFn = (rowA, rowB, columnId) => {
-    const a = rowA.original[columnId] || '0-0';
-    const b = rowB.original[columnId] || '0-0';
-    const [aWins, aLosses] = a.split('-').map(Number);
-    const [bWins, bLosses] = b.split('-').map(Number);
-    console.log(`Sorting ${columnId}: ${a} vs ${b} -> ${aWins}-${aLosses} vs ${bWins}-${bLosses}`);
-    return aWins !== bWins ? aWins - bWins : bLosses - aLosses; // Ascending wins, descending losses
-  };
-
-  // Custom sorting function for poll ranks
-  const pollSortingFn = (rowA, rowB, columnId) => {
-    const a = rowA.original[columnId] || 'NR';
-    const b = rowB.original[columnId] || 'NR';
-    const aVal = a === 'NR' ? Infinity : parseInt(a, 10);
-    const bVal = b === 'NR' ? Infinity : parseInt(b, 10);
-    console.log(`Sorting ${columnId}: ${a} vs ${b} -> ${aVal} vs ${bVal}`);
-    return aVal - bVal;
-  };
-
-  // Custom sorting function for numeric columns
-  const numericSortingFn = (rowA, rowB, columnId) => {
-    const a = rowA.original[columnId] !== null && rowA.original[columnId] !== undefined ? rowA.original[columnId] : Infinity;
-    const b = rowB.original[columnId] !== null && rowB.original[columnId] !== undefined ? rowB.original[columnId] : Infinity;
-    console.log(`Sorting ${columnId}: ${a} vs ${b}`);
-    return a - b;
-  };
-
   const columns = useMemo(() => [
     columnHelper.accessor('school', {
       id: 'School',
@@ -58,126 +30,105 @@ function TeamsRankings({ year = '2025', week = '4' }) {
           </Link>
         );
       },
-      enableSorting: false,
     }),
     columnHelper.accessor('record', {
       id: 'OVR',
       enableSorting: true,
-      sortingFn: recordSortingFn,
-      sortDescFirst: false,
       cell: info => info.getValue() || '0-0',
     }),
     columnHelper.accessor('home_record', {
       id: 'HOME',
       enableSorting: true,
-      sortingFn: recordSortingFn,
-      sortDescFirst: false,
       cell: info => info.getValue() || '0-0',
     }),
     columnHelper.accessor('away_record', {
       id: 'AWAY',
       enableSorting: true,
-      sortingFn: recordSortingFn,
-      sortDescFirst: false,
       cell: info => info.getValue() || '0-0',
     }),
     columnHelper.accessor('neutral_record', {
       id: 'NEU',
       enableSorting: true,
-      sortingFn: recordSortingFn,
-      sortDescFirst: false,
       cell: info => info.getValue() || '0-0',
     }),
     columnHelper.accessor('quad1_record', {
       id: 'QUAD 1',
       enableSorting: true,
-      sortingFn: recordSortingFn,
-      sortDescFirst: false,
       cell: info => info.getValue() || '0-0',
     }),
     columnHelper.accessor('quad2_record', {
       id: 'QUAD 2',
       enableSorting: true,
-      sortingFn: recordSortingFn,
-      sortDescFirst: false,
       cell: info => info.getValue() || '0-0',
     }),
     columnHelper.accessor('quad3_record', {
       id: 'QUAD 3',
       enableSorting: true,
-      sortingFn: recordSortingFn,
-      sortDescFirst: false,
       cell: info => info.getValue() || '0-0',
     }),
     columnHelper.accessor('quad4_record', {
       id: 'QUAD 4',
       enableSorting: true,
-      sortingFn: recordSortingFn,
-      sortDescFirst: false,
       cell: info => info.getValue() || '0-0',
     }),
     columnHelper.accessor('SP_Rating', {
       id: 'SP+ Rating',
       enableSorting: true,
-      sortingFn: numericSortingFn,
-      sortDescFirst: true,
       cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue().toFixed(1) : 'N/A'),
     }),
     columnHelper.accessor('SP_Ranking', {
       id: 'SP+ Rank',
       enableSorting: true,
-      sortingFn: numericSortingFn,
-      sortDescFirst: false,
       cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue() : 'N/A'),
     }),
     columnHelper.accessor('SP_Off_Ranking', {
       id: 'SP+ Off. Rank',
       enableSorting: true,
-      sortingFn: numericSortingFn,
-      sortDescFirst: false,
       cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue() : 'N/A'),
     }),
     columnHelper.accessor('SP_Def_Ranking', {
       id: 'SP+ Def. Rank',
       enableSorting: true,
-      sortingFn: numericSortingFn,
-      sortDescFirst: false,
       cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue() : 'N/A'),
     }),
     columnHelper.accessor('FPI_Ranking', {
       id: 'FPI Rank',
       enableSorting: true,
-      sortingFn: numericSortingFn,
-      sortDescFirst: false,
       cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue() : 'N/A'),
     }),
     columnHelper.accessor('SOR', {
       id: 'SOR',
       enableSorting: true,
-      sortingFn: numericSortingFn,
-      sortDescFirst: false,
       cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue() : 'N/A'),
     }),
     columnHelper.accessor('SOS', {
       id: 'SOS',
       enableSorting: true,
-      sortingFn: numericSortingFn,
-      sortDescFirst: false,
       cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue() : 'N/A'),
     }),
     columnHelper.accessor('coaches_poll_rank', {
       id: 'Coaches Poll',
       enableSorting: true,
-      sortingFn: pollSortingFn,
-      sortDescFirst: false,
       cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue() : 'NR'),
+      sortType: (rowA, rowB, columnId) => {
+        const a = rowA.values[columnId];
+        const b = rowB.values[columnId];
+        const aVal = a === 'NR' ? Infinity : parseInt(a, 10);
+        const bVal = b === 'NR' ? Infinity : parseInt(b, 10);
+        return aVal - bVal;
+      },
     }),
     columnHelper.accessor('ap_poll_rank', {
       id: 'AP Poll',
       enableSorting: true,
-      sortingFn: pollSortingFn,
-      sortDescFirst: false,
       cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue() : 'NR'),
+      sortType: (rowA, rowB, columnId) => {
+        const a = rowA.values[columnId];
+        const b = rowB.values[columnId];
+        const aVal = a === 'NR' ? Infinity : parseInt(a, 10);
+        const bVal = b === 'NR' ? Infinity : parseInt(b, 10);
+        return aVal - bVal;
+      },
     }),
   ], [navigate, year]);
 
@@ -235,33 +186,48 @@ function TeamsRankings({ year = '2025', week = '4' }) {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     initialState: {
-      sorting: [{ id: 'AP Poll', desc: false }],
+      sorting: [{ id: 'FPI Rank', desc: false }],
     },
   });
 
   if (isLoading) {
     return (
-      <div className="p-0 shadow-xl rounded-lg h-full">
-        <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Full Team Rankings</h2>
-        <p className="text-gray-500 text-center p-4">Loading...</p>
+      <div className="w-full">
+        <NavBar />
+        <div className="pt-5 px-4 mx-auto">
+          <div className="p-0 shadow-xl rounded-lg h-full">
+            <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Full Team Rankings</h2>
+            <p className="text-gray-500 text-center p-4">Loading...</p>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-0 shadow-xl rounded-lg h-full">
-        <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Full Team Rankings</h2>
-        <p className="text-red-500 text-center p-4">Error: {error}</p>
+      <div className="w-full">
+        <NavBar />
+        <div className="pt-5 px-4 mx-auto">
+          <div className="p-0 shadow-xl rounded-lg h-full">
+            <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Full Team Rankings</h2>
+            <p className="text-red-500 text-center p-4">Error: {error}</p>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!data.length) {
     return (
-      <div className="p-0 shadow-xl rounded-lg h-full">
-        <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Full Team Rankings</h2>
-        <p className="text-gray-500 text-center p-4">No data available for {year}, week {week}.</p>
+      <div className="w-full">
+        <NavBar />
+        <div className="pt-5 px-4 mx-auto">
+          <div className="p-0 shadow-xl rounded-lg h-full">
+            <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Full Team Rankings</h2>
+            <p className="text-gray-500 text-center p-4">No data available for {year}, week {week}.</p>
+          </div>
+        </div>
       </div>
     );
   }
@@ -269,10 +235,10 @@ function TeamsRankings({ year = '2025', week = '4' }) {
   return (
     <div className="w-full">
       <NavBar />
-      <div className="pt-20 px-4 max-w-7xl mx-auto"> {/* Padding to avoid overlap with fixed NavBar */}
+      <div className="pt-5 px-4 mx-auto">
         <div className="p-0 shadow-xl rounded-lg h-full border-b border-[#235347]">
           <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Full Team Rankings</h2>
-          <div className="h-[600px] overflow-y-auto border-b border-[#235347]">
+          <div className="h-[full] overflow-y-auto border-b border-[#235347]">
             <table className="w-full text-center border-collapse">
               <thead className="sticky top-0 bg-white z-500">
                 {tableInstance.getHeaderGroups().map(headerGroup => (
@@ -286,20 +252,21 @@ function TeamsRankings({ year = '2025', week = '4' }) {
                           verticalAlign: 'middle',
                           lineHeight: '1.1',
                         }}
-                        onClick={() => {
-                          if (column.column.columnDef.enableSorting) {
-                            const currentSort = tableInstance.getState().sorting.find(s => s.id === column.id);
-                            tableInstance.setSorting([
-                              {
-                                id: column.id,
-                                desc: currentSort ? !currentSort.desc : column.column.columnDef.sortDescFirst || false,
-                              }
-                            ]);
-                          }
-                        }}
+                        onClick={column.column.columnDef.enableSorting ? () => {
+                          const sorting = tableInstance.getState().sorting;
+                          const currentSort = sorting.find(s => s.id === column.id);
+                          tableInstance.setSorting([
+                            {
+                              id: column.id,
+                              desc: !currentSort?.desc,
+                            },
+                          ]);
+                        } : undefined}
                       >
-                        {flexRender(column.column.columnDef.header, column.getContext())}
-                        {column.getIsSorted() ? (column.getIsSorted() === 'asc' ? ' ▲' : ' ▼') : ''}
+                        {column.id}
+                        {column.column.columnDef.enableSorting && tableInstance.getState().sorting.find(s => s.id === column.id) && (
+                          tableInstance.getState().sorting.find(s => s.id === column.id).desc ? ' ▼' : ' ▲'
+                        )}
                       </th>
                     ))}
                   </tr>
@@ -329,6 +296,28 @@ function TeamsRankings({ year = '2025', week = '4' }) {
               </tbody>
             </table>
           </div>
+          <div className="p-1 text-center text-sm">
+            <span
+              className="text-black hover:text-gray-900 underline underline-offset-2 inline-block cursor-pointer"
+              style={{ display: 'inline-block' }}
+              onClick={() => setShowComingSoon(true)}
+            >
+              Full Rankings
+            </span>
+          </div>
+          {showComingSoon && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white p-6 rounded-lg shadow-xl">
+                <p className="text-lg font-semibold text-black">Coming Soon</p>
+                <button
+                  className="mt-4 px-4 py-2 text-center bg-[#235347] text-white rounded hover:bg-[#1b3e32]"
+                  onClick={() => setShowComingSoon(false)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
