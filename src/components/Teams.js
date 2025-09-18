@@ -2,9 +2,9 @@ import React, { useEffect, useMemo, useState, memo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 
 const conferences = [
-  'All', 'ACC', 'American Athletic', 'Big 12', 'Big Sky', 'Big South-OVC', 'Big Ten', 'CAA', 'Conference USA',
-  'FBS Independents', 'FCS Independents', 'Ivy', 'MEAC', 'MVFC', 'Mid-American', 'Mountain West', 'NEC',
-  'Pac-12', 'Patriot', 'Pioneer', 'SEC', 'SWAC', 'Southern', 'Southland', 'Sun Belt', 'UAC'
+  'All', 'ACC', 'American Athletic', 'Big 12', 'Big Ten', 'Conference USA',
+  'FBS Independents', 'Mid-American', 'Mountain West',
+  'Pac-12', 'SEC', 'Sun Belt'
 ];
 
 const firstRowConferences = conferences.slice(0, 13);
@@ -75,7 +75,7 @@ function TeamsComponent({ year = '2025' }) {
   }
 
   const filteredTeams = teamsData.filter(team => {
-    const isDivisionI = team.classification === 'fbs' || team.classification === 'fcs';
+    const isDivisionI = team.classification === 'fbs';
     const teamNameMatch = team.school.toLowerCase().includes(filterTeamName.toLowerCase());
     const conferenceMatch = !filterConference || filterConference === 'All' || team.conference.toLowerCase() === filterConference.toLowerCase();
     return isDivisionI && teamNameMatch && conferenceMatch;

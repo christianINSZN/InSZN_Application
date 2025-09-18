@@ -828,29 +828,33 @@ app.get('/api/players/ppa/:year/top-rbs', (req, res) => {
 });
 
 app.get('/api/teams/rankings/:year/:week', (req, res) => {
-  const { year, week } = req.params;
-  console.log(`Fetching team rankings for year: ${year}, week: ${week}`);
-  db.all(
-    `
-    SELECT teamId, year, week, school, coaches_poll_rank, ap_poll_rank, SP_Ranking, ELO_Rating, FPI_Ranking, SP_Rating, SP_Off_Rating, SP_Def_Rating, SP_Off_Ranking, SP_Def_Ranking, SOS, SOR
-    FROM Teams_Rankings
-    WHERE year = ? AND week = ?
-    ORDER BY ap_poll_rank ASC
-    LIMIT 25
-    `,
-    [year, week],
-    (err, rows) => {
-      if (err) {
-        console.error('Database error:', err.message);
-        return res.status(500).json({ error: err.message });
-      }
-      if (!rows.length) {
-        console.log(`No team rankings found for year: ${year}, week: ${week}`);
-        return res.status(404).json({ error: 'No team rankings found for this year and week' });
-      }
-      res.json(rows);
-    }
-  );
+    const { year, week } = req.params;
+    console.log(`Fetching team rankings for year: ${year}, week: ${week}`);
+    db.all(
+        `
+        SELECT teamId, year, week, school, coaches_poll_rank, ap_poll_rank, 
+               SP_Ranking, SP_Rating, SP_Off_Ranking, SP_Off_Rating, 
+               SP_Def_Ranking, SP_Def_Rating, ELO_Rating, SOR, FPI_Ranking, 
+               SOS, record, home_record, away_record, neutral_record, 
+               quad1_record, quad2_record, quad3_record, quad4_record
+        FROM Teams_Rankings
+        WHERE year = ? AND week = ?
+        ORDER BY ap_poll_rank ASC
+        LIMIT 25
+        `,
+        [year, week],
+        (err, rows) => {
+            if (err) {
+                console.error('Database error:', err.message);
+                return res.status(500).json({ error: err.message });
+            }
+            if (!rows.length) {
+                console.log(`No team rankings found for year: ${year}, week: ${week}`);
+                return res.status(404).json({ error: 'No team rankings found for this year and week' });
+            }
+            res.json(rows);
+        }
+    );
 });
 
 // Roster endpoint

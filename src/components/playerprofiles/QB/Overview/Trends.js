@@ -64,7 +64,7 @@ const Trends = ({ teamGames, weeklyGrades }) => {
 
   return (
     <div className="h-80 bg-white rounded-lg shadow-lg">
-      <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">3-Game Trends</h2>
+      <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Trends (3 Game)</h2>
       <div className="grid grid-cols-3 gap-4 mb-4 h-[40%]">
         {trendData.trendUp.map((trend, index) => (
           <div

@@ -22,7 +22,15 @@ columns = [col[1] for col in cursor.fetchall()]
 new_columns = [
     ("SOR", "INTEGER"),
     ("FPI_Ranking", "INTEGER"),
-    ("SOS", "INTEGER")
+    ("SOS", "INTEGER"),
+    ("record", "TEXT"),
+    ("home_record", "TEXT"),
+    ("away_record", "TEXT"),
+    ("neutral_record", "TEXT"),
+    ("quad1_record", "TEXT"),
+    ("quad2_record", "TEXT"),
+    ("quad3_record", "TEXT"),
+    ("quad4_record", "TEXT")
 ]
 for col_name, col_type in new_columns:
     if col_name not in columns:
@@ -47,6 +55,14 @@ CREATE TABLE IF NOT EXISTS Teams_Rankings (
     SOR INTEGER,
     FPI_Ranking INTEGER,
     SOS INTEGER,
+    record TEXT,
+    home_record TEXT,
+    away_record TEXT,
+    neutral_record TEXT,
+    quad1_record TEXT,
+    quad2_record TEXT,
+    quad3_record TEXT,
+    quad4_record TEXT,
     PRIMARY KEY (teamId, year, week)
 )
 """)
@@ -71,10 +87,10 @@ def fetch_rankings(year, week):
         print(f"Error fetching rankings data: {e}")
         return []
 
-def fetch_sp_ratings(year):
+def fetch_sp_ratings(year, week):
     url = "https://api.collegefootballdata.com/ratings/sp"
     headers = {"Authorization": f"Bearer {API_KEY}"}
-    params = {"year": year}
+    params = {"year": year, "week": week}
     try:
         response = session.get(url, headers=headers, params=params, timeout=10)
         response.raise_for_status()
@@ -86,10 +102,10 @@ def fetch_sp_ratings(year):
         print(f"Error fetching SP+ ratings: {e}")
         return []
 
-def fetch_elo_ratings(year):
+def fetch_elo_ratings(year, week):
     url = "https://api.collegefootballdata.com/ratings/elo"
     headers = {"Authorization": f"Bearer {API_KEY}"}
-    params = {"year": year}
+    params = {"year": year, "week": week}
     try:
         response = session.get(url, headers=headers, params=params, timeout=10)
         response.raise_for_status()
@@ -101,10 +117,10 @@ def fetch_elo_ratings(year):
         print(f"Error fetching Elo ratings: {e}")
         return []
 
-def fetch_fpi_ratings(year):
+def fetch_fpi_ratings(year, week):
     url = "https://api.collegefootballdata.com/ratings/fpi"
     headers = {"Authorization": f"Bearer {API_KEY}"}
-    params = {"year": year}
+    params = {"year": year, "week": week}
     try:
         response = session.get(url, headers=headers, params=params, timeout=10)
         response.raise_for_status()
@@ -116,12 +132,109 @@ def fetch_fpi_ratings(year):
         print(f"Error fetching FPI ratings: {e}")
         return []
 
+def calculate_team_record(team_id, year, week, school):
+    cursor.execute(
+        'SELECT id, season, week, seasonType, team, homeId, homePoints, awayId, awayPoints, neutralSite FROM Teams_Games WHERE (homeId = ? OR awayId = ?) AND season = ? AND week <= ? AND seasonType = ? AND completed = 1 AND team = ?',
+        [team_id, team_id, year, week, 'regular', school]
+    )
+    games = cursor.fetchall()
+    overall_wins = 0
+    overall_losses = 0
+    home_wins = 0
+    home_losses = 0
+    away_wins = 0
+    away_losses = 0
+    neutral_wins = 0
+    neutral_losses = 0
+    quad1_wins = 0
+    quad1_losses = 0
+    quad2_wins = 0
+    quad2_losses = 0
+    quad3_wins = 0
+    quad3_losses = 0
+    quad4_wins = 0
+    quad4_losses = 0
+    for game in games:
+        game_id = game[0]
+        game_week = game[2]
+        is_home = game[5] == int(team_id)
+        team_points = game[6] if is_home else game[8]
+        opponent_points = game[8] if is_home else game[6]
+        opponent_id = game[7] if is_home else game[5]
+        neutral_site = game[9]
+        if team_points is not None and opponent_points is not None:
+            is_win = team_points > opponent_points
+            is_loss = team_points < opponent_points
+            if is_win:
+                overall_wins += 1
+            elif is_loss:
+                overall_losses += 1
+            if neutral_site:
+                if is_win:
+                    neutral_wins += 1
+                elif is_loss:
+                    neutral_losses += 1
+            elif is_home:
+                if is_win:
+                    home_wins += 1
+                elif is_loss:
+                    home_losses += 1
+            else:
+                if is_win:
+                    away_wins += 1
+                elif is_loss:
+                    away_losses += 1
+            # Get opponent's FPI_Ranking for the game's week
+            cursor.execute(
+                'SELECT FPI_Ranking FROM Teams_Rankings WHERE teamId = ? AND year = ? AND week = ?',
+                [opponent_id, year, game_week]
+            )
+            opponent_fpi = cursor.fetchone()
+            if opponent_fpi and opponent_fpi[0]:
+                fpi_rank = opponent_fpi[0]
+                if 1 <= fpi_rank <= 30:
+                    if is_win:
+                        quad1_wins += 1
+                    elif is_loss:
+                        quad1_losses += 1
+                elif 31 <= fpi_rank <= 60:
+                    if is_win:
+                        quad2_wins += 1
+                    elif is_loss:
+                        quad2_losses += 1
+                elif 61 <= fpi_rank <= 90:
+                    if is_win:
+                        quad3_wins += 1
+                    elif is_loss:
+                        quad3_losses += 1
+                elif fpi_rank >= 91:
+                    if is_win:
+                        quad4_wins += 1
+                    elif is_loss:
+                        quad4_losses += 1
+            else:
+                # Treat NR as Quad 4
+                if is_win:
+                    quad4_wins += 1
+                elif is_loss:
+                    quad4_losses += 1
+    return {
+        'overall': f"{overall_wins}-{overall_losses}",
+        'home': f"{home_wins}-{home_losses}",
+        'away': f"{away_wins}-{away_losses}",
+        'neutral': f"{neutral_wins}-{neutral_losses}",
+        'quad1': f"{quad1_wins}-{quad1_losses}",
+        'quad2': f"{quad2_wins}-{quad2_losses}",
+        'quad3': f"{quad3_wins}-{quad3_losses}",
+        'quad4': f"{quad4_wins}-{quad4_losses}"
+    }
+
 def save_rankings(year, week):
     # Fetch data from all endpoints
     rankings_data = fetch_rankings(year, week)
-    sp_data = fetch_sp_ratings(year)
-    elo_data = fetch_elo_ratings(year)
-    fpi_data = fetch_fpi_ratings(year)
+    sp_data = fetch_sp_ratings(year, week)
+    elo_data = fetch_elo_ratings(year, week)
+    fpi_data = fetch_fpi_ratings(year, week)
     count = 0
 
     # Fetch all teams from Teams table
@@ -201,23 +314,28 @@ def save_rankings(year, week):
         sor = fpi_data_team.get("SOR", None)
         fpi_ranking = fpi_data_team.get("FPI_Ranking", None)
         sos = fpi_data_team.get("SOS", None)
+        records = calculate_team_record(team_id, year, week, school)
 
         cursor.execute(
             """
             INSERT OR REPLACE INTO Teams_Rankings (
                 teamId, year, week, school, coaches_poll_rank, ap_poll_rank,
                 SP_Ranking, SP_Rating, SP_Off_Ranking, SP_Off_Rating, SP_Def_Ranking, SP_Def_Rating,
-                ELO_Rating, SOR, FPI_Ranking, SOS
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ELO_Rating, SOR, FPI_Ranking, SOS, record, home_record, away_record, neutral_record,
+                quad1_record, quad2_record, quad3_record, quad4_record
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 team_id, year, week, school, coaches_rank, ap_rank,
                 sp_ranking, sp_rating, sp_off_ranking, sp_off_rating, sp_def_ranking, sp_def_rating,
-                elo_rating, sor, fpi_ranking, sos
+                elo_rating, sor, fpi_ranking, sos, records['overall'], records['home'], records['away'],
+                records['neutral'], records['quad1'], records['quad2'], records['quad3'], records['quad4']
             )
         )
         count += cursor.rowcount
-        print(f"Saved teamId {team_id} ({school}): Coaches={coaches_rank}, AP={ap_rank}, SP={sp_ranking}, ELO={elo_rating}, FPI={fpi_ranking}")
+        print(f"Saved teamId {team_id} ({school}): Coaches={coaches_rank}, AP={ap_rank}, SP={sp_ranking}, ELO={elo_rating}, FPI={fpi_ranking}, "
+              f"Record={records['overall']}, Home={records['home']}, Away={records['away']}, Neutral={records['neutral']}, "
+              f"Quad1={records['quad1']}, Quad2={records['quad2']}, Quad3={records['quad3']}, Quad4={records['quad4']}")
 
     print(f"Saved {count} team rankings for year {year}, week {week}")
     return count
@@ -225,7 +343,7 @@ def save_rankings(year, week):
 def main():
     try:
         year = 2025
-        week = 4
+        week = 3
         save_rankings(year, week)
         conn.commit()
     except Exception as e:
