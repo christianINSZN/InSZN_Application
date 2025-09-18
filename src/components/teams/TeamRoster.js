@@ -16,6 +16,14 @@ const TeamRoster = () => {
   // Configurable headshot size (in pixels)
   const headshotSize = 48;
 
+  // Helper function to convert height (inches) to feet-inches format
+  const formatHeight = (inches) => {
+    if (!inches) return 'N/A';
+    const feet = Math.floor(inches / 12);
+    const remainingInches = inches % 12;
+    return `${feet}-${remainingInches}`;
+  };
+
   useEffect(() => {
     const fetchTeamAndRoster = async () => {
       try {
@@ -106,6 +114,11 @@ const TeamRoster = () => {
         </Link>
       ),
     }),
+    columnHelper.accessor('jersey', {
+      id: 'Jersey',
+      enableSorting: true,
+      cell: info => info.getValue() !== null ? info.getValue() : 'N/A',
+    }),
     columnHelper.accessor('position', {
       id: 'Position',
       enableSorting: true,
@@ -114,17 +127,17 @@ const TeamRoster = () => {
     columnHelper.accessor('height', {
       id: 'Height',
       enableSorting: true,
-      cell: info => info.getValue() !== null ? info.getValue() : 'N/A',
+      cell: info => formatHeight(info.getValue()),
     }),
     columnHelper.accessor('weight', {
       id: 'Weight',
       enableSorting: true,
       cell: info => info.getValue() !== null ? info.getValue() : 'N/A',
     }),
-    columnHelper.accessor('jersey', {
-      id: 'Jersey',
+    columnHelper.accessor(row => `${row.homeCity}, ${row.homeState}`, {
+      id: 'Hometown',
       enableSorting: true,
-      cell: info => info.getValue() !== null ? info.getValue() : 'N/A',
+      cell: info => info.getValue() || 'N/A',
     }),
   ], [year, navigate, headshotSize]);
 
@@ -134,7 +147,7 @@ const TeamRoster = () => {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     initialState: {
-      sorting: [{ id: 'Player Name', desc: false }],
+      sorting: [{ id: 'Jersey', desc: false }],
     },
   });
 
@@ -202,7 +215,7 @@ const TeamRoster = () => {
           </ul>
         </div>
         {/* Roster Content */}
-        <div className="p-4 bg-gray-0 rounded-lg shadow-xl">
+        <div className="p-4 bg-gray-0 w-[80%] rounded-lg shadow-xl mx-auto">
           <div className="p-0">
             <header className="mb-4 flex flex-wrap gap-4 items-end bg-gray-200 p-2 rounded-lg shadow-xl">
               <div className="w-full md:w-auto flex-1">
@@ -244,7 +257,7 @@ const TeamRoster = () => {
                         <th
                           key={column.id}
                           className="p-1 text-xs font-semibold border-b border-gray-400 text-gray-800 cursor-pointer"
-                          style={{ textAlign: column.id === 'Headshot' || column.id === 'Player Name' ? 'left' : 'center', verticalAlign: 'middle', lineHeight: '1.2' }}
+                          style={{ textAlign: column.id === 'Headshot' || column.id === 'Player Name' || column.id === 'Hometown' ? 'left' : 'center', verticalAlign: 'middle', lineHeight: '1.2' }}
                           onClick={() => {
                             if (column.id !== 'Headshot') {
                               const sorting = table.getState().sorting;
@@ -269,7 +282,7 @@ const TeamRoster = () => {
                         <td
                           key={cell.id}
                           className="p-1 text-sm text-left border-b border-gray-300"
-                          style={{ textAlign: cell.column.id === 'Headshot' || cell.column.id === 'Player Name' ? 'left' : 'center', verticalAlign: 'middle', lineHeight: '1.2' }}
+                          style={{ textAlign: cell.column.id === 'Headshot' || cell.column.id === 'Player Name' || cell.column.id === 'Hometown' ? 'left' : 'center', verticalAlign: 'middle', lineHeight: '1.2' }}
                         >
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </td>
