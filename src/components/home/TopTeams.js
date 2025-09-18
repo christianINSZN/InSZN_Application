@@ -6,11 +6,11 @@ function TopTeams() {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showComingSoon, setShowComingSoon] = useState(false);
   const year = 2025;
   const week = 4;
   const navigate = useNavigate();
   const columnHelper = createColumnHelper();
+
   const columns = useMemo(() => [
     columnHelper.accessor('school', {
       id: 'School',
@@ -279,27 +279,14 @@ function TopTeams() {
         </table>
       </div>
       <div className="p-1 text-center text-sm">
-        <span
+        <Link
+          to="/team_rankings"
           className="text-black hover:text-gray-900 underline underline-offset-2 inline-block cursor-pointer"
           style={{ display: 'inline-block' }}
-          onClick={() => setShowComingSoon(true)}
         >
           Full Rankings
-        </span>
+        </Link>
       </div>
-      {showComingSoon && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl">
-            <p className="text-lg font-semibold text-black">Coming Soon</p>
-            <button
-              className="mt-4 px-4 py-2 text-center bg-[#235347] text-white rounded hover:bg-[#1b3e32]"
-              onClick={() => setShowComingSoon(false)}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

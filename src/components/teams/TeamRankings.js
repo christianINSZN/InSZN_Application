@@ -3,17 +3,44 @@ import { useReactTable, getCoreRowModel, getSortedRowModel, createColumnHelper, 
 import { Link, useNavigate } from 'react-router-dom';
 import NavBar from '../NavBar'; // Adjust path as needed
 
+const conferences = [
+  'All', 'ACC', 'American Athletic', 'Big 12', 'Big Ten', 'Conference USA',
+  'FBS Independents', 'Mid-American', 'Mountain West',
+  'Pac-12', 'SEC', 'Sun Belt'
+];
+const firstRowConferences = conferences.slice(0, 13);
+const secondRowConferences = conferences.slice(13);
+
 function TeamsRankings({ year = '2025', week = '4' }) {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showComingSoon, setShowComingSoon] = useState(false);
+  const [filterTeamName, setFilterTeamName] = useState('');
+  const [filterConference, setFilterConference] = useState('');
+  const [activeConference, setActiveConference] = useState('All');
   const navigate = useNavigate();
   const columnHelper = createColumnHelper();
 
+  const uniqueTeamNames = useMemo(() => {
+    return [...new Set(data.map(team => team.school).filter(Boolean))].sort();
+  }, [data]);
+
+  const uniqueConferences = useMemo(() => {
+    return [...new Set(data.map(team => team.conference).filter(Boolean))].sort();
+  }, [data]);
+
+  const filteredData = useMemo(() => {
+    return data.filter(team => {
+      const teamNameMatch = team.school.toLowerCase().includes(filterTeamName.toLowerCase());
+      const conferenceMatch = !filterConference || filterConference === 'All' || team.conference.toLowerCase() === filterConference.toLowerCase();
+      return teamNameMatch && conferenceMatch;
+    });
+  }, [data, filterTeamName, filterConference]);
+
   const columns = useMemo(() => [
     columnHelper.accessor('school', {
-      id: 'School',
+      id: 'TEAM',
       cell: ({ row }) => {
         const toPath = `/teams/${row.original.teamId}/${year}`;
         return (
@@ -30,6 +57,11 @@ function TeamsRankings({ year = '2025', week = '4' }) {
           </Link>
         );
       },
+    }),
+    columnHelper.accessor('conference', {
+      id: 'CONF',
+      enableSorting: true,
+      cell: info => info.getValue() || 'N/A',
     }),
     columnHelper.accessor('record', {
       id: 'OVR',
@@ -181,7 +213,7 @@ function TeamsRankings({ year = '2025', week = '4' }) {
   }, []);
 
   const tableInstance = useReactTable({
-    data,
+    data: filteredData,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -218,7 +250,7 @@ function TeamsRankings({ year = '2025', week = '4' }) {
     );
   }
 
-  if (!data.length) {
+  if (!filteredData.length) {
     return (
       <div className="w-full">
         <NavBar />
@@ -236,6 +268,80 @@ function TeamsRankings({ year = '2025', week = '4' }) {
     <div className="w-full">
       <NavBar />
       <div className="pt-5 px-4 mx-auto">
+        <div className="mb-6 mt-3 gap-4 items-end bg-gray-200 p-2 rounded-lg shadow-xl">
+          <div className="flex flex-wrap gap-4 items-end">
+            <div className="w-full md:w-auto flex-1">
+              <label htmlFor="teamNameFilter" className="block text-sm font-medium text-gray-700">
+                Filter by Team Name
+              </label>
+              <input
+                list="teamNames"
+                id="teamNameFilter"
+                value={filterTeamName}
+                onChange={(e) => setFilterTeamName(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded text-black"
+                placeholder="Type or scroll to select..."
+              />
+              <datalist id="teamNames">
+                {uniqueTeamNames.map((team, index) => (
+                  <option key={index} value={team} />
+                ))}
+              </datalist>
+            </div>
+            <div className="w-full md:w-auto flex-1">
+              <label htmlFor="conferenceFilter" className="block text-sm font-medium text-gray-700">
+                Filter by Conference
+              </label>
+              <input
+                list="conferences"
+                id="conferenceFilter"
+                value={filterConference}
+                onChange={(e) => setFilterConference(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded text-black"
+                placeholder="Type or scroll to select..."
+              />
+              <datalist id="conferences">
+                {uniqueConferences.map((conference, index) => (
+                  <option key={index} value={conference} />
+                ))}
+              </datalist>
+            </div>
+          </div>
+        </div>
+        <div className="border-b border-gray-300 mb-4">
+          <ul className="flex flex-wrap gap-4 justify-center p-4">
+            <div className="flex flex-wrap gap-4 justify-center">
+              {firstRowConferences.map(conference => (
+                <li key={conference}>
+                  <button
+                    className={`text-black hover:text-gray-900 pb-2 border-b-2 ${activeConference === conference ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+                    onClick={() => {
+                      setActiveConference(conference);
+                      setFilterConference(conference);
+                    }}
+                  >
+                    {conference}
+                  </button>
+                </li>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-4 justify-center">
+              {secondRowConferences.map(conference => (
+                <li key={conference}>
+                  <button
+                    className={`text-black hover:text-gray-900 pb-2 border-b-2 ${activeConference === conference ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+                    onClick={() => {
+                      setActiveConference(conference);
+                      setFilterConference(conference);
+                    }}
+                  >
+                    {conference}
+                  </button>
+                </li>
+              ))}
+            </div>
+          </ul>
+        </div>
         <div className="p-0 shadow-xl rounded-lg h-full border-b border-[#235347]">
           <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Full Team Rankings</h2>
           <div className="h-[full] overflow-y-auto border-b border-[#235347]">
@@ -248,7 +354,7 @@ function TeamsRankings({ year = '2025', week = '4' }) {
                         key={column.id}
                         className={`p-3 text-xs font-semibold border-b border-[#235347] text-black ${column.column.columnDef.enableSorting ? 'cursor-pointer' : ''}`}
                         style={{
-                          textAlign: column.id === 'School' ? 'left' : 'center',
+                          textAlign: column.id === 'TEAM' ? 'left' : 'center',
                           verticalAlign: 'middle',
                           lineHeight: '1.1',
                         }}
@@ -283,7 +389,7 @@ function TeamsRankings({ year = '2025', week = '4' }) {
                         key={cell.id}
                         className="p-1 text-xs text-black border-b border-gray-300"
                         style={{
-                          textAlign: cell.column.id === 'School' ? 'left' : 'center',
+                          textAlign: cell.column.id === 'TEAM' ? 'left' : 'center',
                           verticalAlign: 'middle',
                           lineHeight: '1.2',
                         }}
@@ -296,28 +402,6 @@ function TeamsRankings({ year = '2025', week = '4' }) {
               </tbody>
             </table>
           </div>
-          <div className="p-1 text-center text-sm">
-            <span
-              className="text-black hover:text-gray-900 underline underline-offset-2 inline-block cursor-pointer"
-              style={{ display: 'inline-block' }}
-              onClick={() => setShowComingSoon(true)}
-            >
-              Full Rankings
-            </span>
-          </div>
-          {showComingSoon && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white p-6 rounded-lg shadow-xl">
-                <p className="text-lg font-semibold text-black">Coming Soon</p>
-                <button
-                  className="mt-4 px-4 py-2 text-center bg-[#235347] text-white rounded hover:bg-[#1b3e32]"
-                  onClick={() => setShowComingSoon(false)}
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

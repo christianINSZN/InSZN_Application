@@ -155,7 +155,7 @@ const TeamRoster = () => {
   if (error) return <div className="p-4 text-red-500 text-xs">Error: {error}</div>;
   if (!teamData) return <div className="p-4 text-gray-500 text-xs">No team data available</div>;
 
-  const { school, abbreviation, mascot, logo_main } = teamData;
+  const { school, abbreviation, mascot, logo_main, color, alternateColor } = teamData;
   const isOverviewActive = location.pathname === `/teams/${id}/${year}`;
   const isRosterActive = location.pathname === `/teams/${id}/${year}/roster`;
   const isStatsActive = location.pathname === `/teams/${id}/${year}/stats`;
@@ -166,23 +166,24 @@ const TeamRoster = () => {
       <div className="py-6" style={{ boxSizing: 'border-box' }}>
         {/* Header Container */}
         <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
-          <div className="flex items-center justify-between bg-white shadow-lg border-b border-[#235347] h-[80px] rounded px-4">
+          <div
+            className="flex items-center justify-center shadow-lg border-b border-[#235347] h-[80px] rounded px-4"
+            style={{
+              background: `linear-gradient(to right, ${color}, white, ${alternateColor})`
+            }}
+          >
             {logo_main ? (
-              <div className="text-center">
-                <img
-                  src={logo_main}
-                  alt={`${school} logo`}
-                  className="w-16 h-16 mx-auto"
-                  onError={(e) => console.error(`Failed to load logo: ${logo_main}`)}
-                />
-              </div>
+              <img
+                src={logo_main}
+                alt={`${school} logo`}
+                className="w-16 h-16"
+                onError={(e) => console.error(`Failed to load logo: ${logo_main}`)}
+              />
             ) : (
-              <div className="text-center w-16 h-16 flex items-center justify-center">
+              <div className="w-16 h-16 flex items-center justify-center">
                 <span className="text-gray-500">No Logo</span>
               </div>
             )}
-            <h2 className="text-3xl font-bold text-gray-700 flex-1 text-center">{school} {mascot}</h2>
-            <div className="w-16 h-16"></div> {/* Spacer for symmetry */}
           </div>
         </div>
         {/* Nav Bar */}
