@@ -33,42 +33,42 @@ function TopTeams() {
     }),
     columnHelper.accessor('record', {
       id: 'OVR',
-      enableSorting: false,
+      enableSorting: true,
       cell: info => info.getValue() || '0-0',
     }),
     columnHelper.accessor('home_record', {
       id: 'HOME',
-      enableSorting: false,
+      enableSorting: true,
       cell: info => info.getValue() || '0-0',
     }),
     columnHelper.accessor('away_record', {
       id: 'AWAY',
-      enableSorting: false,
+      enableSorting: true,
       cell: info => info.getValue() || '0-0',
     }),
     columnHelper.accessor('neutral_record', {
       id: 'NEU',
-      enableSorting: false,
+      enableSorting: true,
       cell: info => info.getValue() || '0-0',
     }),
     columnHelper.accessor('quad1_record', {
       id: 'QUAD 1',
-      enableSorting: false,
+      enableSorting: true,
       cell: info => info.getValue() || '0-0',
     }),
     columnHelper.accessor('quad2_record', {
       id: 'QUAD 2',
-      enableSorting: false,
+      enableSorting: true,
       cell: info => info.getValue() || '0-0',
     }),
     columnHelper.accessor('quad3_record', {
       id: 'QUAD 3',
-      enableSorting: false,
+      enableSorting: true,
       cell: info => info.getValue() || '0-0',
     }),
     columnHelper.accessor('quad4_record', {
       id: 'QUAD 4',
-      enableSorting: false,
+      enableSorting: true,
       cell: info => info.getValue() || '0-0',
     }),
     columnHelper.accessor('SP_Rating', {
