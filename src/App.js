@@ -26,6 +26,7 @@ import HeadToHeadTE from './components/headtohead/headtohead_te';
 import TeamsComponent from './components/Teams';
 import TeamLanding from './components/teams/TeamLanding';
 import TeamRoster from './components/teams/TeamRoster';
+import TeamsRankings from './components/teams/TeamRankings';
 import './styles/App.css';
 import { useState } from 'react';
 
@@ -56,6 +57,8 @@ function App() {
           <Route path="/players/s/:playerId" element={<OverviewS year={defaultYear} />} />
           <Route path="/players/lb/:playerId" element={<OverviewLBE year={defaultYear} />} />
           <Route path="/teams" element={<TeamsComponent year={defaultYear} />} />
+          <Route path="/team_rankings" element={<TeamsRankings year={defaultYear} />} />
+      
           <Route path="/teams/:id/:year" element={<TeamLanding />} />
           <Route path="/teams/:id/:year/roster" element={<TeamRoster />} />
 

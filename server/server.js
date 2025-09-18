@@ -857,6 +857,36 @@ app.get('/api/teams/rankings/:year/:week', (req, res) => {
     );
 });
 
+// Full rankings endpoint
+app.get('/api/teams/rankings_full/:year/:week', (req, res) => {
+    const { year, week } = req.params;
+    console.log(`Fetching team rankings for year: ${year}, week: ${week}`);
+    db.all(
+        `
+        SELECT teamId, year, week, school, coaches_poll_rank, ap_poll_rank,
+               SP_Ranking, SP_Rating, SP_Off_Ranking, SP_Off_Rating,
+               SP_Def_Ranking, SP_Def_Rating, ELO_Rating, SOR, FPI_Ranking,
+               SOS, record, home_record, away_record, neutral_record,
+               quad1_record, quad2_record, quad3_record, quad4_record
+        FROM Teams_Rankings
+        WHERE year = ? AND week = ? AND FPI_Ranking IS NOT NULL
+        ORDER BY FPI_Ranking ASC
+        `,
+        [year, week],
+        (err, rows) => {
+            if (err) {
+                console.error('Database error:', err.message);
+                return res.status(500).json({ error: err.message });
+            }
+            if (!rows.length) {
+                console.log(`No team rankings found for year: ${year}, week: ${week} with FPI_Ranking not null`);
+                return res.status(404).json({ error: 'No team rankings found for this year and week with FPI_Ranking' });
+            }
+            res.json(rows);
+        }
+    );
+});
+
 // Roster endpoint
 app.get('/api/teams_roster/:id/:year', (req, res) => {
     const { id, year } = req.params;

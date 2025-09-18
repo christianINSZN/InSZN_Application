@@ -1,9 +1,26 @@
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { BsFillPersonFill } from 'react-icons/bs';
 import { RiTeamFill } from 'react-icons/ri';
 import { MdOutlineJoinFull, MdPeople } from "react-icons/md";
 
 function NavBar() {
+  const [isTeamsDropdownOpen, setIsTeamsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsTeamsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
     <div className="w-full">
       <div
@@ -11,7 +28,7 @@ function NavBar() {
         style={{
           height: '64px',
           backgroundImage: 'url(/Header_Gradient.png)',
-          backgroundSize: 'auto 64px', // Auto width, fixed 64px height
+          backgroundSize: 'auto 64px',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat'
         }}
@@ -24,10 +41,35 @@ function NavBar() {
                 <BsFillPersonFill /> <span>Players</span>
               </Link>
             </li>
-            <li>
-              <Link to="/teams" className="flex items-center space-x-2 hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-lg">
+            <li className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setIsTeamsDropdownOpen(!isTeamsDropdownOpen)}
+                className="flex items-center space-x-2 hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-lg focus:outline-none"
+              >
                 <RiTeamFill /> <span>Teams</span>
-              </Link>
+              </button>
+              {isTeamsDropdownOpen && (
+                <ul className="absolute left-0 mt-2 w-48 bg-white border-2 border-[#235347] rounded shadow-lg z-20">
+                  <li>
+                    <Link
+                      to="/teams"
+                      className="block px-4 py-2 text-black hover:bg-[#235347]/70 hover:text-white text-lg"
+                      onClick={() => setIsTeamsDropdownOpen(false)}
+                    >
+                      By Conference
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/team_rankings"
+                      className="block px-4 py-2 text-black hover:bg-[#235347]/70 hover:text-white text-lg"
+                      onClick={() => setIsTeamsDropdownOpen(false)}
+                    >
+                      Rankings
+                    </Link>
+                  </li>
+                </ul>
+              )}
             </li>
           </ul>
           {/* Center logo */}
