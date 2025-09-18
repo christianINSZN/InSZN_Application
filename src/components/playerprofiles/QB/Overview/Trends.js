@@ -8,12 +8,10 @@ const Trends = ({ teamGames, weeklyGrades }) => {
   });
 
   useEffect(() => {
-    if (teamGames && weeklyGrades) {
-      // Sort games by startDate to get the most recent 3 in chronological order
-      const recentGames = [...teamGames]
-        .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
-        .slice(-3);
+    console.log('teamGames:', teamGames);
+    console.log('weeklyGrades:', weeklyGrades);
 
+    if (teamGames && weeklyGrades && teamGames.length >= 1) {
       // Relevant metrics for QB trends
       const metrics = {
         'grades_pass': 'Pass Grade',
@@ -26,21 +24,35 @@ const Trends = ({ teamGames, weeklyGrades }) => {
         'ypa': 'YPA'
       };
 
-      // Calculate trends (weighted percentage growth) for the last 3 games
+      // Filter games where the player has valid stats (at least one non-null metric)
+      const gamesWithStats = teamGames
+        .map(game => {
+          const key = `${game.week}_${game.seasonType}`;
+          const grade = weeklyGrades[key];
+          const hasStats = grade && Object.keys(metrics).some(metric => grade[metric] !== undefined && grade[metric] !== null);
+          return hasStats ? { ...game, key } : null;
+        })
+        .filter(game => game !== null)
+        .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
+        .slice(-3); // Last 3 games with stats
+      console.log('gamesWithStats:', gamesWithStats);
+
+      // Calculate trends for each metric
       const trends = {};
       Object.keys(metrics).forEach(metric => {
-        const values = recentGames
+        const values = gamesWithStats
           .map(game => {
-            const key = `${game.week}_${game.seasonType}`;
-            const grade = weeklyGrades[key];
+            const grade = weeklyGrades[game.key];
+            console.log(`Checking ${metric} for ${game.key}:`, grade ? grade[metric] : 'undefined');
             return grade && grade[metric] !== undefined && grade[metric] !== null ? grade[metric] : null;
           })
           .filter(value => value !== null);
+        console.log(`Metric ${metric} values:`, values);
 
         if (values.length >= 2) { // Need at least 2 points for trend
-          const startValue = values[0]; // Week 1 value
-          const midValue = values[1]; // Week 2 value
-          const endValue = values[values.length - 1]; // Week 3 value
+          const startValue = values[0];
+          const midValue = values[1];
+          const endValue = values[values.length - 1];
           let totalGrowth = 0;
           if (startValue !== 0 && isFinite((endValue - startValue) / startValue)) {
             totalGrowth = ((endValue - startValue) / startValue) * 100;
@@ -51,46 +63,68 @@ const Trends = ({ teamGames, weeklyGrades }) => {
           }
           const weightedTrend = (0.7 * totalGrowth) + (0.3 * recentChange);
           trends[metric] = { label: metrics[metric], value: weightedTrend };
+          console.log(`Trend for ${metric}:`, weightedTrend);
+        } else if (values.length === 1) {
+          trends[metric] = { label: metrics[metric], value: 0 };
+          console.log(`Single value for ${metric}, setting trend to 0`);
         }
       });
 
       // Convert to array and sort by weighted trend
       const trendArray = Object.values(trends).sort((a, b) => b.value - a.value);
-      const trendUp = trendArray.filter(trend => trend.value >= 0).slice(0, 3); // Positive trends
-      const trendDown = trendArray.filter(trend => trend.value < 0).slice(-3).reverse(); // Negative trends
+      const trendUp = trendArray.filter(trend => trend.value >= 0).slice(0, 3);
+      const trendDown = trendArray.filter(trend => trend.value < 0).slice(-3).reverse();
+      console.log('trendUp:', trendUp);
+      console.log('trendDown:', trendDown);
       setTrendData({ trendUp, trendDown });
+    } else {
+      console.log('No valid teamGames or weeklyGrades:', { teamGames, weeklyGrades });
     }
   }, [teamGames, weeklyGrades]);
 
   return (
     <div className="h-80 bg-white rounded-lg shadow-lg">
       <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Trends (3 Game)</h2>
-      <div className="grid grid-cols-3 gap-4 mb-4 h-[40%]">
-        {trendData.trendUp.map((trend, index) => (
-          <div
-            key={trend.label}
-            className="bg-gray-0 p-2 rounded text-center h-full shadow-lg"
-          >
-            <h3 className="text-md font-medium">{trend.label}</h3>
-            <p className="text-3xl font-bold text-gray-800 p-3">
-              <ChevronDoubleUpIcon className="h-14 w-14 inline-block text-green-500" />
-            </p>
+      {trendData.trendUp.length === 0 && trendData.trendDown.length === 0 ? (
+        <p className="text-gray-500 text-center p-4">Trends populate after 3 played games</p>
+      ) : (
+        <>
+          <div className="grid grid-cols-3 gap-4 mb-4 h-[40%]">
+            {trendData.trendUp.length > 0 ? (
+              trendData.trendUp.map((trend, index) => (
+                <div
+                  key={trend.label}
+                  className="bg-gray-0 p-2 rounded text-center h-full shadow-lg"
+                >
+                  <h3 className="text-md font-medium">{trend.label}</h3>
+                  <p className="text-3xl font-bold text-gray-800 p-3">
+                    <ChevronDoubleUpIcon className="h-14 w-14 inline-block text-green-500" />
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500 text-center p-4 col-span-3">No upward trends</p>
+            )}
           </div>
-        ))}
-      </div>
-      <div className="grid grid-cols-3 gap-2 h-[40%]">
-        {trendData.trendDown.map((trend, index) => (
-          <div
-            key={trend.label}
-            className="bg-gray-0 p-2 rounded text-center h-full shadow-lg"
-          >
-            <h3 className="text-md font-medium">{trend.label}</h3>
-            <p className="text-3xl font-bold text-gray-800 p-3">
-              <ChevronDoubleDownIcon className="h-14 w-14 inline-block text-red-500" />
-            </p>
+          <div className="grid grid-cols-3 gap-2 h-[40%]">
+            {trendData.trendDown.length > 0 ? (
+              trendData.trendDown.map((trend, index) => (
+                <div
+                  key={trend.label}
+                  className="bg-gray-0 p-2 rounded text-center h-full shadow-lg"
+                >
+                  <h3 className="text-md font-medium">{trend.label}</h3>
+                  <p className="text-3xl font-bold text-gray-800 p-3">
+                    <ChevronDoubleDownIcon className="h-14 w-14 inline-block text-red-500" />
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500 text-center p-4 col-span-3">No downward trends</p>
+            )}
           </div>
-        ))}
-      </div>
+        </>
+      )}
     </div>
   );
 };
