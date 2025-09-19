@@ -11,7 +11,7 @@ const Header = ({ firstName, lastName, school, position, jersey, height, weight,
         setLoading(true);
         setError(null);
         try {
-          const response = await fetch(`${process.env.REACT_APP_API_URL}/api/player_metadata/${playerId}`, {
+          const response = await fetch(`${process.env.REACT_APP_API_URL}/api/player_metadata_rb/${playerId}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
           });

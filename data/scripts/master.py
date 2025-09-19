@@ -51,10 +51,10 @@ script_order = [
     #  "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/rushing/season/populate_rushing_grades_season.py",
     
     # # # Rushing Concepts Weekly
-    #  "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/rushing/weekly/populate_rushing_grades_weekly.py",
+      "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/rushing/weekly/populate_rushing_grades_weekly.py",
 
     # # # Team Rushing Concepts Weekly
-    #  "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/rushing/weekly/populate_team_rushing_grades_weekly.py",
+      "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/rushing/weekly/populate_team_rushing_grades_weekly.py",
     
     # # #### RECEIVING SEASON DATA ####
     # # # Receiving Concepts Season
