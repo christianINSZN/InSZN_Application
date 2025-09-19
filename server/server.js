@@ -359,7 +359,7 @@ app.get('/api/player_metadata_rb/:playerId', (req, res) => {
 app.get('/api/all_player_percentiles_RB/:year', (req, res) => {
   const { year } = req.params;
   db.all(
-    'SELECT * FROM Players_Full_Percentiles_RB WHERE year = ?',
+    'SELECT * FROM Players_Full_Percentiles_RB_Rushing WHERE year = ?',
     [year],
     (err, rows) => {
       if (err) {

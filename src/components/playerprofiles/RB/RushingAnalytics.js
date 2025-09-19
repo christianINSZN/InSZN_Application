@@ -212,7 +212,7 @@ function PassingAnalytics() {
                     allPlayerPercentiles={allPlayerPercentiles}
                   />
                 </div>
-                <div className="production-container bg-white rounded-lg shadow-lg mt-4">
+                {/* <div className="production-container bg-white rounded-lg shadow-lg mt-4">
                 <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Performance Metrics</h2>
                   <RushingConcept
                     playerId={playerId}
@@ -221,8 +221,8 @@ function PassingAnalytics() {
                     teamGames={teamGames}
                     allPlayerPercentiles={allPlayerPercentiles}
                   />
-                </div>
-                  <div className="production-container bg-white rounded-lg shadow-lg mt-4">
+                </div> */}
+                {/* <div className="production-container bg-white rounded-lg shadow-lg mt-4">
                 <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Pocket Metrics</h2>
                   <ReceivingConcept
                     playerId={playerId}
@@ -231,7 +231,7 @@ function PassingAnalytics() {
                     teamGames={teamGames}
                     allPlayerPercentiles={allPlayerPercentiles}
                   />
-                </div>
+                </div> */}
               </>
             )}
           </div>

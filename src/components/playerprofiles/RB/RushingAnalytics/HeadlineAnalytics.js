@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import Chart from 'chart.js/auto';
 
 const HeadlineAnalytics = ({ playerId, year, weeklyGrades, teamGames, isPopupOpen, setIsPopupOpen, setSelectedContainer, selectedContainer, percentileGrades }) => {
-  const containerTitles = ['Yards', 'Completion (%)', 'Yards Per Attempt', 'Time-to-Throw', 'Avg. Target Depth'];
+  const containerTitles = ['Yards', 'Total Touches', 'Yards Per Attempt', 'Longest', 'Touchdowns'];
   const chartRef = useRef(null);
   const [selectedGrade, setSelectedGrade] = useState(null);
 
@@ -22,10 +22,10 @@ const HeadlineAnalytics = ({ playerId, year, weeklyGrades, teamGames, isPopupOpe
     if (!percentileGrades) return { value: 'N/A', percentile: 'N/A' };
     switch (gradeKey) {
       case 'Yards': return { value: percentileGrades.yards || 'N/A', percentile: percentileGrades.percentile_yards || 'N/A' };
-      case 'Completion (%)': return { value: percentileGrades.completion_percent || 'N/A', percentile: percentileGrades.percentile_completion_percent || 'N/A' };
+      case 'Total Touches': return { value: percentileGrades.total_touches || 'N/A', percentile: percentileGrades.percentile_total_touches || 'N/A' };
       case 'Yards Per Attempt': return { value: percentileGrades.ypa || 'N/A', percentile: percentileGrades.percentile_ypa || 'N/A' };
-      case 'Time-to-Throw': return { value: percentileGrades.avg_time_to_throw || 'N/A', percentile: percentileGrades.percentile_avg_time_to_throw || 'N/A' };
-      case 'Avg. Target Depth': return { value: percentileGrades.avg_depth_of_target || 'N/A', percentile: percentileGrades.percentile_avg_depth_of_target || 'N/A' };
+      case 'Longest': return { value: percentileGrades.longest || 'N/A', percentile: percentileGrades.percentile_longest || 'N/A' };
+      case 'Touchdowns': return { value: percentileGrades.touchdowns || 'N/A', percentile: percentileGrades.percentile_touchdowns || 'N/A' };
       default: return { value: 'N/A', percentile: 'N/A' };
     }
   };
@@ -69,18 +69,18 @@ const HeadlineAnalytics = ({ playerId, year, weeklyGrades, teamGames, isPopupOpe
 
       const gradeToField = {
         'Yards': 'yards',
-        'Completion (%)': 'completion_percent',
+        'Total Touches': 'total_touches',
         'Yards Per Attempt': 'ypa',
-        'Time-to-Throw': 'avg_time_to_throw',
-        'Avg. Target Depth': 'avg_depth_of_target',
+        'Longest': 'longest',
+        'Touchdowns': 'touchdowns',
       };
 
       const metricRanges = {
         'Yards': { min: 0, max: 600, unit: 'Yards' },
-        'Completion (%)': { min: 0, max: 100, unit: 'Percent' },
+        'Total Touches': { min: 0, max: 100, unit: 'Percent' },
         'Yards Per Attempt': { min: 0, max: 25, unit: 'Yards' },
-        'Time-to-Throw': { min: 0, max: 5, unit: 'Seconds' },
-        'Avg. Target Depth': { min: 0, max: 20, unit: 'Yards' },
+        'Longest': { min: 0, max: 5, unit: 'Seconds' },
+        'Touchdowns': { min: 0, max: 20, unit: 'Yards' },
       };
 
       const gradeField = gradeToField[selectedGrade];

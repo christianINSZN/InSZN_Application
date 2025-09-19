@@ -5,38 +5,38 @@ import Chart from 'chart.js/auto';
 const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlayerPercentiles }) => {
   const chartRefs = {
     yards: useRef(null),
-    ypa: useRef(null),
-    completion: useRef(null),
-    passingTouchdowns: useRef(null),
-    passingSnaps: useRef(null),
+    total_touches: useRef(null),
+    longest: useRef(null),
+    touchdowns: useRef(null),
+    fumbles: useRef(null),
   };
   const [checkedPlayers, setCheckedPlayers] = useState({
     yards: {},
-    ypa: {},
-    completion: {},
-    passingTouchdowns: {},
-    passingSnaps: {},
+    total_touches: {},
+    longest: {},
+    touchdowns: {},
+    fumbles: {},
   });
   const [playerWeeklyData, setPlayerWeeklyData] = useState({
     yards: {},
-    ypa: {},
-    completion: {},
-    passingTouchdowns: {},
-    passingSnaps: {},
+    total_touches: {},
+    longest: {},
+    touchdowns: {},
+    fumbles: {},
   });
   const [searchTerms, setSearchTerms] = useState({
     yards: '',
-    ypa: '',
-    completion: '',
-    passingTouchdowns: '',
-    passingSnaps: '',
+    total_touches: '',
+    longest: '',
+    touchdowns: '',
+    fumbles: '',
   });
   const [showSearch, setShowSearch] = useState({
     yards: false,
-    ypa: false,
-    completion: false,
-    passingTouchdowns: false,
-    passingSnaps: false,
+    total_touches: false,
+    longest: false,
+    touchdowns: false,
+    fumbles: false,
   });
   const colors = [
     'rgba(54, 162, 235, 1)', // Blue (default)
@@ -66,7 +66,7 @@ const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlaye
     if (!checkedPlayers[metricId][selectedPlayerId]) {
       try {
         const gradesPromises = teamGames.map(game =>
-          fetch(`${process.env.REACT_APP_API_URL}/api/player_passing_weekly_all/${selectedPlayerId}/${year}/${game.week}/${game.seasonType}`, {
+          fetch(`${process.env.REACT_APP_API_URL}/api/player_rushing_weekly_all/${selectedPlayerId}/${year}/${game.week}/${game.seasonType}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
           }).then(response => {
@@ -135,11 +135,11 @@ const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlaye
     });
 
     const metrics = [
-      { id: 'yards', field: 'yards', title: 'Passing Yards', min: 0, max: 600, unit: 'Yards' },
-      { id: 'ypa', field: 'ypa', title: 'Yards Per Attempt', min: 0, max: 25, unit: 'YPA' },
-      { id: 'completion', field: 'completion_percent', title: 'Completion (%)', min: 0, max: 100, unit: 'Completion (%)' },
-      { id: 'passingTouchdowns', field: 'touchdowns', title: 'Passing Touchdowns', min: 0, max: 5, unit: 'Passing TD' },
-      { id: 'passingSnaps', field: 'passing_snaps', title: 'Passing Snaps', min: 0, max: 100, unit: 'Snaps' },
+      { id: 'yards', field: 'yards', title: 'Rushing Yards', min: 0, max: 200, unit: 'Yards' },
+      { id: 'total_touches', field: 'total_touches', title: 'Total Touches', min: 0, max: 25, unit: 'Touches' },
+      { id: 'longest', field: 'longest', title: 'Longest Rush', min: 0, max: 80, unit: 'Yards' },
+      { id: 'touchdowns', field: 'touchdowns', title: 'Touchdowns', min: 0, max: 5, unit: 'TD' },
+      { id: 'fumbles', field: 'fumbles', title: 'Fumbles', min: 0, max: 3, unit: 'Fumbles' },
     ];
 
     metrics.forEach(metric => {
@@ -240,7 +240,7 @@ const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlaye
       .map(player => ({
         playerId: player.playerId,
         name: player.name,
-        value: player.value.toFixed(metricField === 'passing_snaps' || metricField === 'touchdowns' ? 2 : metricField === 'ypa' || metricField === 'completion_percent' ? 1 : 0),
+        value: player.value.toFixed(metricField === 'passing_snaps' || metricField === 'longest' ? 2 : metricField === 'total_touches' || metricField === 'longest_percent' ? 1 : 0),
       }));
   };
 
@@ -248,10 +248,10 @@ const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlaye
     <div className="production-container grid grid-cols-[80%_18%] gap-4">
       {[
         { id: 'yards', title: 'Yards' },
-        { id: 'ypa', title: 'Yards Per Attempt' },
-        { id: 'completion', title: 'Completion (%)' },
-        { id: 'passingTouchdowns', title: 'Passing Touchdowns' },
-        { id: 'passingSnaps', title: 'Passing Snaps' },
+        { id: 'total_touches', title: 'Total Touches' },
+        { id: 'longest', title: 'Longest' },
+        { id: 'touchdowns', title: 'Touchdowns' },
+        { id: 'fumbles', title: 'Fumbles' },
       ].map((metric, index) => (
         <React.Fragment key={metric.id}>
           {/* Left Column (80%) */}
@@ -287,7 +287,7 @@ const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlaye
                 <thead>
                   <tr className="border-b border-gray-200">
                     <th className="text-left py-1">Player</th>
-                    <th className="text-right py-1">{metric.title === 'Yards' ? 'Yds' : metric.title === 'Yards Per Attempt' ? 'YPA' : metric.title === 'Completion (%)' ? 'Rate' : metric.title === 'Passing Touchdowns' ? 'TD' : 'Snaps'}</th>
+                    <th className="text-right py-1">{metric.title === 'Yards' ? 'Yds' : metric.title === 'Yards Per Attempt' ? 'total_touches' : metric.title === 'longest (%)' ? 'Rate' : metric.title === 'Passing longest' ? 'TD' : 'Snaps'}</th>
                     <th className="text-right py-1 w-8"></th>
                   </tr>
                 </thead>
@@ -296,7 +296,7 @@ const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlaye
                     <tr key={idx} className="border-b border-gray-100">
                       <td className="py-1">
                         <Link
-                          to={`/players/qb/${player.playerId}`}
+                          to={`/players/rb/${player.playerId}`}
                           className="text-blue-600 hover:underline"
                         >
                           {player.name}
