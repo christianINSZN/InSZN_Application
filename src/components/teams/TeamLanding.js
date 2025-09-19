@@ -54,28 +54,28 @@ const TeamLanding = () => {
 
   return (
     <div className="w-full p-0 shadow-xl rounded-lg">
-      <div className="py-6" style={{ boxSizing: 'border-box' }}>
+      <div className="py-2" style={{ boxSizing: 'border-box' }}>
         {/* Header Container */}
         <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
-<div
-  className="flex items-center justify-center shadow-lg border-b border-[#235347] h-[80px] rounded px-4"
-  style={{
-    background: `linear-gradient(to right, ${color}, white, ${alternateColor})`
-  }}
->
-  {logo_main ? (
-    <img
-      src={logo_main}
-      alt={`${school} logo`}
-      className="w-16 h-16"
-      onError={(e) => console.error(`Failed to load logo: ${logo_main}`)}
-    />
-  ) : (
-    <div className="w-16 h-16 flex items-center justify-center">
-      <span className="text-gray-500">No Logo</span>
-    </div>
-  )}
-</div>
+          <div
+            className="flex items-center justify-center shadow-lg border-b border-[#235347] h-[80px] rounded px-4"
+            style={{
+              background: `linear-gradient(to right, ${color}, white, ${alternateColor})`
+            }}
+          >
+            {logo_main ? (
+              <img
+                src={logo_main}
+                alt={`${school} logo`}
+                className="w-16 h-16"
+                onError={(e) => console.error(`Failed to load logo: ${logo_main}`)}
+              />
+            ) : (
+              <div className="w-16 h-16 flex items-center justify-center">
+                <span className="text-gray-500">No Logo</span>
+              </div>
+            )}
+          </div>
         </div>
         {/* Nav Bar */}
         <div className="border-b border-[#235347] mb-4">

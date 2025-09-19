@@ -117,8 +117,8 @@ script_order = [
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/defense/weekly/populate_team_slot_coverage_weekly.py",
 
     # ## PERCENTILES ####
-     "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/passing/season/populate_full_percentiles_qb.py",
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/rushing/season/populate_full_percentiles_rb.py",
+    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/passing/season/populate_full_percentiles_qb.py",
+     "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/rushing/season/populate_full_percentiles_rb.py",
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/season/populate_full_percentiles_rb.py",
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/season/populate_full_percentiles_te.py",
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/season/populate_full_percentiles_wr.py",
