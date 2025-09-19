@@ -7,6 +7,9 @@ import OverviewQB from './components/playerprofiles/QB/Overview';
 import FieldViewInterface from './components/playerprofiles/QB/FieldView';
 import PassingAnalytics from './components/playerprofiles/QB/PassingAnalytics';
 import HeadToHeadContainer from './components/playerprofiles/QB/HeadToHead';
+
+import RushingAnalytics from './components/playerprofiles/RB/RushingAnalytics';
+
 import GameRecap from './components/games/GameRecapMain';
 import OverviewRB from './components/playerprofiles/RB/Overview';
 import OverviewWR from './components/playerprofiles/WR/Overview';
@@ -45,8 +48,11 @@ function App() {
           <Route path="/players/qb/:playerId/passing" element={<PassingAnalytics year={defaultYear} />} />
           <Route path="/players/qb/:playerId/fieldview" element={<FieldViewInterface year={defaultYear} />} />
           <Route path="/players/qb/:playerId/h2h" element={<HeadToHeadContainer year={defaultYear} />} />
-          <Route path="/game/:id" element={<GameRecap />} />
+
           <Route path="/players/rb/:playerId" element={<OverviewRB year={defaultYear} />} />
+          <Route path="/players/rb/:playerId/rushing" element={<RushingAnalytics year={defaultYear} />} />
+
+          
           <Route path="/players/wr/:playerId" element={<OverviewWR year={defaultYear} />} />
           <Route path="/players/te/:playerId" element={<OverviewTE year={defaultYear} />} />
           <Route path="/players/cb/:playerId" element={<OverviewCB year={defaultYear} />} />
@@ -58,7 +64,7 @@ function App() {
           <Route path="/players/lb/:playerId" element={<OverviewLBE year={defaultYear} />} />
           <Route path="/teams" element={<TeamsComponent year={defaultYear} />} />
           <Route path="/team_rankings" element={<TeamsRankings year={defaultYear} />} />
-      
+          <Route path="/game/:id" element={<GameRecap />} />
           <Route path="/teams/:id/:year" element={<TeamLanding />} />
           <Route path="/teams/:id/:year/roster" element={<TeamRoster />} />
 

@@ -356,6 +356,55 @@ app.get('/api/player_metadata_rb/:playerId', (req, res) => {
   });
 }); 
 
+app.get('/api/all_player_percentiles_RB/:year', (req, res) => {
+  const { year } = req.params;
+  db.all(
+    'SELECT * FROM Players_Full_Percentiles_RB WHERE year = ?',
+    [year],
+    (err, rows) => {
+      if (err) {
+        console.error('Database query error:', err.message);
+        res.status(500).send('Internal server error');
+      } else if (!rows || rows.length === 0) {
+        res.status(404).send('No percentile data found for the specified year');
+      } else {
+        const result = rows.reduce((acc, row) => ({
+          ...acc,
+          [row.playerId]: {
+            name: row.name,
+            
+            yards: row.yards,
+            total_touches: row.total_touches,
+            longest: row.longest,
+            touchdowns: row.touchdowns,
+            fumbles: row.fumbles,
+            
+            routes: row.routes,
+            targets: row.targets,
+            rec_yards: row.rec_yards,
+            yprr: row.yprr,
+            elu_recv_mtf: row.elu_recv_mtf,
+            
+            attempts: row.attempts,
+            ypa: row.ypa,
+            yco_attempt: row.yco_attempt,
+            gap_attempts: row.gap_attempts,
+            zone_attempts: row.zone_attempts,
+
+            yards_after_contact: row.yards_after_contact,
+            breakaway_percent: row.breakaway_percent,
+            breakaway_yards: row.breakaway_yards,
+            elu_rush_mtf: row.elu_rush_mtf,
+            elusive_rating: row.elusive_rating,
+
+          },
+        }), {});
+        res.json(result);
+      }
+    }
+  );
+});
+
 /* Receiving */
 /* WR Specific */
 app.get('/api/player_percentiles_WR/:playerId/:year', (req, res) => {
