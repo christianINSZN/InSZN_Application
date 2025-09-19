@@ -37,13 +37,13 @@ const HeadlineGrades = ({
     switch (gradeKey) {
       case 'Run Grade': return percentileGrades.percentile_grades_run || 'N/A';
       case 'Overall Offense Grade': return percentileGrades.percentile_grades_offense_rushing || 'N/A';
-      case 'Receiving Grade': return percentileGrades.percentile_grades_pass_route || 'N/A';
-      case 'Ball Security Grade': return percentileGrades.percentile_grades_hands_fumble || 'N/A';
+      case 'Receiving Grade': return percentileGrades.percentile_grades_pass_route_rushing || 'N/A';
+      case 'Ball Security Grade': return percentileGrades.percentile_grades_hands_fumble_rishing || 'N/A';
       case 'Elusiveness Grade': return percentileGrades.percentile_elusive_rating || 'N/A';
       case 'Breakaway Percentage': return percentileGrades.percentile_breakaway_percent || 'N/A';
       case 'Penalty Aversion': return percentileGrades.percentile_grades_offense_penalty || 'N/A';
-      case 'Run Blocking Grade': return percentileGrades.percentile_grades_run_block || 'N/A';
-      case 'Blitz Pass Grades': return percentileGrades.percentile_grades_pass_block || 'N/A';
+      case 'Run Blocking Grade': return percentileGrades.percentile_grades_run_block_rushing || 'N/A';
+      case 'Blitz Pass Grades': return percentileGrades.percentile_grades_pass_block_rushing || 'N/A';
       default: return 'N/A';
     }
   };
