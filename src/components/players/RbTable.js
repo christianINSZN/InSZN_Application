@@ -47,15 +47,6 @@ const RbTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
         );
       },
     }),
-    columnHelper.accessor('grades_run', {
-      id: 'Run Grade',
-      enableSorting: true,
-      sortDescFirst: true,
-      cell: info => {
-        console.log('Grade Run Value for RB:', info.getValue());
-        return info.getValue() !== null ? info.getValue() : 'N/A';
-      },
-    }),
     columnHelper.accessor('player_game_count', {
       id: 'GP',
       enableSorting: true,
@@ -86,6 +77,15 @@ const RbTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
       enableSorting: true,
       cell: info => (info.getValue() !== null ? info.getValue() : 'N/A'),
     }),
+        columnHelper.accessor('grades_run', {
+      id: 'Run Grade',
+      enableSorting: true,
+      sortDescFirst: true,
+      cell: info => {
+        console.log('Grade Run Value for RB:', info.getValue());
+        return info.getValue() !== null ? info.getValue() : 'N/A';
+      },
+    }),
   ], [navigate, year]);
 
   const rbTableData = useMemo(() => {
@@ -103,7 +103,7 @@ const RbTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     initialState: {
-      sorting: [{ id: 'Run Grade', desc: true }],
+      sorting: [{ id: 'YDS', desc: true }],
     },
   });
 

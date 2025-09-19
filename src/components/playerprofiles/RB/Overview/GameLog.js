@@ -95,7 +95,7 @@ const GameLog = ({ teamGames, weeklyGrades, year }) => {
                 let grades_run = weekGrade['grades_run'] !== undefined && weekGrade['grades_run'] !== null ? weekGrade['grades_run'].toFixed(1) : '-';
                 let attempts = weekGrade['attempts'] !== undefined && weekGrade['attempts'] !== null ? weekGrade['attempts'] : '-';
                 let yards = weekGrade['yards'] !== undefined && weekGrade['yards'] !== null ? weekGrade['yards'] : '-';
-                let ypc = weekGrade['ypc'] !== undefined && weekGrade['ypc'] !== null ? weekGrade['ypc'].toFixed(1) : '-';
+                let ypa = weekGrade['ypa'] !== undefined && weekGrade['ypa'] !== null ? weekGrade['ypa'].toFixed(1) : '-';
                 let touchdowns = weekGrade['touchdowns'] !== undefined && weekGrade['touchdowns'] !== null ? weekGrade['touchdowns'] : '-';
                 let fumbles = weekGrade['fumbles'] !== undefined && weekGrade['fumbles'] !== null ? weekGrade['fumbles'] : '-';
 
@@ -128,7 +128,7 @@ const GameLog = ({ teamGames, weeklyGrades, year }) => {
                     <td className="p-1 text-xs text-left" style={{ verticalAlign: 'middle', lineHeight: '1.1' }}>{grades_run}</td>
                     <td className="p-1 text-xs text-left" style={{ verticalAlign: 'middle', lineHeight: '1.1' }}>{attempts}</td>
                     <td className="p-1 text-xs text-left" style={{ verticalAlign: 'middle', lineHeight: '1.1' }}>{yards}</td>
-                    <td className="p-1 text-xs text-left" style={{ verticalAlign: 'middle', lineHeight: '1.1' }}>{ypc}</td>
+                    <td className="p-1 text-xs text-left" style={{ verticalAlign: 'middle', lineHeight: '1.1' }}>{ypa}</td>
                     <td className="p-1 text-xs text-left" style={{ verticalAlign: 'middle', lineHeight: '1.1' }}>{touchdowns}</td>
                     <td className="p-1 text-xs text-left" style={{ verticalAlign: 'middle', lineHeight: '1.1' }}>{fumbles}</td>
                   </tr>

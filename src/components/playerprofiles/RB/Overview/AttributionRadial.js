@@ -10,7 +10,7 @@ const AttributionRadial = ({ playerId, year, percentileGrades }) => {
       case 'Grade B': return percentileGrades.percentile_explosive || 'N/A';
       case 'Grade C': return percentileGrades.percentile_breakaway_percent || 'N/A';
       case 'Grade D': return percentileGrades.percentile_yards_after_contact || 'N/A';
-      case 'Grade E': return percentileGrades.percentile_grades_hands_fumble || 'N/A';
+      case 'Grade E': return percentileGrades.percentile_grades_hands_fumble_rishing || 'N/A';
       default: return 'N/A';
     }
   };

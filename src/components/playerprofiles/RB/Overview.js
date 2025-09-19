@@ -164,15 +164,6 @@ function OverviewRB() {
             </li>
             <li>
               <Link
-                to={`/players/rb/${playerId || ''}/fieldview`}
-                state={{ year }}
-                className={`text-gray-500 hover:text-gray-700 pb-2 border-b-2 ${isFieldViewActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
-              >
-                FieldView
-              </Link>
-            </li>
-            <li>
-              <Link
                 to={`/players/rb/${playerId || ''}/h2h`}
                 state={{ year }}
                 className={`text-gray-500 hover:text-gray-700 pb-2 border-b-2 ${isH2HActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}

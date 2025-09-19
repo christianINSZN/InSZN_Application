@@ -45,12 +45,6 @@ const QbTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
         );
       },
     }),
-    columnHelper.accessor('grades_pass', {
-      id: 'Pass Grade',
-      enableSorting: true,
-      sortDescFirst: true,
-      cell: info => (info.getValue() !== null ? info.getValue().toFixed(1) : 'N/A'),
-    }),
     columnHelper.accessor('player_game_count', {
       id: 'GP',
       enableSorting: true,
@@ -80,6 +74,12 @@ const QbTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
       id: 'INTs',
       enableSorting: true,
       cell: info => (info.getValue() !== null ? info.getValue() : 'N/A'),
+    }),
+    columnHelper.accessor('grades_pass', {
+      id: 'Pass Grade',
+      enableSorting: true,
+      sortDescFirst: true,
+      cell: info => (info.getValue() !== null ? info.getValue().toFixed(1) : 'N/A'),
     }),
   ], [navigate, year]);
 
@@ -111,7 +111,7 @@ const QbTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     initialState: {
-      sorting: [{ id: 'Pass Grade', desc: true }],
+      sorting: [{ id: 'YDS', desc: true }],
     },
   });
 

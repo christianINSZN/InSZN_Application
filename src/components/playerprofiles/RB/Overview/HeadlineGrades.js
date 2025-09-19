@@ -95,7 +95,7 @@ const HeadlineGrades = ({
         'Ball Security Grade': 'grades_hands_fumble',
         'Elusiveness Grade': 'elusive_rating',
         'Breakaway Percentage': 'breakaway_percent',
-        'Penalty Aversion': 'grades_offense_penalty',
+        'Penalty Aversion': 'percentile_grades_offense_penalty_rushing',
         'Run Blocking Grade': 'grades_run_block',
         'Blitz Pass Grades': 'grades_pass_block',
       };
