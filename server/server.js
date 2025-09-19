@@ -293,7 +293,7 @@ app.get('/api/player_percentiles_RB/:playerId/:year', (req, res) => {
         pgw.percentile_grades_pass_route AS percentile_grades_pass_route_rushing, pdw.percentile_grades_pass_route AS percentile_grades_pass_route_receiving,
         pgw.percentile_grades_offense AS percentile_grades_offense_rushing, pdw.percentile_grades_offense AS percentile_grades_offense_receiving,
         pgw.percentile_grades_hands_fumble AS percentile_grades_hands_fumble_rishing, pdw.percentile_grades_hands_fumble AS percentile_grades_hands_fumble_receiving,
-        pgw.percentile_grades_offense_penalty AS percentile_grades_offense_penalty_rushing
+        pgw.percentile_grades_offense_penalty AS percentile_grades_offense_penalty_rushing,
         pgw.percentile_longest AS percentile_longest_rushing, pdw.percentile_longest AS percentile_longest_receiving,
         pgw.percentile_touchdowns AS percentile_touchdowns_rushing, pdw.percentile_touchdowns AS percentile_touchdowns_receiving,
         pgw.percentile_yards AS percentile_yards_rushing, pdw.percentile_yards AS percentile_yards_receiving,
