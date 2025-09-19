@@ -340,6 +340,19 @@ app.get('/api/player_rushing_weekly_all/:playerId/:year/:week/:seasonType', (req
   );
 });
 
+app.get('/api/player_metadata_rb/:playerId', (req, res) => {
+  const { playerId } = req.params;
+  db.get('SELECT * FROM Players_Basic WHERE playerId = ? AND position = "RB"', [playerId], (err, row) => {
+    if (err) {
+      res.status(500).send(err.message);
+    } else if (!row) {
+      res.status(404).send('Player not found');
+    } else {
+      res.json([row]);
+    }
+  });
+}); 
+
 /* Receiving */
 /* WR Specific */
 app.get('/api/player_percentiles_WR/:playerId/:year', (req, res) => {
