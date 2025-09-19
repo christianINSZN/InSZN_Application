@@ -21,11 +21,11 @@ const HeadlineAnalytics = ({ playerId, year, weeklyGrades, teamGames, isPopupOpe
   const getGradeValue = (gradeKey) => {
     if (!percentileGrades) return { value: 'N/A', percentile: 'N/A' };
     switch (gradeKey) {
-      case 'Yards': return { value: percentileGrades.yards || 'N/A', percentile: percentileGrades.percentile_yards || 'N/A' };
+      case 'Yards': return { value: percentileGrades.yards_rushing || 'N/A', percentile: percentileGrades.percentile_yards_rushing || 'N/A' };
       case 'Total Touches': return { value: percentileGrades.total_touches || 'N/A', percentile: percentileGrades.percentile_total_touches || 'N/A' };
       case 'Yards Per Attempt': return { value: percentileGrades.ypa || 'N/A', percentile: percentileGrades.percentile_ypa || 'N/A' };
-      case 'Longest': return { value: percentileGrades.longest || 'N/A', percentile: percentileGrades.percentile_longest || 'N/A' };
-      case 'Touchdowns': return { value: percentileGrades.touchdowns || 'N/A', percentile: percentileGrades.percentile_touchdowns || 'N/A' };
+      case 'Longest': return { value: percentileGrades.longest_rushing || 'N/A', percentile: percentileGrades.percentile_longest_rushing || 'N/A' };
+      case 'Touchdowns': return { value: percentileGrades.touchdowns_rushing || 'N/A', percentile: percentileGrades.percentile_touchdowns_rushing || 'N/A' };
       default: return { value: 'N/A', percentile: 'N/A' };
     }
   };
@@ -68,19 +68,19 @@ const HeadlineAnalytics = ({ playerId, year, weeklyGrades, teamGames, isPopupOpe
       });
 
       const gradeToField = {
-        'Yards': 'yards',
+        'Yards': 'yards_rushing',
         'Total Touches': 'total_touches',
         'Yards Per Attempt': 'ypa',
-        'Longest': 'longest',
-        'Touchdowns': 'touchdowns',
+        'Longest': 'longest_rushing',
+        'Touchdowns': 'touchdowns_rushing',
       };
 
       const metricRanges = {
-        'Yards': { min: 0, max: 600, unit: 'Yards' },
-        'Total Touches': { min: 0, max: 100, unit: 'Percent' },
+        'Yards': { min: 0, max: 200, unit: 'Yards' },
+        'Total Touches': { min: 0, max: 100, unit: 'Total Touches' },
         'Yards Per Attempt': { min: 0, max: 25, unit: 'Yards' },
-        'Longest': { min: 0, max: 5, unit: 'Seconds' },
-        'Touchdowns': { min: 0, max: 20, unit: 'Yards' },
+        'Longest': { min: 0, max: 80, unit: 'Yards' },
+        'Touchdowns': { min: 0, max: 5, unit: 'TD' },
       };
 
       const gradeField = gradeToField[selectedGrade];

@@ -8,7 +8,7 @@ import ReceivingConcept from './RushingAnalytics/ReceivingConcept';
 
 export const WeeklyGradesContext = createContext({});
 
-function PassingAnalytics() {
+function RushingAnalytics() {
   const { playerId } = useParams();
   const location = useLocation();
   const year = location.state?.year || 2024;
@@ -125,7 +125,7 @@ function PassingAnalytics() {
   const { height, weight, jersey } = basicData;
   const teamID = basicData && 'teamID' in basicData ? basicData.teamID : (teamGames.length > 0 ? teamGames[0].homeId || teamGames[0].awayId : null);
   const isOverviewActive = location.pathname === `/players/rb/${playerId}`;
-  const isPassingActive = location.pathname === `/players/rb/${playerId}/passing`;
+  const isRushingActive = location.pathname === `/players/rb/${playerId}/rushing`;
   const isFieldViewActive = location.pathname === `/players/rb/${playerId}/fieldview`;
   const ish2hActive = location.pathname === `/players/rb/${playerId}/h2h`;
 
@@ -167,7 +167,7 @@ function PassingAnalytics() {
                 <Link
                   to={`/players/rb/${playerId || ''}/rushing`}
                   state={{ year }}
-                  className={`text-[#235347] hover:text-[#235347] pb-2 border-b-2 ${isPassingActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+                  className={`text-[#235347] hover:text-[#235347] pb-2 border-b-2 ${isRushingActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
                 >
                   Rushing Analytics
                 </Link>
@@ -184,7 +184,7 @@ function PassingAnalytics() {
             </ul>
           </div>
           <div className="px-4">
-            {isPassingActive && (
+            {isRushingActive && (
               <>
                 <div className="analytics-container bg-white rounded-lg shadow-lg mt-4">
                   <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Headline Analytics</h2>
@@ -241,4 +241,4 @@ function PassingAnalytics() {
   );
 }
 
-export default PassingAnalytics;
+export default RushingAnalytics;
