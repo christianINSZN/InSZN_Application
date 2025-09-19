@@ -52,7 +52,7 @@ const AttributionRadial = ({ playerId, year, percentileGrades }) => {
       const value = getGradeValue(key);
       console.log(`Processing ${key}: ${value}`);
       let numericValue = value === 'N/A' ? 0 : parseFloat(value) || 0;
-      if (key === 'Grade E') { // Invert for Ball Security (lower fumble rate is better)
+      if (key === 'Grade F') { // Invert for Ball Security (lower fumble rate is better)
         numericValue = 100 - numericValue;
       }
       return numericValue;

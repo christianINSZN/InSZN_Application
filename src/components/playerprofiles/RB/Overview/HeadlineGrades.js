@@ -36,7 +36,7 @@ const HeadlineGrades = ({
     if (!percentileGrades) return 'N/A';
     switch (gradeKey) {
       case 'Run Grade': return percentileGrades.percentile_grades_run || 'N/A';
-      case 'Overall Offense Grade': return percentileGrades.percentile_grades_offense || 'N/A';
+      case 'Overall Offense Grade': return percentileGrades.percentile_grades_offense_rushing || 'N/A';
       case 'Receiving Grade': return percentileGrades.percentile_grades_pass_route || 'N/A';
       case 'Ball Security Grade': return percentileGrades.percentile_grades_hands_fumble || 'N/A';
       case 'Elusiveness Grade': return percentileGrades.percentile_elusive_rating || 'N/A';
