@@ -77,7 +77,7 @@ function OverviewWR() {
 
         // Fetch grades with startDate-based matching
         const gradesPromises = gamesData.map(game => {
-          const url = `${process.env.REACT_APP_API_URL}/api/player_rushing_weekly_all/${playerId}/${year}/${game.week}/${game.seasonType}`;
+          const url = `${process.env.REACT_APP_API_URL}/api/player_receiving_weekly_all/${playerId}/${year}/${game.week}/${game.seasonType}`;
           return fetch(url, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
@@ -115,7 +115,7 @@ function OverviewWR() {
   const teamID = basicData && 'teamID' in basicData ? basicData.teamID : (teamGames.length > 0 ? teamGames[0].homeId || teamGames[0].awayId : null);
 
   const isOverviewActive = location.pathname === `/players/wr/${playerId}`;
-  const isRushingActive = location.pathname === `/players/wr/${playerId}/receiving`;
+  const isReceivingActive = location.pathname === `/players/wr/${playerId}/receiving`;
   const isFieldViewActive = location.pathname === `/players/wr/${playerId}/fieldview`;
   const isH2HActive = location.pathname === `/players/wr/${playerId}/h2h`;
 
@@ -157,7 +157,7 @@ function OverviewWR() {
               <Link
                 to={`/players/wr/${playerId || ''}/receiving`}
                 state={{ year }}
-                className={`text-gray-500 hover:text-gray-700 pb-2 border-b-2 ${isRushingActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
+                className={`text-gray-500 hover:text-gray-700 pb-2 border-b-2 ${isReceivingActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
               >
                 Receiving Analytics
               </Link>

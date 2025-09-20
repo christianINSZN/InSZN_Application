@@ -300,7 +300,6 @@ app.get('/api/player_percentiles_RB/:playerId/:year', (req, res) => {
         pgw.percentile_yards AS percentile_yards_rushing, pdw.percentile_yards AS percentile_yards_receiving,
         pgw.touchdowns AS touchdowns_rushing, pdw.touchdowns AS touchdowns_receiving,
         pgw.yards AS yards_rushing, pdw.yards AS yards_receiving,
-        pgw.player_game_count as player_game_count_rushing,
         pgw.*, pdw.*, pfb.*
       FROM Players_Full_Percentiles_RB_Rushing pgw
       LEFT JOIN Players_Full_Percentiles_RB_Receiving pdw
@@ -438,6 +437,20 @@ app.get('/api/player_percentiles_WR/:playerId/:year', (req, res) => {
     }
   );
 });
+
+
+app.get('/api/player_metadata_wr/:playerId', (req, res) => {
+  const { playerId } = req.params;
+  db.get('SELECT * FROM Players_Basic WHERE playerId = ? AND position = "WR"', [playerId], (err, row) => {
+    if (err) {
+      res.status(500).send(err.message);
+    } else if (!row) {
+      res.status(404).send('Player not found');
+    } else {
+      res.json([row]);
+    }
+  });
+}); 
 
 /* TE Specific */
 app.get('/api/player_percentiles_TE/:playerId/:year', (req, res) => {
