@@ -58,22 +58,22 @@ script_order = [
     
     # # #### RECEIVING SEASON DATA ####
     # # # Receiving Concepts Season
-     "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/season/populate_receiving_concept_season.py",
-     "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/season/populate_receiving_depth_season.py",
-     "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/season/populate_receiving_grades_season.py",
-     "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/season/populate_receiving_scheme_season.py",
+    #  "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/season/populate_receiving_concept_season.py",
+    #  "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/season/populate_receiving_depth_season.py",
+    #  "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/season/populate_receiving_grades_season.py",
+    #  "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/season/populate_receiving_scheme_season.py",
     
-    # # Receiving Concepts Weekly
-     "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/weekly/populate_receiving_concept_weekly.py",
-    "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/weekly/populate_receiving_depth_weekly.py",
-    "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/weekly/populate_receiving_grades_weekly.py",
-    "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/weekly/populate_receiving_scheme_weekly.py",
+    # # # Receiving Concepts Weekly
+    #  "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/weekly/populate_receiving_concept_weekly.py",
+    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/weekly/populate_receiving_depth_weekly.py",
+    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/weekly/populate_receiving_grades_weekly.py",
+    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/weekly/populate_receiving_scheme_weekly.py",
 
-    # # Team Receiving Concepts Weekly
-    "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/weekly/populate_team_receiving_concept_weekly.py",
-    "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/weekly/populate_team_receiving_depth_weekly.py",
-    "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/weekly/populate_team_receiving_grades_weekly.py",
-    "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/weekly/populate_team_receiving_scheme_weekly.py",
+    # # # Team Receiving Concepts Weekly
+    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/weekly/populate_team_receiving_concept_weekly.py",
+    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/weekly/populate_team_receiving_depth_weekly.py",
+    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/weekly/populate_team_receiving_grades_weekly.py",
+    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/weekly/populate_team_receiving_scheme_weekly.py",
     
     # # #### BLOCKING SEASON DATA ####
     # # Blocking Concepts Season
@@ -119,7 +119,7 @@ script_order = [
     # ## PERCENTILES ####
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/passing/season/populate_full_percentiles_qb.py",
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/rushing/season/populate_full_percentiles_rb.py",
-     "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/season/populate_full_percentiles_rb.py",
+    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/season/populate_full_percentiles_rb.py",
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/season/populate_full_percentiles_te.py",
      "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/receiving/season/populate_full_percentiles_wr.py",
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/blocking/season/populate_full_percentiles_c.py",

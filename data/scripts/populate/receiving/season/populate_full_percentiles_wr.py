@@ -40,7 +40,7 @@ try:
     pff_data = {}
     BASE_DIR = Path("/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/PFF_Data/Receiving/SeasonReports/")
     BASE_METRIC_COLS = set()
-    EXCLUDED_COLS = {"player", "player_id", "position", "team_name", "player_game_count", "franchise_id", "declined_penalties", "penalties"}
+    EXCLUDED_COLS = {"player", "player_id", "position", "team_name", "franchise_id", "declined_penalties", "penalties"}
     if not BASE_DIR.exists():
         print(f"Directory {BASE_DIR} does not exist")
         conn.close()
