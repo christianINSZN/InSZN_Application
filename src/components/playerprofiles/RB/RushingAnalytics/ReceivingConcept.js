@@ -4,39 +4,39 @@ import Chart from 'chart.js/auto';
 
 const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPercentiles }) => {
   const chartRefs = {
-    def_gen_pressures: useRef(null),
-    pressure_to_sack_rate: useRef(null),
-    sack_percent: useRef(null),
-    hit_as_threw: useRef(null),
-    avg_time_to_throw: useRef(null),
+    routes: useRef(null),
+    targets: useRef(null),
+    rec_yards: useRef(null),
+    yprr: useRef(null),
+    elu_recv_mtf: useRef(null),
   };
   const [checkedPlayers, setCheckedPlayers] = useState({
-    def_gen_pressures: {},
-    pressure_to_sack_rate: {},
-    sack_percent: {},
-    hit_as_threw: {},
-    avg_time_to_throw: {},
+    routes: {},
+    targets: {},
+    rec_yards: {},
+    yprr: {},
+    elu_recv_mtf: {},
   });
   const [playerWeeklyData, setPlayerWeeklyData] = useState({
-    def_gen_pressures: {},
-    pressure_to_sack_rate: {},
-    sack_percent: {},
-    hit_as_threw: {},
-    avg_time_to_throw: {},
+    routes: {},
+    targets: {},
+    rec_yards: {},
+    yprr: {},
+    elu_recv_mtf: {},
   });
   const [searchTerms, setSearchTerms] = useState({
-    def_gen_pressures: '',
-    pressure_to_sack_rate: '',
-    sack_percent: '',
-    hit_as_threw: '',
-    avg_time_to_throw: '',
+    routes: '',
+    targets: '',
+    rec_yards: '',
+    yprr: '',
+    elu_recv_mtf: '',
   });
   const [showSearch, setShowSearch] = useState({
-    def_gen_pressures: false,
-    pressure_to_sack_rate: false,
-    sack_percent: false,
-    hit_as_threw: false,
-    avg_time_to_throw: false,
+    routes: false,
+    targets: false,
+    rec_yards: false,
+    yprr: false,
+    elu_recv_mtf: false,
   });
   const colors = [
     'rgba(153, 102, 255, 1)', // Purple
@@ -66,7 +66,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
     if (!checkedPlayers[metricId][selectedPlayerId]) {
       try {
         const gradesPromises = teamGames.map(game =>
-          fetch(`${process.env.REACT_APP_API_URL}/api/player_passing_weekly_all/${selectedPlayerId}/${year}/${game.week}/${game.seasonType}`, {
+          fetch(`${process.env.REACT_APP_API_URL}/api/player_rushing_weekly_all/${selectedPlayerId}/${year}/${game.week}/${game.seasonType}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
           }).then(response => {
@@ -135,11 +135,11 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
     });
 
     const metrics = [
-      { id: 'def_gen_pressures', field: 'def_gen_pressures', title: 'Defense Generated Pressures', min: 0, max: 50, unit: 'Pressures' },
-      { id: 'pressure_to_sack_rate', field: 'pressure_to_sack_rate', title: 'Pressure to Sack Rate (%)', min: 0, max: 50, unit: 'Pressure to Sack Rate' },
-      { id: 'sack_percent', field: 'sack_percent', title: 'Sack Rate (%)', min: 0, max: 50, unit: 'Sack Rate per Play' },
-      { id: 'hit_as_threw', field: 'hit_as_threw', title: 'Hit as Thrown', min: 0, max: 5, unit: 'Hits' },
-      { id: 'avg_time_to_throw', field: 'avg_time_to_throw', title: 'Avgerage Time to Throw', min: 0, max: 10, unit: 'Avg. Time to Throw' },
+      { id: 'routes', field: 'routes', title: 'Pass Routes Run', min: 0, max: 20, unit: 'Pass Routes Run' },
+      { id: 'targets', field: 'targets', title: 'Receiving Targets', min: 0, max: 20, unit: 'Receiving Targets' },
+      { id: 'rec_yards', field: 'rec_yards', title: 'Receiving Yards', min: 0, max: 100, unit: 'Receiving Yards' },
+      { id: 'yprr', field: 'yprr', title: 'Yards per Route Run', min: 0, max: 5, unit: 'Yards per Route Run' },
+      { id: 'elu_recv_mtf', field: 'elu_recv_mtf', title: 'Missed Forced Tackles (Receiving)', min: 0, max: 5, unit: 'Missed Forced Tackles (Receiving)' },
     ];
 
     metrics.forEach(metric => {
@@ -240,18 +240,18 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
       .map(player => ({
         playerId: player.playerId,
         name: player.name,
-        value: player.value.toFixed(metricField === 'def_gen_pressures' || metricField === 'hit_as_threw' ? 2 : 1),
+        value: player.value.toFixed(metricField === 'routes' || metricField === 'yprr' ? 2 : 1),
       }));
   };
 
   return (
     <div className="pocket-production-container grid grid-cols-[80%_18%] gap-4">
       {[
-        { id: 'def_gen_pressures', title: 'Def. Generated Pressures', field: 'def_gen_pressures' },
-        { id: 'pressure_to_sack_rate', title: 'Pressure to Sack Rate (%)', field: 'pressure_to_sack_rate' },
-        { id: 'sack_percent', title: 'Sack Rate (%)', field: 'sack_percent' },
-        { id: 'hit_as_threw', title: 'Hit as Thrown', field: 'hit_as_threw' },
-        { id: 'avg_time_to_throw', title: 'Avg. Time to Throw', field: 'avg_time_to_throw' },
+        { id: 'routes', title: 'Pass Routes Run', field: 'routes' },
+        { id: 'targets', title: 'Receiving Targets', field: 'targets' },
+        { id: 'rec_yards', title: 'Receiving Yards', field: 'rec_yards' },
+        { id: 'yprr', title: 'Yards per Route Run', field: 'yprr' },
+        { id: 'elu_recv_mtf', title: 'Missed Forced Tackles (Receiving)', field: 'elu_recv_mtf' },
       ].map((metric, index) => (
         <React.Fragment key={metric.id}>
           {/* Left Column (80%) */}
@@ -287,7 +287,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
                 <thead>
                   <tr className="border-b border-gray-200">
                     <th className="text-left py-1">Player</th>
-                    <th className="text-right py-1">{metric.title === 'Def. Generated Pressures' ? 'Pressures' : metric.title === 'Pressure to Sack Rate (%)' ? 'Rate' : metric.title === 'Sack Rate (%)' ? 'Rate' : metric.title === 'Hit as Thrown' ? 'Hits' : 'Sec'}</th>
+                    <th className="text-right py-1">{metric.title === 'Pass Routes Run' ? 'Routes' : metric.title === 'Receiving Targets' ? 'Targets' : metric.title === 'Receiving Yards' ? 'YDS' : metric.title === 'Yards per Route Run' ? 'YPRR' : 'MFT'}</th>
                     <th className="text-right py-1 w-8"></th>
                   </tr>
                 </thead>

@@ -68,11 +68,11 @@ const HeadlineAnalytics = ({ playerId, year, weeklyGrades, teamGames, isPopupOpe
       });
 
       const gradeToField = {
-        'Yards': 'yards_rushing',
+        'Yards': 'yards',
         'Total Touches': 'total_touches',
         'Yards Per Attempt': 'ypa',
-        'Longest': 'longest_rushing',
-        'Touchdowns': 'touchdowns_rushing',
+        'Longest': 'longest',
+        'Touchdowns': 'touchdowns',
       };
 
       const metricRanges = {

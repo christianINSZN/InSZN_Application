@@ -4,39 +4,39 @@ import Chart from 'chart.js/auto';
 
 const PerformanceContainer = ({ playerId, year, weeklyGrades, teamGames, allPlayerPercentiles }) => {
   const chartRefs = {
-    accuracy: useRef(null),
-    twp_rate: useRef(null),
-    btt_rate: useRef(null),
-    targetDepth: useRef(null),
-    qb_rating: useRef(null),
+    attempts: useRef(null),
+    ypa: useRef(null),
+    yco_attempt: useRef(null),
+    gap_attempts: useRef(null),
+    zone_attempts: useRef(null),
   };
   const [checkedPlayers, setCheckedPlayers] = useState({
-    accuracy: {},
-    twp_rate: {},
-    btt_rate: {},
-    targetDepth: {},
-    qb_rating: {},
+    attempts: {},
+    ypa: {},
+    yco_attempt: {},
+    gap_attempts: {},
+    zone_attempts: {},
   });
   const [playerWeeklyData, setPlayerWeeklyData] = useState({
-    accuracy: {},
-    twp_rate: {},
-    btt_rate: {},
-    targetDepth: {},
-    qb_rating: {},
+    attempts: {},
+    ypa: {},
+    yco_attempt: {},
+    gap_attempts: {},
+    zone_attempts: {},
   });
   const [searchTerms, setSearchTerms] = useState({
-    accuracy: '',
-    twp_rate: '',
-    btt_rate: '',
-    targetDepth: '',
-    qb_rating: '',
+    attempts: '',
+    ypa: '',
+    yco_attempt: '',
+    gap_attempts: '',
+    zone_attempts: '',
   });
   const [showSearch, setShowSearch] = useState({
-    accuracy: false,
-    twp_rate: false,
-    btt_rate: false,
-    targetDepth: false,
-    qb_rating: false,
+    attempts: false,
+    ypa: false,
+    yco_attempt: false,
+    gap_attempts: false,
+    zone_attempts: false,
   });
   const colors = [
     'rgba(255, 99, 132, 1)', // Red
@@ -66,7 +66,7 @@ const PerformanceContainer = ({ playerId, year, weeklyGrades, teamGames, allPlay
     if (!checkedPlayers[metricId][selectedPlayerId]) {
       try {
         const gradesPromises = teamGames.map(game =>
-          fetch(`${process.env.REACT_APP_API_URL}/api/player_passing_weekly_all/${selectedPlayerId}/${year}/${game.week}/${game.seasonType}`, {
+          fetch(`${process.env.REACT_APP_API_URL}/api/player_rushing_weekly_all/${selectedPlayerId}/${year}/${game.week}/${game.seasonType}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
           }).then(response => {
@@ -135,11 +135,11 @@ const PerformanceContainer = ({ playerId, year, weeklyGrades, teamGames, allPlay
     });
 
     const metrics = [
-      { id: 'accuracy', field: 'accuracy_percent', title: 'Accuracy (%)', min: 0, max: 100, unit: 'Accuracy (%)' },
-      { id: 'twp_rate', field: 'twp_rate', title: 'Turnover Worthy Play (%)', min: 0, max: 20, unit: 'Turnover Worthy Play (%)' },
-      { id: 'btt_rate', field: 'btt_rate', title: 'Big Time Throw (%)', min: 0, max: 20, unit: 'Big Time Throw (%)' },
-      { id: 'targetDepth', field: 'avg_depth_of_target', title: 'Avg. Depth of Target', min: 0, max: 20, unit: 'Avg. Depth of Target' },
-      { id: 'qb_rating', field: 'qb_rating', title: 'QB Rating', min: 0, max: 160, unit: 'QB Rating' },
+      { id: 'attempts', field: 'attempts', title: 'Attempts', min: 0, max: 30, unit: 'Attempts' },
+      { id: 'ypa', field: 'ypa', title: 'Yards per Attempt', min: 0, max: 20, unit: 'Yards per Attempt' },
+      { id: 'yco_attempt', field: 'yco_attempt', title: 'Yards After Contact (per Att.)', min: 0, max: 30, unit: 'Yards After Contact (per Att.)' },
+      { id: 'gap_attempts', field: 'gap_attempts', title: 'Gap Attempts', min: 0, max: 30, unit: 'Gap Attempts' },
+      { id: 'zone_attempts', field: 'zone_attempts', title: 'Zone Attempts', min: 0, max: 30, unit: 'Zone Attempts' },
     ];
 
     metrics.forEach(metric => {
@@ -247,11 +247,11 @@ const PerformanceContainer = ({ playerId, year, weeklyGrades, teamGames, allPlay
   return (
     <div className="performance-container grid grid-cols-[80%_18%] gap-4">
       {[
-        { id: 'accuracy', title: 'Accuracy (%)', field: 'accuracy' },
-        { id: 'twp_rate', title: 'TWP Rate (%)', field: 'twp_rate' },
-        { id: 'btt_rate', title: 'Big Time Throw (%)', field: 'btt_rate' },
-        { id: 'targetDepth', title: 'Avg. Depth of Target', field: 'targetDepth' },
-        { id: 'qb_rating', title: 'QB Rating', field: 'qb_rating' },
+        { id: 'attempts', title: 'Attempts', field: 'attempts' },
+        { id: 'ypa', title: 'Yards per Attempt', field: 'ypa' },
+        { id: 'yco_attempt', title: 'Yards After Contact (per Att.)', field: 'yco_attempt' },
+        { id: 'gap_attempts', title: 'Gap Attempts', field: 'gap_attempts' },
+        { id: 'zone_attempts', title: 'Zone Attempts', field: 'zone_attempts' },
       ].map((metric, index) => (
         <React.Fragment key={metric.id}>
           {/* Left Column (80%) */}
@@ -287,7 +287,7 @@ const PerformanceContainer = ({ playerId, year, weeklyGrades, teamGames, allPlay
                 <thead>
                   <tr className="border-b border-gray-200">
                     <th className="text-left py-1">Player</th>
-                    <th className="text-right py-1">{metric.title === 'Accuracy (%)' ? 'Rate' : metric.title === 'TWP Rate (%)' ? 'Rate' : metric.title === 'Big Time Throw (%)' ? 'Rate' : metric.title === 'Avg. Depth of Target' ? 'YDS' : 'Rating'}</th>
+                    <th className="text-right py-1">{metric.title === 'Attempts' ? 'ATT' : metric.title === 'Yards per Attempt' ? 'YPA' : metric.title === 'Yards After Contact (per Att.)' ? 'YAC' : metric.title === 'Gap Attempts' ? 'ATT' : 'ATT'}</th>
                     <th className="text-right py-1 w-8"></th>
                   </tr>
                 </thead>

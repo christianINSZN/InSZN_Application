@@ -406,6 +406,18 @@ app.get('/api/all_player_percentiles_RB/:year', (req, res) => {
   );
 });
 
+app.get('/api/player_rb_list', (req, res) => {
+  db.all('SELECT * FROM Players_Basic WHERE position = "RB"', [], (err, rows) => {
+    if (err) {
+      res.status(500).send(err.message);
+    } else if (!rows || rows.length === 0) {
+      res.status(404).send('No RBs found');
+    } else {
+      res.json(rows); // <-- no extra []
+    }
+  });
+});
+
 /* Receiving */
 /* WR Specific */
 app.get('/api/player_percentiles_WR/:playerId/:year', (req, res) => {

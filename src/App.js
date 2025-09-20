@@ -9,6 +9,8 @@ import PassingAnalytics from './components/playerprofiles/QB/PassingAnalytics';
 import HeadToHeadContainer from './components/playerprofiles/QB/HeadToHead';
 
 import RushingAnalytics from './components/playerprofiles/RB/RushingAnalytics';
+import HeadToHeadContainerRB from './components/playerprofiles/RB/HeadToHead';
+
 
 import GameRecap from './components/games/GameRecapMain';
 import OverviewRB from './components/playerprofiles/RB/Overview';
@@ -51,6 +53,7 @@ function App() {
 
           <Route path="/players/rb/:playerId" element={<OverviewRB year={defaultYear} />} />
           <Route path="/players/rb/:playerId/rushing" element={<RushingAnalytics year={defaultYear} />} />
+          <Route path="/players/rb/:playerId/h2h" element={<HeadToHeadContainerRB year={defaultYear} />} />
 
           
           <Route path="/players/wr/:playerId" element={<OverviewWR year={defaultYear} />} />

@@ -5,6 +5,7 @@ import HeadlineAnalytics from './RushingAnalytics/HeadlineAnalytics';
 import ProductionConcept from './RushingAnalytics/ProductionConcept';
 import RushingConcept from './RushingAnalytics/RushingConcept';
 import ReceivingConcept from './RushingAnalytics/ReceivingConcept';
+import SkillConcept from './RushingAnalytics/SkillConcept';
 
 export const WeeklyGradesContext = createContext({});
 
@@ -212,8 +213,8 @@ function RushingAnalytics() {
                     allPlayerPercentiles={allPlayerPercentiles}
                   />
                 </div>
-                {/* <div className="production-container bg-white rounded-lg shadow-lg mt-4">
-                <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Performance Metrics</h2>
+                 <div className="production-container bg-white rounded-lg shadow-lg mt-4">
+                <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Rushing Concept</h2>
                   <RushingConcept
                     playerId={playerId}
                     year={year}
@@ -221,9 +222,9 @@ function RushingAnalytics() {
                     teamGames={teamGames}
                     allPlayerPercentiles={allPlayerPercentiles}
                   />
-                </div> */}
-                {/* <div className="production-container bg-white rounded-lg shadow-lg mt-4">
-                <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Pocket Metrics</h2>
+                </div> 
+                 <div className="production-container bg-white rounded-lg shadow-lg mt-4">
+                <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Receiving Concept</h2>
                   <ReceivingConcept
                     playerId={playerId}
                     year={year}
@@ -231,7 +232,17 @@ function RushingAnalytics() {
                     teamGames={teamGames}
                     allPlayerPercentiles={allPlayerPercentiles}
                   />
-                </div> */}
+                </div> 
+                 <div className="production-container bg-white rounded-lg shadow-lg mt-4">
+                <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Skill Metrics</h2>
+                  <SkillConcept
+                    playerId={playerId}
+                    year={year}
+                    weeklyGrades={weeklyGrades}
+                    teamGames={teamGames}
+                    allPlayerPercentiles={allPlayerPercentiles}
+                  />
+                </div> 
               </>
             )}
           </div>

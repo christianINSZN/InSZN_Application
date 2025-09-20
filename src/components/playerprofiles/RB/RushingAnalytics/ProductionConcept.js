@@ -287,7 +287,7 @@ const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlaye
                 <thead>
                   <tr className="border-b border-gray-200">
                     <th className="text-left py-1">Player</th>
-                    <th className="text-right py-1">{metric.title === 'Yards' ? 'Yds' : metric.title === 'Yards Per Attempt' ? 'total_touches' : metric.title === 'longest (%)' ? 'Rate' : metric.title === 'Passing longest' ? 'TD' : 'Snaps'}</th>
+                    <th className="text-right py-1">{metric.title === 'Yards' ? 'Yds' : metric.title === 'Total Touches' ? 'Touches' : metric.title === 'Longest' ? 'Long' : metric.title === 'Touchdowns' ? 'TDs' : 'FUM'}</th>
                     <th className="text-right py-1 w-8"></th>
                   </tr>
                 </thead>
