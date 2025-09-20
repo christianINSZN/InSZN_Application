@@ -18,30 +18,32 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
   const [loading, setLoading] = useState(false);
   const [metrics, setMetrics] = useState([
     { label: 'Games Played', field: 'player_game_count', p1Value: 0, p2Value: 0 },
+    { label: 'Attempts', field: 'attempts', p1Value: 0, p2Value: 0 },
     { label: 'Yards', field: 'yards', p1Value: 0, p2Value: 0 },
     { label: 'YPA', field: 'ypa', p1Value: 0, p2Value: 0 },
     { label: 'Attempts', field: 'attempts', p1Value: 0, p2Value: 0 },
-    { label: 'Completions', field: 'completions', p1Value: 0, p2Value: 0 },
-    { label: 'Completion (%)', field: 'completion_percent', p1Value: 0, p2Value: 0 },
-    { label: 'Accuracy (%)', field: 'accuracy_percent', p1Value: 0, p2Value: 0 },
-    { label: 'Time to Throw', field: 'avg_time_to_throw', p1Value: 0, p2Value: 0 },
-    { label: 'Turnover Worthy Play (%)', field: 'twp_rate', p1Value: 0, p2Value: 0 },
-    { label: 'Big Time Play (%)', field: 'btt_rate', p1Value: 0, p2Value: 0 },
-    { label: 'INTs', field: 'interceptions', p1Value: 0, p2Value: 0 },
-    { label: 'TDs', field: 'touchdowns', p1Value: 0, p2Value: 0 },
-    { label: 'QBR', field: 'qb_rating', p1Value: 0, p2Value: 0 },
+    { label: 'Gap Attempts', field: 'gap_attempts', p1Value: 0, p2Value: 0 },
+    { label: 'Zone Attempts', field: 'zone_attempts', p1Value: 0, p2Value: 0 },
+    { label: 'Yards After Contact', field: 'yards_after_contact', p1Value: 0, p2Value: 0 },
+    { label: 'Yards After Contact (per Att.)', field: 'yco_attempt', p1Value: 0, p2Value: 0 },
+    { label: 'Breakaway Yards', field: 'breakaway_yards', p1Value: 0, p2Value: 0 },
+    { label: 'Breakaway (%)', field: 'breakaway_percent', p1Value: 0, p2Value: 0 },
+    { label: 'Longest (Run)', field: 'longest_rushing', p1Value: 0, p2Value: 0 },
+    { label: 'TD (Rushing)', field: 'touchdowns_rushing', p1Value: 0, p2Value: 0 },
+    { label: 'Fumbles', field: 'fumbles', p1Value: 0, p2Value: 0 },
+
+    { label: 'Receiving Yards', field: 'rec_yards', p1Value: 0, p2Value: 0 },
+    { label: 'Yards per Pass Route Run', field: 'yprr', p1Value: 0, p2Value: 0 },
+    { label: 'TD (Receiving)', field: 'touchdowns_receiving', p1Value: 0, p2Value: 0 },
+
   ]);
   const [metricsGrades, setMetricsGrades] = useState([
     { label: 'Offense Grade', field: 'grades_offense', p1Value: 0, p2Value: 0 },
-    { label: 'Pass Grade', field: 'grades_pass', p1Value: 0, p2Value: 0 },
     { label: 'Run Grade', field: 'grades_run', p1Value: 0, p2Value: 0 },
+    { label: 'Receiving Grade', field: 'grades_pass_route', p1Value: 0, p2Value: 0 },
     { label: 'Ball Security Grade', field: 'grades_hands_fumble', p1Value: 0, p2Value: 0 },
-    { label: 'BLOS Pass Grade', field: 'behind_los_grades_pass', p1Value: 0, p2Value: 0 },
-    { label: 'Short Pass Grade', field: 'short_grades_pass', p1Value: 0, p2Value: 0 },
-    { label: 'Medium Grade Pass', field: 'medium_grades_pass', p1Value: 0, p2Value: 0 },
-    { label: 'Deep Grade Pass', field: 'deep_grades_pass', p1Value: 0, p2Value: 0 },
-    { label: 'Pressure Grade Pass', field: 'pressure_grades_pass', p1Value: 0, p2Value: 0 },
-    { label: 'Blitz Grade Pass', field: 'blitz_grades_pass', p1Value: 0, p2Value: 0 },
+    { label: 'Penalty Aversion Grade', field: 'grades_offense_penalty', p1Value: 0, p2Value: 0 },
+
   ]);
   const [customMetrics, setCustomMetrics] = useState([]);
   const [availableMetrics, setAvailableMetrics] = useState([]);

@@ -36,7 +36,7 @@ const ContainerB = ({ player1, player2 }) => {
           // Fetch metrics from weekly endpoint (use first available game)
           if (gamesData && gamesData.length > 0) {
             const { week, seasonType } = gamesData[0];
-            const statsResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/player_passing_weekly_all/${player1.playerId}/${player1.year}/${week}/${seasonType}`);
+            const statsResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/player_rushing_weekly_all/${player1.playerId}/${player1.year}/${week}/${seasonType}`);
             if (!statsResponse.ok) throw new Error('Failed to fetch weekly stats data');
             const statsData = await statsResponse.json();
             console.log('Player 1 weekly stats:', statsData);
