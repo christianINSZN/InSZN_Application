@@ -300,6 +300,7 @@ app.get('/api/player_percentiles_RB/:playerId/:year', (req, res) => {
         pgw.percentile_yards AS percentile_yards_rushing, pdw.percentile_yards AS percentile_yards_receiving,
         pgw.touchdowns AS touchdowns_rushing, pdw.touchdowns AS touchdowns_receiving,
         pgw.yards AS yards_rushing, pdw.yards AS yards_receiving,
+        pgw.player_game_count as player_game_count_rushing,
         pgw.*, pdw.*, pfb.*
       FROM Players_Full_Percentiles_RB_Rushing pgw
       LEFT JOIN Players_Full_Percentiles_RB_Receiving pdw
