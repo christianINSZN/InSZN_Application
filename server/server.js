@@ -550,6 +550,55 @@ app.get('/api/player_receiving_season_depth/:playerId/:year', (req, res) => {
   );
 });
 
+app.get('/api/all_player_percentiles_WR/:year', (req, res) => {
+  const { year } = req.params;
+  db.all(
+    'SELECT * FROM Players_Full_Percentiles_WR WHERE year = ?',
+    [year],
+    (err, rows) => {
+      if (err) {
+        console.error('Database query error:', err.message);
+        res.status(500).send('Internal server error');
+      } else if (!rows || rows.length === 0) {
+        res.status(404).send('No percentile data found for the specified year');
+      } else {
+        const result = rows.reduce((acc, row) => ({
+          ...acc,
+          [row.playerId]: {
+            name: row.name,
+            
+            yards: row.yards,
+            receptions: row.receptions,
+            yards_per_reception: row.yards_per_reception,
+            caught_percent: row.caught_percent,
+            touchdowns: row.touchdowns,
+            
+            targets: row.targets,
+            routes: row.routes,
+            yprr: row.yprr,
+            slot_rate: row.slot_rate,
+            wide_rate: row.wide_rate,
+            
+            zone_yards: row.zone_yards,
+            zone_receptions: row.zone_receptions,
+            zone_yards_per_reception: row.zone_yards_per_reception,
+            zone_avg_depth_of_target: row.zone_avg_depth_of_target,
+            zone_caught_percent: row.zone_caught_percent,
+
+            man_yards: row.man_yards,
+            man_receptions: row.man_receptions,
+            man_yards_per_reception: row.man_yards_per_reception,
+            man_avg_depth_of_target: row.man_avg_depth_of_target,
+            man_caught_percent: row.man_caught_percent,
+
+          },
+        }), {});
+        res.json(result);
+      }
+    }
+  );
+});
+
 /* Blocking */
 /* Guard Specific */
 app.get('/api/player_percentiles_G/:playerId/:year', (req, res) => {
