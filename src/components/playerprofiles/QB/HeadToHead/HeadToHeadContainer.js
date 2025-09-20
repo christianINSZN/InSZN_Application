@@ -17,7 +17,7 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
   const [headshotUrl2, setHeadshotUrl2] = useState(null);
   const [loading, setLoading] = useState(false);
   const [metrics, setMetrics] = useState([
-    { label: 'Games Played', field: 'player_game_count', p1Value: 0, p2Value: 0 },
+    { label: 'Games Played', field: 'player_game_count_rushing', p1Value: 0, p2Value: 0 },
     { label: 'Yards', field: 'yards', p1Value: 0, p2Value: 0 },
     { label: 'YPA', field: 'ypa', p1Value: 0, p2Value: 0 },
     { label: 'Attempts', field: 'attempts', p1Value: 0, p2Value: 0 },
