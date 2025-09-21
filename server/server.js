@@ -438,7 +438,6 @@ app.get('/api/player_percentiles_WR/:playerId/:year', (req, res) => {
   );
 });
 
-
 app.get('/api/player_metadata_wr/:playerId', (req, res) => {
   const { playerId } = req.params;
   db.get('SELECT * FROM Players_Basic WHERE playerId = ? AND position = "WR"', [playerId], (err, row) => {
@@ -451,6 +450,18 @@ app.get('/api/player_metadata_wr/:playerId', (req, res) => {
     }
   });
 }); 
+
+app.get('/api/player_wr_list', (req, res) => {
+  db.all('SELECT * FROM Players_Basic WHERE position = "WR"', [], (err, rows) => {
+    if (err) {
+      res.status(500).send(err.message);
+    } else if (!rows || rows.length === 0) {
+      res.status(404).send('No QBs found');
+    } else {
+      res.json(rows); // <-- no extra []
+    }
+  });
+});
 
 /* TE Specific */
 app.get('/api/player_percentiles_TE/:playerId/:year', (req, res) => {
