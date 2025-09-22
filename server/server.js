@@ -48,6 +48,14 @@ app.get('/', (req, res) => {
   res.json({ message: 'API server is running' });
 });
 
+// Handle raw body for Stripe webhooks
+app.use('/api/webhooks/stripe', express.raw({ type: 'application/json' }));
+app.use(express.json()); // Reapply JSON parsing for other routes
+
+// Routes
+app.use('/api/subscriptions', require('./routes/subscriptions'));
+app.use('/api/webhooks', require('./routes/webhooks'));
+
 app.use((err, req, res, next) => {
   console.error('Server error:', err.stack);
   res.status(500).json({ error: 'Internal server error', details: err.message });
