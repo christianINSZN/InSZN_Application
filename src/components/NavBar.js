@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { MdPeople, MdOutlineJoinFull, MdLogin, MdPersonAdd } from 'react-icons/md';
 import { BsFillPersonFill } from 'react-icons/bs';
 import { RiTeamFill } from 'react-icons/ri';
-import { MdOutlineJoinFull, MdPeople } from "react-icons/md";
+
+
 
 function NavBar() {
   const [isTeamsDropdownOpen, setIsTeamsDropdownOpen] = useState(false);
@@ -92,6 +94,16 @@ function NavBar() {
             <li>
               <Link to="/subscribe" className="flex items-center space-x-2 hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-lg">
                 <MdOutlineJoinFull /> <span>Subscribe</span>
+              </Link>
+            </li>
+            <li>
+              <Link to="/sign-up" className="flex items-center space-x-2 hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-lg">
+                <MdPersonAdd /> <span>Sign Up</span>
+              </Link>
+            </li>
+            <li>
+              <Link to="/sign-in" className="flex items-center space-x-2 hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-lg">
+                <MdLogin /> <span>Sign In</span>
               </Link>
             </li>
           </ul>

@@ -6,7 +6,7 @@ import Header from './Overview/Header';
 
 export const WeeklyGradesContext = createContext({});
 
-function HeadToHeadWR() {
+function HeadToHeadTE() {
   const { playerId } = useParams();
   const location = useLocation();
   const year = location.state?.year || '2024';
@@ -36,7 +36,7 @@ function HeadToHeadWR() {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
           }),
-          fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_WR/${playerId}/${year}`, {
+          fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_TE/${playerId}/${year}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
           }),
@@ -194,10 +194,10 @@ function HeadToHeadWR() {
     grades_pass_route
   };
 
-  const isOverviewActive = location.pathname === `/players/wr/${playerId}`;
-  const isReceivingActive = location.pathname === `/players/wr/${playerId}/receiving`;
-  const isFieldViewActive = location.pathname === `/players/wr/${playerId}/fieldview`;
-  const isH2hActive = location.pathname === `/players/wr/${playerId}/h2h`;
+  const isOverviewActive = location.pathname === `/players/te/${playerId}`;
+  const isReceivingActive = location.pathname === `/players/te/${playerId}/receiving`;
+  const isFieldViewActive = location.pathname === `/players/te/${playerId}/fieldview`;
+  const isH2hActive = location.pathname === `/players/te/${playerId}/h2h`;
 
   console.log('Providing weeklyGrades to context:', weeklyGrades);
 
@@ -221,7 +221,7 @@ function HeadToHeadWR() {
             <ul className="flex gap-4">
               <li>
                 <Link
-                  to={`/players/wr/${playerId || ''}`}
+                  to={`/players/te/${playerId || ''}`}
                   state={{ year }}
                   className={`text-gray-500 hover:text-gray-700 pb-2 border-b-2 ${isOverviewActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
                 >
@@ -230,7 +230,7 @@ function HeadToHeadWR() {
               </li>
               <li>
                 <Link
-                  to={`/players/wr/${playerId || ''}/receiving`}
+                  to={`/players/te/${playerId || ''}/receiving`}
                   state={{ year }}
                   className={`text-gray-500 hover:text-gray-700 pb-2 border-b-2 ${isReceivingActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
                 >
@@ -239,7 +239,7 @@ function HeadToHeadWR() {
               </li>
               <li>
                 <Link
-                  to={`/players/wr/${playerId || ''}/fieldview`}
+                  to={`/players/te/${playerId || ''}/fieldview`}
                   state={{ year }}
                   className={`text-gray-500 hover:text-gray-700 pb-2 border-b-2 ${isFieldViewActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
                 >
@@ -248,7 +248,7 @@ function HeadToHeadWR() {
               </li>
               <li>
                 <Link
-                  to={`/players/wr/${playerId || ''}/h2h`}
+                  to={`/players/te/${playerId || ''}/h2h`}
                   state={{ year }}
                   className={`text-[#235347] hover:text-[#235347] pb-2 border-b-2 ${isH2hActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
                 >
@@ -279,4 +279,4 @@ function HeadToHeadWR() {
   );
 }
 
-export default HeadToHeadWR;
+export default HeadToHeadTE;

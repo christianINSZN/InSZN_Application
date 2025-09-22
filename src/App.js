@@ -3,27 +3,23 @@ import NavBar from './components/NavBar';
 import Home from './components/Home';
 import Players from './components/Players';
 import Subscription from './components/Subscription';
-
+import SignUpPage from './components/auth/SignUp';
+import SignInPage from './components/auth/SignIn';
 import OverviewQB from './components/playerprofiles/QB/Overview';
 import FieldViewInterface from './components/playerprofiles/QB/FieldView';
 import PassingAnalytics from './components/playerprofiles/QB/PassingAnalytics';
 import HeadToHeadContainer from './components/playerprofiles/QB/HeadToHead';
-
 import OverviewRB from './components/playerprofiles/RB/Overview';
 import RushingAnalytics from './components/playerprofiles/RB/RushingAnalytics';
 import HeadToHeadContainerRB from './components/playerprofiles/RB/HeadToHead';
-
 import OverviewWR from './components/playerprofiles/WR/Overview';
 import ReceivingAnalytics from './components/playerprofiles/WR/ReceivingAnalytics';
 import HeadToHeadContainerWR from './components/playerprofiles/WR/HeadToHead';
 import FieldViewInterfaceWR from './components/playerprofiles/WR/FieldView';
-
 import OverviewTE from './components/playerprofiles/TE/Overview';
 import ReceivingAnalyticsTE from './components/playerprofiles/TE/ReceivingAnalytics';
 import HeadToHeadContainerTE from './components/playerprofiles/TE/HeadToHead';
 import FieldViewInterfaceTE from './components/playerprofiles/TE/FieldView';
-
-
 import GameRecap from './components/games/GameRecapMain';
 import OverviewCB from './components/playerprofiles/CB/Overview';
 import OverviewDL from './components/playerprofiles/DL/Overview';
@@ -46,37 +42,30 @@ import { useState } from 'react';
 
 function App() {
   const [isOpen, setIsOpen] = useState(true);
-  const [defaultYear, setDefaultYear] = useState(2025); // Global default year, update to 2025 when season starts
+  const [defaultYear, setDefaultYear] = useState(2025);
 
   return (
     <BrowserRouter>
       <NavBar isOpen={isOpen} setIsOpen={setIsOpen} />
-      <div className="w-full pt-16 p-4 overflow-auto bg-gray-100"> {/* Added pt-16 for nav bar height, removed conditional margin */}
+      <div className="w-full pt-16 p-4 overflow-auto bg-gray-100">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/players" element={<Players year={defaultYear} />} />
-
           <Route path="/players/qb/:playerId" element={<OverviewQB year={defaultYear} />} />
           <Route path="/players/qb/:playerId/passing" element={<PassingAnalytics year={defaultYear} />} />
           <Route path="/players/qb/:playerId/fieldview" element={<FieldViewInterface year={defaultYear} />} />
           <Route path="/players/qb/:playerId/h2h" element={<HeadToHeadContainer year={defaultYear} />} />
-
           <Route path="/players/rb/:playerId" element={<OverviewRB year={defaultYear} />} />
           <Route path="/players/rb/:playerId/rushing" element={<RushingAnalytics year={defaultYear} />} />
           <Route path="/players/rb/:playerId/h2h" element={<HeadToHeadContainerRB year={defaultYear} />} />
-
-          
           <Route path="/players/wr/:playerId" element={<OverviewWR year={defaultYear} />} />
           <Route path="/players/wr/:playerId/receiving" element={<ReceivingAnalytics year={defaultYear} />} />
           <Route path="/players/wr/:playerId/fieldview" element={<FieldViewInterfaceWR year={defaultYear} />} />
           <Route path="/players/wr/:playerId/h2h" element={<HeadToHeadContainerWR year={defaultYear} />} />
-
           <Route path="/players/te/:playerId" element={<OverviewTE year={defaultYear} />} />
           <Route path="/players/te/:playerId/receiving" element={<ReceivingAnalyticsTE year={defaultYear} />} />
           <Route path="/players/te/:playerId/fieldview" element={<FieldViewInterfaceTE year={defaultYear} />} />
           <Route path="/players/te/:playerId/h2h" element={<HeadToHeadContainerTE year={defaultYear} />} />
-
-
           <Route path="/players/cb/:playerId" element={<OverviewCB year={defaultYear} />} />
           <Route path="/players/dl/:playerId" element={<OverviewDL year={defaultYear} />} />
           <Route path="/players/c/:playerId" element={<OverviewC year={defaultYear} />} />
@@ -89,13 +78,14 @@ function App() {
           <Route path="/game/:id" element={<GameRecap />} />
           <Route path="/teams/:id/:year" element={<TeamLanding />} />
           <Route path="/teams/:id/:year/roster" element={<TeamRoster />} />
-
           <Route path="/h2h" element={<HeadToHead year={defaultYear} />} />
           <Route path="/h2h/qb" element={<HeadToHeadQB year={defaultYear} />} />
           <Route path="/h2h/rb" element={<HeadToHeadRB year={defaultYear} />} />
           <Route path="/h2h/wr" element={<HeadToHeadWR year={defaultYear} />} />
           <Route path="/h2h/te" element={<HeadToHeadTE year={defaultYear} />} />
           <Route path="/subscribe" element={<Subscription />} />
+          <Route path="/sign-up" element={<SignUpPage />} />
+          <Route path="/sign-in" element={<SignInPage />} />
         </Routes>
       </div>
     </BrowserRouter>

@@ -1,4 +1,4 @@
-// In src/components/playerprofiles/WR/PassingAnalytics/PassingAnalytics.js
+// In src/components/playerprofiles/TE/PassingAnalytics/PassingAnalytics.js
 import React, { useState, useEffect, createContext } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import Header from './Overview/Header';
@@ -135,10 +135,10 @@ function FieldViewInterface() {
   const [firstName, lastName] = name ? name.split(' ') : ['', ''];
   const { height, weight, jersey } = basicData;
   const teamID = basicData && 'teamID' in basicData ? basicData.teamID : (teamGames.length > 0 ? teamGames[0].homeId || teamGames[0].awayId : null);
-  const isOverviewActive = location.pathname === `/players/wr/${playerId}`;
-  const isPassingActive = location.pathname === `/players/wr/${playerId}/passing`;
-  const isFieldViewActive = location.pathname === `/players/wr/${playerId}/fieldview`;
-  const ish2hActive = location.pathname === `/players/wr/${playerId}/h2h`;
+  const isOverviewActive = location.pathname === `/players/te/${playerId}`;
+  const isPassingActive = location.pathname === `/players/te/${playerId}/passing`;
+  const isFieldViewActive = location.pathname === `/players/te/${playerId}/fieldview`;
+  const ish2hActive = location.pathname === `/players/te/${playerId}/h2h`;
 
   // Create gradesData object from playerData
   const gradesData = {
@@ -168,7 +168,7 @@ function FieldViewInterface() {
             <ul className="flex gap-4">
               <li>
                 <Link
-                  to={`/players/wr/${playerId || ''}`}
+                  to={`/players/te/${playerId || ''}`}
                   state={{ year }}
                   className={`text-gray-500 hover:text-gray-700 pb-2 border-b-2 ${isOverviewActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
                 >
@@ -177,7 +177,7 @@ function FieldViewInterface() {
               </li>
               <li>
                 <Link
-                  to={`/players/wr/${playerId || ''}/receiving`}
+                  to={`/players/te/${playerId || ''}/receiving`}
                   state={{ year }}
                   className={`text-gray-500 hover:text-gray-700 pb-2 border-b-2 ${isPassingActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
                 >
@@ -186,7 +186,7 @@ function FieldViewInterface() {
               </li>
               <li>
                 <Link
-                  to={`/players/wr/${playerId || ''}/fieldview`}
+                  to={`/players/te/${playerId || ''}/fieldview`}
                   state={{ year }}
                   className={`text-[#235347] hover:text-[#235347] pb-2 border-b-2 ${isFieldViewActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
                 >
@@ -195,7 +195,7 @@ function FieldViewInterface() {
               </li>
               <li>
                 <Link
-                  to={`/players/wr/${playerId || ''}/h2h`}
+                  to={`/players/te/${playerId || ''}/h2h`}
                   state={{ year }}
                   className={`text-gray-500 hover:text-gray-700 pb-2 border-b-2 ${ish2hActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
                 >
