@@ -296,7 +296,7 @@ const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlaye
                     <tr key={idx} className="border-b border-gray-100">
                       <td className="py-1">
                         <Link
-                          to={`/players/wr/${player.playerId}`}
+                          to={`/players/te/${player.playerId}`}
                           className="text-blue-600 hover:underline"
                         >
                           {player.name}

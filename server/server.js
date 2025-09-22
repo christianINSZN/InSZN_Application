@@ -503,6 +503,19 @@ app.get('/api/player_metadata_te/:playerId', (req, res) => {
   });
 }); 
 
+
+app.get('/api/player_te_list', (req, res) => {
+  db.all('SELECT * FROM Players_Basic WHERE position = "TE"', [], (err, rows) => {
+    if (err) {
+      res.status(500).send(err.message);
+    } else if (!rows || rows.length === 0) {
+      res.status(404).send('No QBs found');
+    } else {
+      res.json(rows); // <-- no extra []
+    }
+  });
+});
+
 app.get('/api/player_receiving_weekly_all/:playerId/:year/:week/:seasonType', (req, res) => {
   const { playerId, year, week, seasonType } = req.params;
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Chart } from 'chart.js/auto';
 
 const AttributionRadial = ({ playerId, year, percentileGrades }) => {
-  // Function to get grade value from percentileGrades (matching HeadlineGrades)
+  // Function to get grade value from percentileGrades
   const getGradeValue = (gradeKey) => {
     if (!percentileGrades) return 'N/A';
     switch (gradeKey) {
@@ -35,30 +35,29 @@ const AttributionRadial = ({ playerId, year, percentileGrades }) => {
     'Grade D': 'Strength', // Indicate inversion in label
     'Grade E': 'Ball Security'
   };
-
   const [data, setData] = useState({ labels: [], data: [] });
   const chartRef = useRef(null);
   const canvasRef = useRef(null);
 
   useEffect(() => {
-    console.log('AttributionRadial props:', { playerId, year, percentileGrades }); // Debug every render
+    console.log('AttributionRadial props:', { playerId, year, percentileGrades });
     console.log(`Processing data for playerId: ${playerId}, year: ${year}, percentileGrades:`, percentileGrades);
+
     if (!percentileGrades) {
       console.warn('percentileGrades is undefined, setting empty data');
       setData({ labels: [], data: [] });
       return;
     }
 
-    // Extract data for the 6 specific grades, matching HeadlineGrades
-    const gradeKeys = ['Grade A', 'Grade B', 'Grade C', 'Grade E', 'Grade D'];
+    // Extract data for the 5 specific grades
+    const gradeKeys = ['Grade A', 'Grade B', 'Grade C', 'Grade D', 'Grade E'];
     const labels = gradeKeys.map(key => customLabels[key] || key.replace('Grade ', '').replace(/([A-Z])/g, ' $1').trim());
     const dataValues = gradeKeys.map(key => {
       const value = getGradeValue(key);
       console.log(`Processing ${key}: ${value}`);
       let numericValue = value === 'N/A' ? 0 : parseFloat(value) || 0;
-      // Invert value for Grade D (BLOS Pass)
-      if (key === 'Grade J') {
-        numericValue = 100 - numericValue; // Direct inversion for 0-100 scale
+      if (key === 'Grade F') { // Invert for Ball Security (lower fumble rate is better)
+        numericValue = 100 - numericValue;
       }
       return numericValue;
     });
@@ -66,6 +65,7 @@ const AttributionRadial = ({ playerId, year, percentileGrades }) => {
     if (dataValues.every(v => v === 0)) {
       console.warn('All data values are 0, chart may be blank');
     }
+
     console.log('Processed data:', { labels, data: dataValues });
     setData({ labels, data: dataValues });
   }, [playerId, year, percentileGrades]);
@@ -75,6 +75,7 @@ const AttributionRadial = ({ playerId, year, percentileGrades }) => {
       chartRef.current.destroy();
       console.log('Previous chart destroyed');
     }
+
     const ctx = canvasRef.current?.getContext('2d');
     if (ctx && data.labels.length > 0 && data.data.length > 0 && data.data.some(v => v > 0)) {
       console.log('Creating chart with data:', data);
@@ -85,10 +86,10 @@ const AttributionRadial = ({ playerId, year, percentileGrades }) => {
           datasets: [{
             label: 'Percentile',
             data: data.data,
-            backgroundColor: 'rgba(50, 71, 207, 0.2)',
-            borderColor: 'rgba(54, 162, 235, 1)',
+            backgroundColor: 'rgba(35, 83, 71, 0.3)',
+            borderColor: 'rgba(35, 83, 71, 1)',
             borderWidth: 2,
-            pointRadius: 5,
+            pointRadius: 2,
             fill: true,
           }],
         },
@@ -105,8 +106,11 @@ const AttributionRadial = ({ playerId, year, percentileGrades }) => {
               },
               pointLabels: {
                 font: {
-                  size: 12,
+                  size: 16,
+                  family: 'Arial',
+                  weight: 'bold'
                 },
+                color: '#235347',
               },
               angleLines: { display: true },
               grid: { circular: true },
@@ -115,7 +119,7 @@ const AttributionRadial = ({ playerId, year, percentileGrades }) => {
           plugins: {
             legend: { display: false },
           },
-          maintainAspectRatio: true,
+          maintainAspectRatio: false,
           responsive: true,
         },
       });
@@ -126,10 +130,10 @@ const AttributionRadial = ({ playerId, year, percentileGrades }) => {
   }, [data]);
 
   return (
-    <div className="bg-white p-4 rounded-lg shadow-lg row-span-2">
-      <h2 className="text-xl font-semibold mb-2 text-black text-center shadow-lg">Attribution Radial</h2>
-      <div className="h-96 bg-white flex items-center justify-center relative" style={{ position: 'relative', width: '100%' }}>
-        <canvas ref={canvasRef} id="attributionChart" className="w-full h-full" />
+    <div className="bg-white rounded-lg shadow-lg row-span-2">
+      <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Attribution Radial</h2>
+      <div className="h-[380px] bg-white flex items-center justify-center relative" style={{ position: 'relative', width: '100%' }}>
+        <canvas ref={canvasRef} id="attributionChart" style={{ width: '100%', height: '100%', maxWidth: '600px', maxHeight: '320px' }} />
         {!data.labels.length && <div className="absolute text-red-500">No data available</div>}
       </div>
     </div>
@@ -137,3 +141,4 @@ const AttributionRadial = ({ playerId, year, percentileGrades }) => {
 };
 
 export default AttributionRadial;
+

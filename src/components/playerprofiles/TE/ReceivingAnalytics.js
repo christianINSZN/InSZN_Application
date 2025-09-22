@@ -42,11 +42,11 @@ function ReceivingAnalytics() {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
           }),
-          fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_WR/${playerId}/${year}`, {
+          fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_TE/${playerId}/${year}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
           }),
-          fetch(`${process.env.REACT_APP_API_URL}/api/all_player_percentiles_WR/${year}`, {
+          fetch(`${process.env.REACT_APP_API_URL}/api/all_player_percentiles_TE/${year}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
           }),
@@ -125,10 +125,10 @@ function ReceivingAnalytics() {
   const [firstName, lastName] = name ? name.split(' ') : ['', ''];
   const { height, weight, jersey } = basicData;
   const teamID = basicData && 'teamID' in basicData ? basicData.teamID : (teamGames.length > 0 ? teamGames[0].homeId || teamGames[0].awayId : null);
-  const isOverviewActive = location.pathname === `/players/wr/${playerId}`;
-  const isReceivingActive = location.pathname === `/players/wr/${playerId}/receiving`;
-  const isFieldViewActive = location.pathname === `/players/wr/${playerId}/fieldview`;
-  const ish2hActive = location.pathname === `/players/wr/${playerId}/h2h`;
+  const isOverviewActive = location.pathname === `/players/te/${playerId}`;
+  const isReceivingActive = location.pathname === `/players/te/${playerId}/receiving`;
+  const isFieldViewActive = location.pathname === `/players/te/${playerId}/fieldview`;
+  const ish2hActive = location.pathname === `/players/te/${playerId}/h2h`;
 
   // Create gradesData object from playerData
   const gradesData = {
@@ -158,7 +158,7 @@ function ReceivingAnalytics() {
             <ul className="flex gap-4">
               <li>
                 <Link
-                  to={`/players/wr/${playerId || ''}`}
+                  to={`/players/te/${playerId || ''}`}
                   state={{ year }}
                   className={`text-gray-500 hover:text-gray-700 pb-2 border-b-2 ${isOverviewActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
                 >
@@ -167,7 +167,7 @@ function ReceivingAnalytics() {
               </li>
               <li>
                 <Link
-                  to={`/players/wr/${playerId || ''}/receiving`}
+                  to={`/players/te/${playerId || ''}/receiving`}
                   state={{ year }}
                   className={`text-[#235347] hover:text-[#235347] pb-2 border-b-2 ${isReceivingActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
                 >
@@ -176,7 +176,7 @@ function ReceivingAnalytics() {
               </li>
               <li>
                 <Link
-                  to={`/players/wr/${playerId || ''}/fieldview`}
+                  to={`/players/te/${playerId || ''}/fieldview`}
                   state={{ year }}
                   className={`text-gray-500 hover:text-gray-700 pb-2 border-b-2 ${isFieldViewActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
                 >
@@ -185,7 +185,7 @@ function ReceivingAnalytics() {
               </li>
               <li>
                 <Link
-                  to={`/players/wr/${playerId || ''}/h2h`}
+                  to={`/players/te/${playerId || ''}/h2h`}
                   state={{ year }}
                   className={`text-gray-500 hover:text-gray-700 pb-2 border-b-2 ${isFieldViewActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
                 >
