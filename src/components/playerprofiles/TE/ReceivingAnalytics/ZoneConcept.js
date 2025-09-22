@@ -2,48 +2,48 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Chart from 'chart.js/auto';
 
-const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlayerPercentiles }) => {
+const PerformanceContainer = ({ playerId, year, weeklyGrades, teamGames, allPlayerPercentiles }) => {
   const chartRefs = {
-    yards: useRef(null),
-    receptions: useRef(null),
-    yards_per_reception: useRef(null),
-    caught_percent: useRef(null),
-    touchdowns: useRef(null),
+    zone_yards: useRef(null),
+    zone_receptions: useRef(null),
+    zone_yards_per_reception: useRef(null),
+    zone_avg_depth_of_target: useRef(null),
+    zone_caught_percent: useRef(null),
   };
   const [checkedPlayers, setCheckedPlayers] = useState({
-    yards: {},
-    receptions: {},
-    yards_per_reception: {},
-    caught_percent: {},
-    touchdowns: {},
+    zone_yards: {},
+    zone_receptions: {},
+    zone_yards_per_reception: {},
+    zone_avg_depth_of_target: {},
+    zone_caught_percent: {},
   });
   const [playerWeeklyData, setPlayerWeeklyData] = useState({
-    yards: {},
-    receptions: {},
-    yards_per_reception: {},
-    caught_percent: {},
-    touchdowns: {},
+    zone_yards: {},
+    zone_receptions: {},
+    zone_yards_per_reception: {},
+    zone_avg_depth_of_target: {},
+    zone_caught_percent: {},
   });
   const [searchTerms, setSearchTerms] = useState({
-    yards: '',
-    receptions: '',
-    yards_per_reception: '',
-    caught_percent: '',
-    touchdowns: '',
+    zone_yards: '',
+    zone_receptions: '',
+    zone_yards_per_reception: '',
+    zone_avg_depth_of_target: '',
+    zone_caught_percent: '',
   });
   const [showSearch, setShowSearch] = useState({
-    yards: false,
-    receptions: false,
-    yards_per_reception: false,
-    caught_percent: false,
-    touchdowns: false,
+    zone_yards: false,
+    zone_receptions: false,
+    zone_yards_per_reception: false,
+    zone_avg_depth_of_target: false,
+    zone_caught_percent: false,
   });
   const colors = [
-    'rgba(54, 162, 235, 1)', // Blue (default)
-    'rgba(255, 99, 132, 1)', // Red
-    'rgba(75, 192, 192, 1)', // Teal
     'rgba(255, 159, 64, 1)', // Orange
     'rgba(153, 102, 255, 1)', // Purple
+    'rgba(255, 99, 132, 1)', // Red
+    'rgba(54, 162, 235, 1)', // Blue
+    'rgba(75, 192, 192, 1)', // Teal
   ];
 
   const capitalizeName = (name) => {
@@ -135,11 +135,11 @@ const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlaye
     });
 
     const metrics = [
-      { id: 'yards', field: 'yards', title: 'Receiving Yards', min: 0, max: 300, unit: 'Yards' },
-      { id: 'receptions', field: 'receptions', title: 'Receptions', min: 0, max: 30, unit: 'Receptions' },
-      { id: 'yards_per_reception', field: 'yards_per_reception', title: 'Yards Per Reception', min: 0, max: 100, unit: 'Yards' },
-      { id: 'caught_percent', field: 'caught_percent', title: 'Catch (%)', min: 0, max: 100, unit: 'Catch (%)' },
-      { id: 'touchdowns', field: 'touchdowns', title: 'Touchdowns', min: 0, max: 5, unit: 'Touchdowns' },
+      { id: 'zone_yards', field: 'zone_yards', title: 'Zone Yards', min: 0, max: 200, unit: 'Zone Yards' },
+      { id: 'zone_receptions', field: 'zone_receptions', title: 'Zone Receptions', min: 0, max: 20, unit: 'Zone Receptions' },
+      { id: 'zone_yards_per_reception', field: 'zone_yards_per_reception', title: 'Yards Per Reception', min: 0, max: 30, unit: 'Yards Per Reception' },
+      { id: 'zone_avg_depth_of_target', field: 'zone_avg_depth_of_target', title: 'Zone Average Depth of Target', min: 0, max: 30, unit: 'Zone Average Depth of Target' },
+      { id: 'zone_caught_percent', field: 'zone_caught_percent', title: 'Zone Catch Rate', min: 0, max: 100, unit: 'Zone Catch Rate' },
     ];
 
     metrics.forEach(metric => {
@@ -240,18 +240,18 @@ const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlaye
       .map(player => ({
         playerId: player.playerId,
         name: player.name,
-        value: player.value.toFixed(metricField === 'passing_snaps' || metricField === 'yards_per_reception' ? 2 : metricField === 'receptions' || metricField === 'longest_percent' ? 1 : 0),
+        value: player.value.toFixed(1),
       }));
   };
 
   return (
-    <div className="production-container grid grid-cols-[80%_18%] gap-4">
+    <div className="performance-container grid grid-cols-[80%_18%] gap-4">
       {[
-        { id: 'yards', title: 'Yards' },
-        { id: 'receptions', title: 'Receptions' },
-        { id: 'yards_per_reception', title: 'Yards Per Reception' },
-        { id: 'caught_percent', title: 'Catch (%)' },
-        { id: 'touchdowns', title: 'Touchdowns' },
+        { id: 'zone_yards', title: 'Zone Yards', field: 'zone_yards' },
+        { id: 'zone_receptions', title: 'Zone Receptions', field: 'zone_receptions' },
+        { id: 'zone_yards_per_reception', title: 'Yards Per Reception', field: 'zone_yards_per_reception' },
+        { id: 'zone_avg_depth_of_target', title: 'Zone Average Depth of Target', field: 'zone_avg_depth_of_target' },
+        { id: 'zone_caught_percent', title: 'Zone Catch Rate', field: 'zone_caught_percent' },
       ].map((metric, index) => (
         <React.Fragment key={metric.id}>
           {/* Left Column (80%) */}
@@ -287,12 +287,12 @@ const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlaye
                 <thead>
                   <tr className="border-b border-gray-200">
                     <th className="text-left py-1">Player</th>
-                    <th className="text-right py-1">{metric.title === 'Yards' ? 'Yds' : metric.title === 'Receptions' ? 'REC' : metric.title === 'Yards Per Reception' ? 'YPR' : metric.title === 'Catch (%)' ? 'Rate' : 'TD'}</th>
+                    <th className="text-right py-1">{metric.title === 'Zone Yards' ? 'YDS' : metric.title === 'Zone Receptions' ? 'REC' : metric.title === 'Yards Per Reception' ? 'YPR' : metric.title === 'Zone Average Depth of Target' ? 'YDS' : 'Rate'}</th>
                     <th className="text-right py-1 w-8"></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {getTopPerformers(metric.id, searchTerms[metric.id]).map((player, idx) => (
+                  {getTopPerformers(metric.field, searchTerms[metric.id]).map((player, idx) => (
                     <tr key={idx} className="border-b border-gray-100">
                       <td className="py-1">
                         <Link
@@ -313,7 +313,7 @@ const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlaye
                       </td>
                     </tr>
                   ))}
-                  {getTopPerformers(metric.id, searchTerms[metric.id]).length === 0 && (
+                  {getTopPerformers(metric.field, searchTerms[metric.id]).length === 0 && (
                     <tr>
                       <td colSpan="3" className="py-1 text-center">No players found</td>
                     </tr>
@@ -328,4 +328,4 @@ const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlaye
   );
 };
 
-export default ProductionContainer;
+export default PerformanceContainer;

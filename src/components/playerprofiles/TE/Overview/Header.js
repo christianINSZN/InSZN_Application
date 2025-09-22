@@ -1,19 +1,62 @@
-// In src/components/players/Header.js
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
-const Header = ({ firstName, lastName, school, position, jersey, height, weight, year, gradesData = {} }) => {
+const Header = ({ firstName, lastName, school, position, jersey, height, weight, year, gradesData = {}, headshotURL, playerId }) => {
+  const [fetchedHeadshotURL, setFetchedHeadshotURL] = useState(headshotURL || '');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchPlayerData = async () => {
+      if (playerId) {
+        setLoading(true);
+        setError(null);
+        try {
+          const response = await fetch(`${process.env.REACT_APP_API_URL}/api/player_metadata_te/${playerId}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+          });
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const data = await response.json();
+          if (data.length > 0) {
+            setFetchedHeadshotURL(data[0].headshotURL || '');
+          } else {
+            setError('Player not found');
+          }
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setFetchedHeadshotURL(headshotURL || '');
+        setError(null);
+      }
+    };
+    fetchPlayerData();
+  }, [playerId, headshotURL]);
+
   return (
-    <div className="bg-gradient-to-r from-gray-100 to-white p-6 rounded-xl shadow-xl mb-6 grid grid-cols-[3fr_2fr] gap-6 items-center">
+    <div className="bg-gray-100 p-6 rounded-xl shadow-xl mt-3 mb-6 grid grid-cols-[3fr_2fr] gap-6 items-center">
       {/* Left Column: Player Info */}
       <div className="space-y-4">
         <div className="flex items-center space-x-6">
+          {/* Headshot Image */}
+          {(fetchedHeadshotURL || headshotURL) && (
+            <img
+              src={fetchedHeadshotURL || headshotURL}
+              alt={`${firstName} ${lastName} headshot`}
+              className="w-30 h-20 object-cover"
+            />
+          )}
           {/* Container for First and Last Name */}
           <div>
-            <h1 className="text-3xl  text-gray-900">{firstName}</h1>
+            <h1 className="text-3xl text-gray-900">{firstName}</h1>
             <h2 className="text-4xl font-semibold text-gray-700">{lastName}</h2>
           </div>
           {/* Vertical Line */}
-          <div className="h-20 border-l-2 border-gray-400"></div> {/* Vertical line */}
+          <div className="h-20 border-l-2 border-[#235347]"></div>
           {/* Container for Metadata */}
           <div className="flex flex-col text-lg text-gray-600">
             <span>{school || 'N/A'} · {position || 'N/A'} · #{jersey || 'N/A'}</span>
@@ -22,8 +65,8 @@ const Header = ({ firstName, lastName, school, position, jersey, height, weight,
         </div>
       </div>
       {/* Right Column: Stats */}
-      <div className="space-y-4">
-        <p className="text-md text-gray-600 text-center">{year || 'N/A'} Season</p>
+      <div className="space-y-2 bg-gray-100 rounded-xl shadow-md">
+        <p className="flex items-center justify-center text-sm bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[20px] rounded">{year || 'N/A'} Season</p>
         <div className="flex justify-around">
           <div className="text-center">
             <p className="text-2xl font-bold text-gray-800">{gradesData.yards || 'N/A'}</p>
@@ -35,7 +78,7 @@ const Header = ({ firstName, lastName, school, position, jersey, height, weight,
           </div>
           <div className="text-center">
             <p className="text-2xl font-bold text-gray-800">{gradesData.receptions || 'N/A'}</p>
-            <p className="text-md text-gray-600">REC</p>
+            <p className="text-md text-gray-600">Receptions</p>
           </div>
           <div className="text-center">
             <p className="text-2xl font-bold text-gray-800">{gradesData.grades_pass_route || 'N/A'}</p>
@@ -43,6 +86,8 @@ const Header = ({ firstName, lastName, school, position, jersey, height, weight,
           </div>
         </div>
       </div>
+      {loading && <div className="flex justify-center mt-4"><div className="w-6 h-6 border-4 border-t-blue-500 border-blue-200 rounded-full animate-spin"></div></div>}
+      {error && <div className="text-red-500 text-center mt-4">{error}</div>}
     </div>
   );
 };

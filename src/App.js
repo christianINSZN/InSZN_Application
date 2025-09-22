@@ -16,11 +16,15 @@ import HeadToHeadContainerRB from './components/playerprofiles/RB/HeadToHead';
 import OverviewWR from './components/playerprofiles/WR/Overview';
 import ReceivingAnalytics from './components/playerprofiles/WR/ReceivingAnalytics';
 import HeadToHeadContainerWR from './components/playerprofiles/WR/HeadToHead';
+import FieldViewInterfaceWR from './components/playerprofiles/WR/FieldView';
 
+import OverviewTE from './components/playerprofiles/TE/Overview';
+import ReceivingAnalyticsTE from './components/playerprofiles/TE/ReceivingAnalytics';
+import HeadToHeadContainerTE from './components/playerprofiles/TE/HeadToHead';
+import FieldViewInterfaceTE from './components/playerprofiles/TE/FieldView';
 
 
 import GameRecap from './components/games/GameRecapMain';
-import OverviewTE from './components/playerprofiles/TE/Overview';
 import OverviewCB from './components/playerprofiles/CB/Overview';
 import OverviewDL from './components/playerprofiles/DL/Overview';
 import OverviewC from './components/playerprofiles/C/Overview';
@@ -64,11 +68,15 @@ function App() {
           
           <Route path="/players/wr/:playerId" element={<OverviewWR year={defaultYear} />} />
           <Route path="/players/wr/:playerId/receiving" element={<ReceivingAnalytics year={defaultYear} />} />
+          <Route path="/players/wr/:playerId/fieldview" element={<FieldViewInterfaceWR year={defaultYear} />} />
           <Route path="/players/wr/:playerId/h2h" element={<HeadToHeadContainerWR year={defaultYear} />} />
 
-
-
           <Route path="/players/te/:playerId" element={<OverviewTE year={defaultYear} />} />
+          <Route path="/players/te/:playerId/receiving" element={<ReceivingAnalyticsTE year={defaultYear} />} />
+          <Route path="/players/te/:playerId/fieldview" element={<FieldViewInterfaceTE year={defaultYear} />} />
+          <Route path="/players/te/:playerId/h2h" element={<HeadToHeadContainerTE year={defaultYear} />} />
+
+
           <Route path="/players/cb/:playerId" element={<OverviewCB year={defaultYear} />} />
           <Route path="/players/dl/:playerId" element={<OverviewDL year={defaultYear} />} />
           <Route path="/players/c/:playerId" element={<OverviewC year={defaultYear} />} />

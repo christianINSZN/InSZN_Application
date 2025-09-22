@@ -490,6 +490,19 @@ app.get('/api/player_percentiles_TE/:playerId/:year', (req, res) => {
   );
 });
 
+app.get('/api/player_metadata_te/:playerId', (req, res) => {
+  const { playerId } = req.params;
+  db.get('SELECT * FROM Players_Basic WHERE playerId = ? AND position = "TE"', [playerId], (err, row) => {
+    if (err) {
+      res.status(500).send(err.message);
+    } else if (!row) {
+      res.status(404).send('Player not found');
+    } else {
+      res.json([row]);
+    }
+  });
+}); 
+
 app.get('/api/player_receiving_weekly_all/:playerId/:year/:week/:seasonType', (req, res) => {
   const { playerId, year, week, seasonType } = req.params;
 
