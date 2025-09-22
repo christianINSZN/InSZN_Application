@@ -85,6 +85,7 @@ function App() {
           <Route path="/h2h/te" element={<HeadToHeadTE year={defaultYear} />} />
           <Route path="/subscribe" element={<Subscription />} />
           <Route path="/sign-up" element={<SignUpPage />} />
+          <Route path="/sign-up/verify-email-address" element={<SignUpPage />} />
           <Route path="/sign-in" element={<SignInPage />} />
         </Routes>
       </div>
