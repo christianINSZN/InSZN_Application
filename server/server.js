@@ -568,7 +568,7 @@ app.get('/api/player_te_list', (req, res) => {
 app.get('/api/all_player_percentiles_TE/:year', (req, res) => {
   const { year } = req.params;
   db.all(
-    'SELECT * FROM Players_Full_Percentiles_TE WHERE year = ?',
+    'SELECT * FROM Players_Full_Percentiles_TE_Receiving WHERE year = ?',
     [year],
     (err, rows) => {
       if (err) {
