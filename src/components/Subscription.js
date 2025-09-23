@@ -58,8 +58,7 @@ const SubscriptionForm = () => {
         return;
       }
 
-      if (data.message === 'Payment requires action' && data.clientSecret) {
-        console.log('Payment requires action, confirming...');
+      if (data.clientSecret) {
         const result = await stripe.confirmCardPayment(data.clientSecret, {
           payment_method: paymentMethod.id,
         });
@@ -75,10 +74,11 @@ const SubscriptionForm = () => {
           setError('Payment processing incomplete. Please try again.');
         }
       } else if (data.status === 'active') {
+        console.log('Subscription active:', data.subscriptionId);
         alert('Subscription successful! Please refresh the page to access premium content.');
       } else {
         console.warn('No clientSecret received:', data);
-        setError('Subscription created but requires payment confirmation. Please try again.');
+        setError(data.message || 'Subscription created but requires payment confirmation. Please try again.');
       }
     } catch (err) {
       console.error('Frontend error:', err);
@@ -91,7 +91,7 @@ const SubscriptionForm = () => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <form onSubmit={handleSubmit} className="p-4 max-w-md mx-auto bg-white rounded-lg shadow-lg">
-        <h2 className="text-xl font-bold mb-4 text[#235347]">Choose Your Plan</h2>
+        <h2 className="text-xl font-bold mb-4 text-[#235347]">Choose Your Plan</h2>
         {!user && (
           <p className="text-gray-500 mb-4">
             Please <Link to="/sign-in" className="text-[#235347] underline">sign in</Link> to subscribe.
@@ -111,7 +111,7 @@ const SubscriptionForm = () => {
         <button
           type="submit"
           disabled={!stripe || !user || loading}
-          className="px-4 py-2 bg-[#235347] text-white rounded hover:bg[#1b3e32] disabled:bg-gray-400"
+          className="px-4 py-2 bg-[#235347] text-white rounded hover:bg-[#1b3e32] disabled:bg-gray-400"
         >
           {loading ? 'Processing...' : 'Subscribe'}
         </button>

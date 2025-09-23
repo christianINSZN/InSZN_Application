@@ -136,7 +136,7 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
       items: [{ price: priceId }],
-      payment_behavior: 'default_incomplete',
+      payment_behavior: 'allow_incomplete', // Change to allow_incomplete to attempt payment
       payment_settings: {
         payment_method_types: ['card'],
         save_default_payment_method: 'on_subscription',
@@ -146,49 +146,21 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
     });
     console.log('Subscription created:', subscription);
 
-    if (paymentMethodId && subscription.latest_invoice.status === 'open') {
-      try {
-        const paidInvoice = await stripe.invoices.pay(subscription.latest_invoice.id, {
-          payment_method: paymentMethodId,
-        });
-        console.log('Invoice payment attempted:', paidInvoice);
-
-        const updatedSubscription = await stripe.subscriptions.retrieve(subscription.id);
-        console.log('Updated subscription:', updatedSubscription);
-
-        if (paidInvoice.payment_intent?.client_secret) {
-          return res.json({
-            clientSecret: paidInvoice.payment_intent.client_secret,
-            subscriptionId: subscription.id,
-            status: updatedSubscription.status,
-          });
-        } else {
-          console.warn('No payment_intent in paid invoice:', paidInvoice.id);
-          return res.json({
-            subscriptionId: subscription.id,
-            status: updatedSubscription.status,
-            clientSecret: null,
-            message: 'Invoice paid but no payment_intent available',
-          });
-        }
-      } catch (paymentError) {
-        console.error('Invoice payment failed:', paymentError);
-        return res.status(500).json({
-          subscriptionId: subscription.id,
-          status: subscription.status,
-          clientSecret: null,
-          message: 'Invoice payment failed: ' + paymentError.message,
-        });
-      }
+    if (subscription.latest_invoice?.payment_intent?.client_secret) {
+      return res.json({
+        clientSecret: subscription.latest_invoice.payment_intent.client_secret,
+        subscriptionId: subscription.id,
+        status: subscription.status,
+      });
+    } else {
+      console.warn('No payment_intent in subscription, subscription is incomplete:', subscription.id, 'Invoice status:', subscription.latest_invoice.status);
+      return res.json({
+        subscriptionId: subscription.id,
+        status: subscription.status,
+        clientSecret: null,
+        message: 'Subscription created but requires payment confirmation',
+      });
     }
-
-    console.warn('No payment_intent or invoice not open, subscription is incomplete:', subscription.id, 'Invoice status:', subscription.latest_invoice.status);
-    return res.json({
-      subscriptionId: subscription.id,
-      status: subscription.status,
-      clientSecret: subscription.latest_invoice.payment_intent?.client_secret || null,
-      message: 'Subscription created but requires payment confirmation',
-    });
   } catch (error) {
     console.error('Error creating subscription:', error, 'Response:', error.response?.data);
     res.status(500).json({ error: error.message });
