@@ -24,11 +24,30 @@ const SubscriptionForm = () => {
     setLoading(true);
     setError(null);
     try {
-      console.log('Sending subscription request for user:', user.id, 'with priceId:', plan);
+      // Create payment method
+      const { paymentMethod, error: paymentMethodError } = await stripe.createPaymentMethod({
+        type: 'card',
+        card: elements.getElement(CardElement),
+        billing_details: {
+          email: user.primaryEmailAddress?.emailAddress || 'unknown',
+        },
+      });
+
+      if (paymentMethodError) {
+        console.error('Payment method error:', paymentMethodError);
+        setError(paymentMethodError.message);
+        setLoading(false);
+        return;
+      }
+
+      console.log('Created payment method:', paymentMethod.id);
+
+      // Create subscription
+      console.log('Sending subscription request for user:', user.id, 'with priceId:', plan, 'paymentMethodId:', paymentMethod.id);
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/subscriptions/create-subscription`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId: plan, clerkUserId: user.id }),
+        body: JSON.stringify({ priceId: plan, clerkUserId: user.id, paymentMethodId: paymentMethod.id, email: user.primaryEmailAddress?.emailAddress }),
       });
       const data = await response.json();
 
@@ -39,31 +58,27 @@ const SubscriptionForm = () => {
         return;
       }
 
-      if (!data.clientSecret) {
-        console.warn('No clientSecret received:', data);
-        setError('Subscription created but requires payment confirmation. Please try again.');
-        setLoading(false);
-        return;
-      }
+      if (data.message === 'Payment requires action' && data.clientSecret) {
+        console.log('Payment requires action, confirming...');
+        const result = await stripe.confirmCardPayment(data.clientSecret, {
+          payment_method: paymentMethod.id,
+        });
 
-      const result = await stripe.confirmCardPayment(data.clientSecret, {
-        payment_method: {
-          card: elements.getElement(CardElement),
-          billing_details: {
-            email: user.primaryEmailAddress?.emailAddress || 'unknown',
-          },
-        },
-      });
-
-      if (result.error) {
-        console.error('Payment confirmation error:', result.error);
-        setError(result.error.message);
-      } else if (result.paymentIntent.status === 'succeeded') {
-        console.log('Payment succeeded:', result.paymentIntent);
+        if (result.error) {
+          console.error('Payment confirmation error:', result.error);
+          setError(result.error.message);
+        } else if (result.paymentIntent.status === 'succeeded') {
+          console.log('Payment succeeded:', result.paymentIntent);
+          alert('Subscription successful! Please refresh the page to access premium content.');
+        } else {
+          console.warn('Unexpected payment intent status:', result.paymentIntent.status);
+          setError('Payment processing incomplete. Please try again.');
+        }
+      } else if (data.status === 'active') {
         alert('Subscription successful! Please refresh the page to access premium content.');
       } else {
-        console.warn('Unexpected payment intent status:', result.paymentIntent.status);
-        setError('Payment processing incomplete. Please try again.');
+        console.warn('No clientSecret received:', data);
+        setError('Subscription created but requires payment confirmation. Please try again.');
       }
     } catch (err) {
       console.error('Frontend error:', err);
@@ -76,7 +91,7 @@ const SubscriptionForm = () => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <form onSubmit={handleSubmit} className="p-4 max-w-md mx-auto bg-white rounded-lg shadow-lg">
-        <h2 className="text-xl font-bold mb-4 text-[#235347]">Choose Your Plan</h2>
+        <h2 className="text-xl font-bold mb-4 text[#235347]">Choose Your Plan</h2>
         {!user && (
           <p className="text-gray-500 mb-4">
             Please <Link to="/sign-in" className="text-[#235347] underline">sign in</Link> to subscribe.
@@ -96,7 +111,7 @@ const SubscriptionForm = () => {
         <button
           type="submit"
           disabled={!stripe || !user || loading}
-          className="px-4 py-2 bg-[#235347] text-white rounded hover:bg-[#1b3e32] disabled:bg-gray-400"
+          className="px-4 py-2 bg-[#235347] text-white rounded hover:bg[#1b3e32] disabled:bg-gray-400"
         >
           {loading ? 'Processing...' : 'Subscribe'}
         </button>
