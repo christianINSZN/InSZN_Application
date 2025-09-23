@@ -47,7 +47,7 @@ const SubscriptionForm = () => {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/subscriptions/create-subscription`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId: plan, clerkUserId: user.id, paymentMethodId: paymentMethod.id }),
+        body: JSON.stringify({ priceId: plan, clerkUserId: user.id, paymentMethodId: paymentMethod.id, email: user.primaryEmailAddress?.emailAddress }),
       });
       const data = await response.json();
 

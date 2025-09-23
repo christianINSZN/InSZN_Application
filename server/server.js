@@ -104,16 +104,9 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
 
     const customer = await stripe.customers.create({
       metadata: { clerkUserId },
+      email: req.body.email || null, // Optional: Include email for customer
     });
     console.log('Customer created:', customer.id, 'Metadata:', customer.metadata);
-
-    let subscriptionParams = {
-      customer: customer.id,
-      items: [{ price: priceId }],
-      payment_behavior: 'default_incomplete',
-      payment_settings: { save_default_payment_method: 'on_subscription' },
-      expand: ['latest_invoice.payment_intent'],
-    };
 
     if (paymentMethodId) {
       await stripe.paymentMethods.attach(paymentMethodId, { customer: customer.id });
@@ -121,26 +114,48 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
         invoice_settings: { default_payment_method: paymentMethodId },
       });
       console.log('Payment method attached:', paymentMethodId);
-      subscriptionParams.default_payment_method = paymentMethodId;
     }
 
-    const subscription = await stripe.subscriptions.create(subscriptionParams);
+    const subscription = await stripe.subscriptions.create({
+      customer: customer.id,
+      items: [{ price: priceId }],
+      payment_behavior: 'default_incomplete',
+      payment_settings: {
+        payment_method_types: ['card'],
+        save_default_payment_method: 'on_subscription',
+      },
+      default_payment_method: paymentMethodId || null,
+      expand: ['latest_invoice.payment_intent'],
+    });
     console.log('Subscription created:', subscription);
 
     if (!subscription.latest_invoice?.payment_intent?.client_secret) {
-      console.warn('No payment_intent in subscription, subscription is incomplete:', subscription.id);
-      return res.json({
+      console.warn('No payment_intent in subscription, attempting to finalize invoice:', subscription.latest_invoice.id);
+      // Finalize the invoice to trigger payment attempt
+      const invoice = await stripe.invoices.finalizeInvoice(subscription.latest_invoice.id, {
+        auto_advance: true,
+      });
+      console.log('Invoice finalized:', invoice);
+
+      if (!invoice.payment_intent?.client_secret) {
+        return res.json({
+          subscriptionId: subscription.id,
+          status: subscription.status,
+          clientSecret: null,
+          message: 'Subscription created but requires payment confirmation',
+        });
+      }
+
+      res.json({
+        clientSecret: invoice.payment_intent.client_secret,
         subscriptionId: subscription.id,
-        status: subscription.status,
-        clientSecret: null,
-        message: 'Subscription created but requires payment confirmation',
+      });
+    } else {
+      res.json({
+        clientSecret: subscription.latest_invoice.payment_intent.client_secret,
+        subscriptionId: subscription.id,
       });
     }
-
-    res.json({
-      clientSecret: subscription.latest_invoice.payment_intent.client_secret,
-      subscriptionId: subscription.id,
-    });
   } catch (error) {
     console.error('Error creating subscription:', error, 'Response:', error.response?.data);
     res.status(500).json({ error: error.message });
