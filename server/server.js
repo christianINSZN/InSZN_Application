@@ -41,8 +41,57 @@ const db = new sqlite3.Database(dbPath, (err) => {
 });
 
 app.use(cors());
+
+// Handle raw body for Stripe webhooks
+app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  try {
+    const event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+    if (event.type === 'customer.subscription.created' || event.type === 'customer.subscription.updated') {
+      const subscription = event.data.object;
+      const clerkUserId = subscription.customer.metadata.clerkUserId;
+      const plan = subscription.items.data[0].price.id === 'price_123' ? 'pro' : 'premium'; // Replace with your Price IDs
+      const clerk = new Clerk({ apiKey: process.env.CLERK_SECRET_KEY });
+      await clerk.users.updateUserMetadata(clerkUserId, {
+        publicMetadata: { subscriptionPlan: plan },
+      });
+      console.log(`Updated user ${clerkUserId} with subscriptionPlan: ${plan}`);
+    }
+    res.json({ received: true });
+  } catch (error) {
+    console.error('Webhook error:', error);
+    res.status(400).send(`Webhook Error: ${error.message}`);
+  }
+});
+
+// Apply JSON parsing for other routes
 app.use(express.json());
 
+// Subscription Creation Endpoint
+app.post('/api/subscriptions/create-subscription', async (req, res) => {
+  const { priceId, clerkUserId } = req.body;
+  try {
+    const customer = await stripe.customers.create({
+      metadata: { clerkUserId },
+    });
+    const subscription = await stripe.subscriptions.create({
+      customer: customer.id,
+      items: [{ price: priceId }],
+      payment_behavior: 'default_incomplete',
+      payment_settings: { save_default_payment_method: 'on_subscription' },
+      expand: ['latest_invoice.payment_intent'],
+    });
+    res.json({
+      clientSecret: subscription.latest_invoice.payment_intent.client_secret,
+      subscriptionId: subscription.id,
+    });
+  } catch (error) {
+    console.error('Error creating subscription:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 app.get('/', (req, res) => {
   res.json({ message: 'API server is running' });
