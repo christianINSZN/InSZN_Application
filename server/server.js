@@ -65,7 +65,7 @@ app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), asyn
 
     if (event.type === 'customer.subscription.created' || event.type === 'customer.subscription.updated') {
       const subscription = event.data.object;
-      const customer = await stripe.customers.retrieve(subscription.customer, { expand: ['metadata'] });
+      const customer = await stripe.customers.retrieve(subscription.customer);
       console.log('Customer fetched in webhook:', JSON.stringify(customer, null, 2));
       const clerkUserId = customer.metadata?.clerkUserId;
 
@@ -73,7 +73,7 @@ app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), asyn
         console.warn('No clerkUserId found in customer metadata for customer:', customer.id);
         // Retry fetching customer after a short delay
         await new Promise(resolve => setTimeout(resolve, 1000));
-        const retryCustomer = await stripe.customers.retrieve(subscription.customer, { expand: ['metadata'] });
+        const retryCustomer = await stripe.customers.retrieve(subscription.customer);
         console.log('Retry customer fetch:', JSON.stringify(retryCustomer, null, 2));
         const retryClerkUserId = retryCustomer.metadata?.clerkUserId;
 
@@ -136,7 +136,7 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
       items: [{ price: priceId }],
-      payment_behavior: 'allow_incomplete', // Change to allow_incomplete to attempt payment
+      payment_behavior: 'default_incomplete',
       payment_settings: {
         payment_method_types: ['card'],
         save_default_payment_method: 'on_subscription',
@@ -146,21 +146,51 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
     });
     console.log('Subscription created:', subscription);
 
-    if (subscription.latest_invoice?.payment_intent?.client_secret) {
-      return res.json({
-        clientSecret: subscription.latest_invoice.payment_intent.client_secret,
-        subscriptionId: subscription.id,
-        status: subscription.status,
-      });
-    } else {
-      console.warn('No payment_intent in subscription, subscription is incomplete:', subscription.id, 'Invoice status:', subscription.latest_invoice.status);
-      return res.json({
-        subscriptionId: subscription.id,
-        status: subscription.status,
-        clientSecret: null,
-        message: 'Subscription created but requires payment confirmation',
-      });
+    if (paymentMethodId && subscription.latest_invoice.status === 'open') {
+      try {
+        const paidInvoice = await stripe.invoices.pay(subscription.latest_invoice.id, {
+          payment_method: paymentMethodId,
+        });
+        console.log('Invoice payment attempted:', paidInvoice);
+
+        const updatedSubscription = await stripe.subscriptions.retrieve(subscription.id);
+        console.log('Updated subscription:', updatedSubscription);
+
+        // Fallback: Update Clerk metadata directly if webhook might fail
+        const plan = subscription.items.data[0]?.price.id === 'price_1SAFtEFQmtxCMsk5yQanLLaY' ? 'pro' : 'premium'; // Replace with your Price IDs
+        try {
+          const clerk = new Clerk({ apiKey: process.env.CLERK_SECRET_KEY });
+          await clerk.users.updateUserMetadata(clerkUserId, {
+            publicMetadata: { subscriptionPlan: plan },
+          });
+          console.log(`Fallback: Updated user ${clerkUserId} with subscriptionPlan: ${plan}`);
+        } catch (clerkError) {
+          console.error('Fallback Clerk metadata update failed:', clerkError);
+        }
+
+        return res.json({
+          clientSecret: paidInvoice.payment_intent?.client_secret || null,
+          subscriptionId: subscription.id,
+          status: updatedSubscription.status,
+        });
+      } catch (paymentError) {
+        console.error('Invoice payment failed:', paymentError);
+        return res.status(500).json({
+          subscriptionId: subscription.id,
+          status: subscription.status,
+          clientSecret: null,
+          message: 'Invoice payment failed: ' + paymentError.message,
+        });
+      }
     }
+
+    console.warn('No payment_intent or invoice not open, subscription is incomplete:', subscription.id, 'Invoice status:', subscription.latest_invoice.status);
+    return res.json({
+      subscriptionId: subscription.id,
+      status: subscription.status,
+      clientSecret: subscription.latest_invoice.payment_intent?.client_secret || null,
+      message: 'Subscription created but requires payment confirmation',
+    });
   } catch (error) {
     console.error('Error creating subscription:', error, 'Response:', error.response?.data);
     res.status(500).json({ error: error.message });
