@@ -65,7 +65,6 @@ app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), asyn
 
     if (event.type === 'customer.subscription.created' || event.type === 'customer.subscription.updated') {
       const subscription = event.data.object;
-      // Fetch customer to verify metadata
       const customer = await stripe.customers.retrieve(subscription.customer);
       const clerkUserId = customer.metadata?.clerkUserId;
 
@@ -108,21 +107,24 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
     });
     console.log('Customer created:', customer.id, 'Metadata:', customer.metadata);
 
+    let subscriptionParams = {
+      customer: customer.id,
+      items: [{ price: priceId }],
+      payment_behavior: 'default_incomplete',
+      payment_settings: { save_default_payment_method: 'on_subscription' },
+      expand: ['latest_invoice.payment_intent'],
+    };
+
     if (paymentMethodId) {
       await stripe.paymentMethods.attach(paymentMethodId, { customer: customer.id });
       await stripe.customers.update(customer.id, {
         invoice_settings: { default_payment_method: paymentMethodId },
       });
       console.log('Payment method attached:', paymentMethodId);
+      subscriptionParams.default_payment_method = paymentMethodId;
     }
 
-    const subscription = await stripe.subscriptions.create({
-      customer: customer.id,
-      items: [{ price: priceId }],
-      payment_behavior: 'default_incomplete',
-      payment_settings: { save_default_payment_method: 'on_subscription' },
-      expand: ['latest_invoice.payment_intent'],
-    });
+    const subscription = await stripe.subscriptions.create(subscriptionParams);
     console.log('Subscription created:', subscription);
 
     if (!subscription.latest_invoice?.payment_intent?.client_secret) {
