@@ -10,7 +10,7 @@ const SubscriptionForm = () => {
   const { user } = useClerk();
   const stripe = useStripe();
   const elements = useElements();
-  const [plan, setPlan] = useState('price_1SAFtEFQmtxCMsk5yQanLLaY'); // Your Pro Price ID
+  const [plan, setPlan] = useState('price_1SAFtEFQmtxCMsk5yQanLLaY'); // Pro Price ID
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -22,8 +22,9 @@ const SubscriptionForm = () => {
     }
 
     setLoading(true);
+    setError(null);
     try {
-      console.log('Sending subscription request for user:', user.id);
+      console.log('Sending subscription request for user:', user.id, 'with priceId:', plan);
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/subscriptions/create-subscription`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -32,27 +33,40 @@ const SubscriptionForm = () => {
       const data = await response.json();
 
       if (data.error) {
+        console.error('Subscription error:', data.error);
         setError(data.error);
         setLoading(false);
         return;
       }
 
-      if (data.status === 'incomplete') {
-        setError('Subscription created but requires payment confirmation. Please complete the payment.');
+      if (!data.clientSecret) {
+        console.warn('No clientSecret received:', data);
+        setError('Subscription created but requires payment confirmation. Please try again.');
         setLoading(false);
         return;
       }
 
       const result = await stripe.confirmCardPayment(data.clientSecret, {
-        payment_method: { card: elements.getElement(CardElement) },
+        payment_method: {
+          card: elements.getElement(CardElement),
+          billing_details: {
+            email: user.primaryEmailAddress?.emailAddress || 'unknown',
+          },
+        },
       });
 
       if (result.error) {
+        console.error('Payment confirmation error:', result.error);
         setError(result.error.message);
-      } else {
+      } else if (result.paymentIntent.status === 'succeeded') {
+        console.log('Payment succeeded:', result.paymentIntent);
         alert('Subscription successful! Please refresh the page to access premium content.');
+      } else {
+        console.warn('Unexpected payment intent status:', result.paymentIntent.status);
+        setError('Payment processing incomplete. Please try again.');
       }
     } catch (err) {
+      console.error('Frontend error:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -75,7 +89,7 @@ const SubscriptionForm = () => {
           disabled={!user}
         >
           <option value="price_1SAFtEFQmtxCMsk5yQanLLaY">Pro ($5/month)</option>
-          <option value="price_1SAMI6FQmtxCMsk5ZVLVzH1u">Premium ($20/month)</option> // Replace with your Premium Price ID
+          <option value="price_1SAMI6FQmtxCMsk5ZVLVzH1u">Premium ($20/month)</option> {/* Replace with your Premium Price ID */}
         </select>
         <CardElement className="p-2 border rounded mb-4" />
         {error && <p className="text-red-500 mb-4">{error}</p>}

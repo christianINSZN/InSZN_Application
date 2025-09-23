@@ -91,7 +91,7 @@ app.use(express.json());
 
 // Subscription Creation Endpoint
 app.post('/api/subscriptions/create-subscription', async (req, res) => {
-  const { priceId, clerkUserId } = req.body;
+  const { priceId, clerkUserId, paymentMethodId } = req.body;
   try {
     if (!clerkUserId) {
       throw new Error('Missing clerkUserId in request body');
@@ -99,12 +99,19 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
     if (!priceId) {
       throw new Error('Missing priceId in request body');
     }
-    console.log('Creating subscription for clerkUserId:', clerkUserId, 'with priceId:', priceId);
+    console.log('Creating subscription for clerkUserId:', clerkUserId, 'with priceId:', priceId, 'paymentMethodId:', paymentMethodId);
 
     const customer = await stripe.customers.create({
       metadata: { clerkUserId },
     });
     console.log('Customer created:', customer.id);
+
+    if (paymentMethodId) {
+      await stripe.paymentMethods.attach(paymentMethodId, { customer: customer.id });
+      await stripe.customers.update(customer.id, {
+        invoice_settings: { default_payment_method: paymentMethodId },
+      });
+    }
 
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
@@ -115,12 +122,12 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
     });
     console.log('Subscription created:', subscription);
 
-    // Check if payment_intent exists
-    if (!subscription.latest_invoice?.payment_intent) {
+    if (!subscription.latest_invoice?.payment_intent?.client_secret) {
       console.warn('No payment_intent in subscription, subscription is incomplete:', subscription.id);
       return res.json({
         subscriptionId: subscription.id,
         status: subscription.status,
+        clientSecret: null,
         message: 'Subscription created but requires payment confirmation',
       });
     }
@@ -134,7 +141,6 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
 app.get('/', (req, res) => {
   res.json({ message: 'API server is running' });
 });
