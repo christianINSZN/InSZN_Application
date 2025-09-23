@@ -75,7 +75,7 @@ const SubscriptionForm = () => {
           disabled={!user}
         >
           <option value="price_1SAFtEFQmtxCMsk5yQanLLaY">Pro ($5/month)</option>
-          <option value="price_456">Premium ($20/month)</option> // Replace with your Premium Price ID
+          <option value="price_1SAMI6FQmtxCMsk5ZVLVzH1u">Premium ($20/month)</option> // Replace with your Premium Price ID
         </select>
         <CardElement className="p-2 border rounded mb-4" />
         {error && <p className="text-red-500 mb-4">{error}</p>}
