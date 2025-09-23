@@ -130,21 +130,31 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
     console.log('Subscription created:', subscription);
 
     // Fetch the latest invoice to check status
-    const invoice = await stripe.invoices.retrieve(subscription.latest_invoice);
+    const invoice = await stripe.invoices.retrieve(subscription.latest_invoice.id);
     console.log('Invoice details:', invoice);
 
     if (invoice.status === 'open' && paymentMethodId) {
-      // Attempt to pay the invoice
-      const paidInvoice = await stripe.invoices.pay(invoice.id, {
-        payment_method: paymentMethodId,
-      });
-      console.log('Invoice payment attempted:', paidInvoice);
+      try {
+        // Attempt to pay the invoice
+        const paidInvoice = await stripe.invoices.pay(invoice.id, {
+          payment_method: paymentMethodId,
+        });
+        console.log('Invoice payment attempted:', paidInvoice);
 
-      if (paidInvoice.payment_intent?.client_secret) {
-        return res.json({
-          clientSecret: paidInvoice.payment_intent.client_secret,
+        if (paidInvoice.payment_intent?.client_secret) {
+          return res.json({
+            clientSecret: paidInvoice.payment_intent.client_secret,
+            subscriptionId: subscription.id,
+            status: subscription.status,
+          });
+        }
+      } catch (paymentError) {
+        console.error('Invoice payment failed:', paymentError);
+        return res.status(500).json({
           subscriptionId: subscription.id,
           status: subscription.status,
+          clientSecret: null,
+          message: 'Invoice payment failed: ' + paymentError.message,
         });
       }
     }
