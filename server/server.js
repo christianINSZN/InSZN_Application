@@ -61,15 +61,14 @@ app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), asyn
       throw new Error('Missing STRIPE_WEBHOOK_SECRET');
     }
     const event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
-    console.log('Webhook event received:', event.type, 'Customer:', event.data.object.customer);
+    console.log('Webhook event received:', event.type, event.data.object);
 
     if (event.type === 'customer.subscription.created' || event.type === 'customer.subscription.updated') {
       const subscription = event.data.object;
-      const customer = await stripe.customers.retrieve(subscription.customer);
-      const clerkUserId = customer.metadata?.clerkUserId;
+      const clerkUserId = subscription.customer?.metadata?.clerkUserId;
 
       if (!clerkUserId) {
-        console.warn('No clerkUserId found in customer metadata:', customer);
+        console.warn('No clerkUserId found in customer metadata:', subscription.customer);
         return res.status(400).send('Webhook Error: Missing clerkUserId in customer metadata');
       }
 
@@ -92,7 +91,7 @@ app.use(express.json());
 
 // Subscription Creation Endpoint
 app.post('/api/subscriptions/create-subscription', async (req, res) => {
-  const { priceId, clerkUserId, paymentMethodId, email } = req.body;
+  const { priceId, clerkUserId, paymentMethodId } = req.body;
   try {
     if (!clerkUserId) {
       throw new Error('Missing clerkUserId in request body');
@@ -100,41 +99,42 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
     if (!priceId) {
       throw new Error('Missing priceId in request body');
     }
-    console.log('Creating subscription for clerkUserId:', clerkUserId, 'with priceId:', priceId, 'paymentMethodId:', paymentMethodId, 'email:', email);
+    console.log('Creating subscription for clerkUserId:', clerkUserId, 'with priceId:', priceId, 'paymentMethodId:', paymentMethodId);
 
     const customer = await stripe.customers.create({
       metadata: { clerkUserId },
-      email: email || null,
     });
-    console.log('Customer created:', customer.id, 'Metadata:', customer.metadata);
+    console.log('Customer created:', customer.id);
 
     if (paymentMethodId) {
       await stripe.paymentMethods.attach(paymentMethodId, { customer: customer.id });
       await stripe.customers.update(customer.id, {
         invoice_settings: { default_payment_method: paymentMethodId },
       });
-      console.log('Payment method attached:', paymentMethodId);
     }
 
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
       items: [{ price: priceId }],
       payment_behavior: 'default_incomplete',
-      payment_settings: {
-        payment_method_types: ['card'],
-        save_default_payment_method: 'on_subscription',
-      },
-      default_payment_method: paymentMethodId || null,
+      payment_settings: { save_default_payment_method: 'on_subscription' },
       expand: ['latest_invoice.payment_intent'],
     });
     console.log('Subscription created:', subscription);
 
-    console.warn('No payment_intent or invoice not open, subscription is incomplete:', subscription.id, 'Invoice status:', subscription.latest_invoice.status);
-    return res.json({
+    if (!subscription.latest_invoice?.payment_intent?.client_secret) {
+      console.warn('No payment_intent in subscription, subscription is incomplete:', subscription.id);
+      return res.json({
+        subscriptionId: subscription.id,
+        status: subscription.status,
+        clientSecret: null,
+        message: 'Subscription created but requires payment confirmation',
+      });
+    }
+
+    res.json({
+      clientSecret: subscription.latest_invoice.payment_intent.client_secret,
       subscriptionId: subscription.id,
-      status: subscription.status,
-      clientSecret: subscription.latest_invoice.payment_intent?.client_secret || null,
-      message: 'Subscription created but requires payment confirmation',
     });
   } catch (error) {
     console.error('Error creating subscription:', error, 'Response:', error.response?.data);

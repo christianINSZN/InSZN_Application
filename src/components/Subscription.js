@@ -24,30 +24,11 @@ const SubscriptionForm = () => {
     setLoading(true);
     setError(null);
     try {
-      // Create payment method
-      const { paymentMethod, error: paymentMethodError } = await stripe.createPaymentMethod({
-        type: 'card',
-        card: elements.getElement(CardElement),
-        billing_details: {
-          email: user.primaryEmailAddress?.emailAddress || 'unknown',
-        },
-      });
-
-      if (paymentMethodError) {
-        console.error('Payment method error:', paymentMethodError);
-        setError(paymentMethodError.message);
-        setLoading(false);
-        return;
-      }
-
-      console.log('Created payment method:', paymentMethod.id);
-
-      // Create subscription
-      console.log('Sending subscription request for user:', user.id, 'with priceId:', plan, 'paymentMethodId:', paymentMethod.id);
+      console.log('Sending subscription request for user:', user.id, 'with priceId:', plan);
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/subscriptions/create-subscription`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId: plan, clerkUserId: user.id, paymentMethodId: paymentMethod.id, email: user.primaryEmailAddress?.emailAddress }),
+        body: JSON.stringify({ priceId: plan, clerkUserId: user.id }),
       });
       const data = await response.json();
 
@@ -65,9 +46,13 @@ const SubscriptionForm = () => {
         return;
       }
 
-      // Confirm payment
       const result = await stripe.confirmCardPayment(data.clientSecret, {
-        payment_method: paymentMethod.id,
+        payment_method: {
+          card: elements.getElement(CardElement),
+          billing_details: {
+            email: user.primaryEmailAddress?.emailAddress || 'unknown',
+          },
+        },
       });
 
       if (result.error) {
