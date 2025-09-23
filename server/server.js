@@ -141,6 +141,7 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
 app.get('/', (req, res) => {
   res.json({ message: 'API server is running' });
 });
