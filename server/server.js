@@ -92,7 +92,7 @@ app.use(express.json());
 
 // Subscription Creation Endpoint
 app.post('/api/subscriptions/create-subscription', async (req, res) => {
-  const { priceId, clerkUserId, paymentMethodId } = req.body;
+  const { priceId, clerkUserId, paymentMethodId, email } = req.body;
   try {
     if (!clerkUserId) {
       throw new Error('Missing clerkUserId in request body');
@@ -100,11 +100,11 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
     if (!priceId) {
       throw new Error('Missing priceId in request body');
     }
-    console.log('Creating subscription for clerkUserId:', clerkUserId, 'with priceId:', priceId, 'paymentMethodId:', paymentMethodId);
+    console.log('Creating subscription for clerkUserId:', clerkUserId, 'with priceId:', priceId, 'paymentMethodId:', paymentMethodId, 'email:', email);
 
     const customer = await stripe.customers.create({
       metadata: { clerkUserId },
-      email: req.body.email || null, // Optional: Include email for customer
+      email: email || null,
     });
     console.log('Customer created:', customer.id, 'Metadata:', customer.metadata);
 
@@ -129,33 +129,40 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
     });
     console.log('Subscription created:', subscription);
 
-    if (!subscription.latest_invoice?.payment_intent?.client_secret) {
-      console.warn('No payment_intent in subscription, attempting to finalize invoice:', subscription.latest_invoice.id);
-      // Finalize the invoice to trigger payment attempt
-      const invoice = await stripe.invoices.finalizeInvoice(subscription.latest_invoice.id, {
-        auto_advance: true,
-      });
-      console.log('Invoice finalized:', invoice);
+    // Fetch the latest invoice to check status
+    const invoice = await stripe.invoices.retrieve(subscription.latest_invoice);
+    console.log('Invoice details:', invoice);
 
-      if (!invoice.payment_intent?.client_secret) {
+    if (invoice.status === 'open' && paymentMethodId) {
+      // Attempt to pay the invoice
+      const paidInvoice = await stripe.invoices.pay(invoice.id, {
+        payment_method: paymentMethodId,
+      });
+      console.log('Invoice payment attempted:', paidInvoice);
+
+      if (paidInvoice.payment_intent?.client_secret) {
         return res.json({
+          clientSecret: paidInvoice.payment_intent.client_secret,
           subscriptionId: subscription.id,
           status: subscription.status,
-          clientSecret: null,
-          message: 'Subscription created but requires payment confirmation',
         });
       }
+    }
 
-      res.json({
-        clientSecret: invoice.payment_intent.client_secret,
+    if (!invoice.payment_intent?.client_secret) {
+      console.warn('No payment_intent in invoice, subscription is incomplete:', subscription.id, 'Invoice status:', invoice.status);
+      return res.json({
         subscriptionId: subscription.id,
-      });
-    } else {
-      res.json({
-        clientSecret: subscription.latest_invoice.payment_intent.client_secret,
-        subscriptionId: subscription.id,
+        status: subscription.status,
+        clientSecret: null,
+        message: 'Subscription created but requires payment confirmation',
       });
     }
+
+    res.json({
+      clientSecret: invoice.payment_intent.client_secret,
+      subscriptionId: subscription.id,
+    });
   } catch (error) {
     console.error('Error creating subscription:', error, 'Response:', error.response?.data);
     res.status(500).json({ error: error.message });
