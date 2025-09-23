@@ -5,39 +5,39 @@ const axios = require('axios');
 const xml2js = require('xml2js');
 const fs = require('fs');
 const path = require('path');
+const Stripe = require('stripe');
+const { Clerk } = require('@clerk/clerk-sdk-node');
 
 const app = express();
 const port = process.env.PORT || 3001;
 const dbPath = process.env.SQLITE_DB_PATH || './data/db/cfb_database.db';
 const repoDbPath = path.join(__dirname, 'data/db/cfb_database.db');
-
-const getDefaultYear = () => 2025; // Align with App.js default, update to 2025 when needed
-
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2025-08-27.basil' }); // Specify API version
+const getDefaultYear = () => 2025;
 
 // Ensure database directory exists and copy database from repo to disk
 console.log(`Copying database from ${repoDbPath} to ${dbPath}`);
 fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 fs.copyFileSync(repoDbPath, dbPath);
-
 const stats = fs.statSync(dbPath);
 console.log(`Database file at: ${dbPath}, size: ${stats.size} bytes`);
 if (stats.size === 0) {
-    console.error('Database file is empty');
+  console.error('Database file is empty');
 }
 
 const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-        console.error('Database connection error:', err.message);
-    } else {
-        console.log('Connected to SQLite database');
-        db.all('SELECT name FROM sqlite_master WHERE type="table"', [], (err, rows) => {
-            if (err) {
-                console.error('Error querying tables:', err.message);
-            } else {
-                console.log('Available tables:', rows.map(row => row.name));
-            }
-        });
-    }
+  if (err) {
+    console.error('Database connection error:', err.message);
+  } else {
+    console.log('Connected to SQLite database');
+    db.all('SELECT name FROM sqlite_master WHERE type="table"', [], (err, rows) => {
+      if (err) {
+        console.error('Error querying tables:', err.message);
+      } else {
+        console.log('Available tables:', rows.map(row => row.name));
+      }
+    });
+  }
 });
 
 app.use(cors());
@@ -48,6 +48,9 @@ app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), asyn
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
   try {
+    if (!webhookSecret) {
+      throw new Error('Missing STRIPE_WEBHOOK_SECRET');
+    }
     const event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
     if (event.type === 'customer.subscription.created' || event.type === 'customer.subscription.updated') {
       const subscription = event.data.object;
@@ -73,6 +76,9 @@ app.use(express.json());
 app.post('/api/subscriptions/create-subscription', async (req, res) => {
   const { priceId, clerkUserId } = req.body;
   try {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('Missing STRIPE_SECRET_KEY');
+    }
     const customer = await stripe.customers.create({
       metadata: { clerkUserId },
     });
