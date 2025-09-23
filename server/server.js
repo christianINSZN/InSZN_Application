@@ -61,14 +61,16 @@ app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), asyn
       throw new Error('Missing STRIPE_WEBHOOK_SECRET');
     }
     const event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
-    console.log('Webhook event received:', event.type, event.data.object);
+    console.log('Webhook event received:', event.type, 'Customer:', event.data.object.customer);
 
     if (event.type === 'customer.subscription.created' || event.type === 'customer.subscription.updated') {
       const subscription = event.data.object;
-      const clerkUserId = subscription.customer?.metadata?.clerkUserId;
+      // Fetch customer to verify metadata
+      const customer = await stripe.customers.retrieve(subscription.customer);
+      const clerkUserId = customer.metadata?.clerkUserId;
 
       if (!clerkUserId) {
-        console.warn('No clerkUserId found in customer metadata:', subscription.customer);
+        console.warn('No clerkUserId found in customer metadata:', customer);
         return res.status(400).send('Webhook Error: Missing clerkUserId in customer metadata');
       }
 
@@ -104,13 +106,14 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
     const customer = await stripe.customers.create({
       metadata: { clerkUserId },
     });
-    console.log('Customer created:', customer.id);
+    console.log('Customer created:', customer.id, 'Metadata:', customer.metadata);
 
     if (paymentMethodId) {
       await stripe.paymentMethods.attach(paymentMethodId, { customer: customer.id });
       await stripe.customers.update(customer.id, {
         invoice_settings: { default_payment_method: paymentMethodId },
       });
+      console.log('Payment method attached:', paymentMethodId);
     }
 
     const subscription = await stripe.subscriptions.create({
@@ -145,14 +148,6 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
 app.get('/', (req, res) => {
   res.json({ message: 'API server is running' });
 });
-
-// Handle raw body for Stripe webhooks
-app.use('/api/webhooks/stripe', express.raw({ type: 'application/json' }));
-app.use(express.json()); // Reapply JSON parsing for other routes
-
-// Routes
-app.use('/api/subscriptions', require('./routes/subscriptions'));
-app.use('/api/webhooks', require('./routes/webhooks'));
 
 app.use((err, req, res, next) => {
   console.error('Server error:', err.stack);

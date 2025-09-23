@@ -24,11 +24,30 @@ const SubscriptionForm = () => {
     setLoading(true);
     setError(null);
     try {
-      console.log('Sending subscription request for user:', user.id, 'with priceId:', plan);
+      // Create payment method
+      const { paymentMethod, error: paymentMethodError } = await stripe.createPaymentMethod({
+        type: 'card',
+        card: elements.getElement(CardElement),
+        billing_details: {
+          email: user.primaryEmailAddress?.emailAddress || 'unknown',
+        },
+      });
+
+      if (paymentMethodError) {
+        console.error('Payment method error:', paymentMethodError);
+        setError(paymentMethodError.message);
+        setLoading(false);
+        return;
+      }
+
+      console.log('Created payment method:', paymentMethod.id);
+
+      // Create subscription
+      console.log('Sending subscription request for user:', user.id, 'with priceId:', plan, 'paymentMethodId:', paymentMethod.id);
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/subscriptions/create-subscription`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceId: plan, clerkUserId: user.id }),
+        body: JSON.stringify({ priceId: plan, clerkUserId: user.id, paymentMethodId: paymentMethod.id }),
       });
       const data = await response.json();
 
@@ -46,13 +65,9 @@ const SubscriptionForm = () => {
         return;
       }
 
+      // Confirm payment
       const result = await stripe.confirmCardPayment(data.clientSecret, {
-        payment_method: {
-          card: elements.getElement(CardElement),
-          billing_details: {
-            email: user.primaryEmailAddress?.emailAddress || 'unknown',
-          },
-        },
+        payment_method: paymentMethod.id,
       });
 
       if (result.error) {
@@ -89,7 +104,7 @@ const SubscriptionForm = () => {
           disabled={!user}
         >
           <option value="price_1SAFtEFQmtxCMsk5yQanLLaY">Pro ($5/month)</option>
-          <option value="price_1SAMI6FQmtxCMsk5ZVLVzH1u">Premium ($20/month)</option> {/* Replace with your Premium Price ID */}
+          <option value="price_1SAFtEFQmtxCMsk5xxxxxx">Premium ($20/month)</option> {/* Replace with your Premium Price ID */}
         </select>
         <CardElement className="p-2 border rounded mb-4" />
         {error && <p className="text-red-500 mb-4">{error}</p>}
