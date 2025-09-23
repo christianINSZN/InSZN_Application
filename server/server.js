@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
@@ -12,8 +13,16 @@ const app = express();
 const port = process.env.PORT || 3001;
 const dbPath = process.env.SQLITE_DB_PATH || './data/db/cfb_database.db';
 const repoDbPath = path.join(__dirname, 'data/db/cfb_database.db');
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2025-08-27.basil' }); // Specify API version
 const getDefaultYear = () => 2025;
+
+// Validate environment variables
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('Missing STRIPE_SECRET_KEY in environment variables');
+}
+if (!process.env.CLERK_SECRET_KEY) {
+  throw new Error('Missing CLERK_SECRET_KEY in environment variables');
+}
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2025-08-27.basil' });
 
 // Ensure database directory exists and copy database from repo to disk
 console.log(`Copying database from ${repoDbPath} to ${dbPath}`);
@@ -52,10 +61,18 @@ app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), asyn
       throw new Error('Missing STRIPE_WEBHOOK_SECRET');
     }
     const event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+    console.log('Webhook event received:', event.type, event.data.object);
+
     if (event.type === 'customer.subscription.created' || event.type === 'customer.subscription.updated') {
       const subscription = event.data.object;
-      const clerkUserId = subscription.customer.metadata.clerkUserId;
-      const plan = subscription.items.data[0].price.id === 'price_123' ? 'pro' : 'premium'; // Replace with your Price IDs
+      const clerkUserId = subscription.customer?.metadata?.clerkUserId;
+
+      if (!clerkUserId) {
+        console.warn('No clerkUserId found in customer metadata:', subscription.customer);
+        return res.status(400).send('Webhook Error: Missing clerkUserId in customer metadata');
+      }
+
+      const plan = subscription.items.data[0]?.price.id === 'price_1SAFtEFQmtxCMsk5yQanLLaY' ? 'pro' : 'premium'; // Replace with your Price IDs
       const clerk = new Clerk({ apiKey: process.env.CLERK_SECRET_KEY });
       await clerk.users.updateUserMetadata(clerkUserId, {
         publicMetadata: { subscriptionPlan: plan },
@@ -76,12 +93,19 @@ app.use(express.json());
 app.post('/api/subscriptions/create-subscription', async (req, res) => {
   const { priceId, clerkUserId } = req.body;
   try {
-    if (!process.env.STRIPE_SECRET_KEY) {
-      throw new Error('Missing STRIPE_SECRET_KEY');
+    if (!clerkUserId) {
+      throw new Error('Missing clerkUserId in request body');
     }
+    if (!priceId) {
+      throw new Error('Missing priceId in request body');
+    }
+    console.log('Creating subscription for clerkUserId:', clerkUserId, 'with priceId:', priceId);
+
     const customer = await stripe.customers.create({
       metadata: { clerkUserId },
     });
+    console.log('Customer created:', customer.id);
+
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
       items: [{ price: priceId }],
@@ -89,12 +113,24 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
       payment_settings: { save_default_payment_method: 'on_subscription' },
       expand: ['latest_invoice.payment_intent'],
     });
+    console.log('Subscription created:', subscription);
+
+    // Check if payment_intent exists
+    if (!subscription.latest_invoice?.payment_intent) {
+      console.warn('No payment_intent in subscription, subscription is incomplete:', subscription.id);
+      return res.json({
+        subscriptionId: subscription.id,
+        status: subscription.status,
+        message: 'Subscription created but requires payment confirmation',
+      });
+    }
+
     res.json({
       clientSecret: subscription.latest_invoice.payment_intent.client_secret,
       subscriptionId: subscription.id,
     });
   } catch (error) {
-    console.error('Error creating subscription:', error);
+    console.error('Error creating subscription:', error, 'Response:', error.response?.data);
     res.status(500).json({ error: error.message });
   }
 });
