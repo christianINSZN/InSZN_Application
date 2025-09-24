@@ -7,7 +7,7 @@ function TopTeams() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const year = 2025;
-  const week = 4;
+  const week = 5;
   const navigate = useNavigate();
   const columnHelper = createColumnHelper();
 

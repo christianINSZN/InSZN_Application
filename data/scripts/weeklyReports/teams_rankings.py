@@ -347,7 +347,7 @@ def save_rankings(year, week):
 def main():
     try:
         year = 2025
-        week = 4
+        week = 5
         save_rankings(year, week)
         conn.commit()
     except Exception as e:
