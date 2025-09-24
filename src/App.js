@@ -47,7 +47,7 @@ function App() {
   return (
     <BrowserRouter>
       <NavBar isOpen={isOpen} setIsOpen={setIsOpen} />
-      <div className="w-full pt-16 p-0 sm:p-4 overflow-auto bg-gray-100">
+      <div className="w-full pt-16 mt-16 p-0 sm:p-4 overflow-auto bg-gray-100">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/players" element={<Players year={defaultYear} />} />
