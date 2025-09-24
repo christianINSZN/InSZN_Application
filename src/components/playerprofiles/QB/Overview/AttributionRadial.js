@@ -11,7 +11,6 @@ const metricExplanations = {
 };
 
 const AttributionRadial = ({ playerId, year, percentileGrades }) => {
-  // Function to get grade value from percentileGrades
   const getGradeValue = (gradeKey) => {
     if (!percentileGrades) return 'N/A';
     switch (gradeKey) {
@@ -28,14 +27,12 @@ const AttributionRadial = ({ playerId, year, percentileGrades }) => {
     }
   };
 
-  // Function to format percentile with two decimals
   const formatPercentile = (value) => {
     if (value === 'N/A' || value === null || value === undefined) return 'N/A';
     const numValue = parseFloat(value);
     return isNaN(numValue) ? 'N/A' : `${numValue.toFixed(2)}%`;
   };
 
-  // Manually adjustable label mappings
   const customLabels = {
     'Grade A': 'Decisiveness',
     'Grade B': 'Playmaking',
@@ -54,7 +51,6 @@ const AttributionRadial = ({ playerId, year, percentileGrades }) => {
       return;
     }
 
-    // Extract data for the 5 specific grades
     const gradeKeys = ['Grade A', 'Grade B', 'Grade C', 'Grade D', 'Grade E'];
     const labels = gradeKeys.map(key => customLabels[key] || key);
     const dataValues = gradeKeys.map(key => {
@@ -65,7 +61,6 @@ const AttributionRadial = ({ playerId, year, percentileGrades }) => {
       }
       return numericValue;
     });
-
     setData({ labels, data: dataValues });
   }, [playerId, year, percentileGrades]);
 
@@ -73,7 +68,6 @@ const AttributionRadial = ({ playerId, year, percentileGrades }) => {
     if (chartRef.current) {
       chartRef.current.destroy();
     }
-
     const ctx = canvasRef.current?.getContext('2d');
     if (ctx && data.labels.length > 0 && data.data.length > 0 && data.data.some(v => v > 0)) {
       chartRef.current = new Chart(ctx, {
@@ -103,7 +97,7 @@ const AttributionRadial = ({ playerId, year, percentileGrades }) => {
               },
               pointLabels: {
                 font: {
-                  size: 16,
+                  size: window.innerWidth < 640 ? 12 : 16, // Smaller on mobile
                   family: 'Arial',
                   weight: 'bold'
                 },
@@ -116,23 +110,19 @@ const AttributionRadial = ({ playerId, year, percentileGrades }) => {
           plugins: {
             legend: { display: false },
             tooltip: {
-              enabled: false, // disable default
+              enabled: false,
               external: (context) => {
                 const tooltipModel = context.tooltip;
                 let tooltipEl = document.getElementById('chartjs-tooltip');
-
                 if (!tooltipEl) {
                   tooltipEl = document.createElement('div');
                   tooltipEl.id = 'chartjs-tooltip';
                   document.body.appendChild(tooltipEl);
                 }
-
                 if (tooltipModel.opacity === 0) {
                   tooltipEl.style.opacity = 0;
                   return;
                 }
-
-                // Style the tooltip
                 tooltipEl.style.maxWidth = '200px';
                 tooltipEl.style.wordWrap = 'break-word';
                 tooltipEl.style.fontFamily = 'Arial';
@@ -143,12 +133,8 @@ const AttributionRadial = ({ playerId, year, percentileGrades }) => {
                 tooltipEl.style.borderRadius = '4px';
                 tooltipEl.style.pointerEvents = 'none';
                 tooltipEl.style.position = 'absolute';
-
-                // Safe title & body
                 const title = (tooltipModel.title && tooltipModel.title.length) ? tooltipModel.title[0] : '';
                 const bodyLines = tooltipModel.body ? tooltipModel.body.map(b => b.lines).flat() : [];
-
-                // Build HTML
                 let innerHtml = '';
                 if (title) {
                   innerHtml += `<div style="font-size: 16px; font-weight: bold; margin-bottom: 4px;">${title}</div>`;
@@ -158,10 +144,7 @@ const AttributionRadial = ({ playerId, year, percentileGrades }) => {
                     innerHtml += `<div style="margin-bottom: 2px;">${line}</div>`;
                   }
                 });
-
                 tooltipEl.innerHTML = innerHtml;
-
-                // Position
                 const { left, top } = context.chart.canvas.getBoundingClientRect();
                 tooltipEl.style.left = left + window.pageXOffset + tooltipModel.caretX + 'px';
                 tooltipEl.style.top = top + window.pageYOffset + tooltipModel.caretY + 'px';
