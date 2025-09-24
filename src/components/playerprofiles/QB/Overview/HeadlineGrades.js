@@ -9,8 +9,8 @@ const HeadlineGrades = ({
   percentileGrades,
   weeklyGrades,
   teamGames,
-  width = '50%', // Default width, customizable via prop
-  height = '50%', // Default height, customizable via prop
+  width = '50%',
+  height = '50%',
 }) => {
   const convertToLetterGrade = (value) => {
     if (value === 'N/A' || value === null || value === undefined) return 'N/A';
@@ -116,7 +116,7 @@ const HeadlineGrades = ({
       const maxValue = 100;
       const buffer = (maxValue - minValue) * 0.1;
       const yMin = Math.max(0, minValue - buffer);
-      const yMax = maxValue ;
+      const yMax = maxValue;
       chartRef.current = new Chart(ctx, {
         type: 'line',
         data: {
@@ -134,8 +134,17 @@ const HeadlineGrades = ({
         },
         options: {
           scales: {
-            x: { title: { display: false, text: 'Opponent' }, ticks: { autoSkip: false, maxRotation: 45, minRotation: 45, labelOffset: 10 } },
-            y: { title: { display: true, text: 'Grade' }, beginAtZero: true, min: yMin, max: yMax, ticks: { stepSize: (yMax - yMin) / 5 } },
+            x: {
+              title: { display: false, text: 'Opponent' },
+              ticks: { autoSkip: false, maxRotation: 45, minRotation: 45, labelOffset: 10, font: { size: 10 } },
+            },
+            y: {
+              title: { display: true, text: 'Grade', font: { size: 12 } },
+              beginAtZero: true,
+              min: yMin,
+              max: yMax,
+              ticks: { stepSize: (yMax - yMin) / 5, font: { size: 10 } },
+            },
           },
           plugins: { legend: { display: true, position: 'top' }, tooltip: { mode: 'index', intersect: false } },
           responsive: true,
@@ -149,65 +158,65 @@ const HeadlineGrades = ({
   return (
     <div className="h-80 bg-white rounded-lg shadow-lg">
       <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Headline Grades</h2>
-      <div className="grid grid-cols-3 gap-4 mb-4 h-[40%]" >
-        <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Pass Grade'); }}>
-          <h3 className="text-md font-medium">Overall Passing</h3>
-          <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Pass Grade'))}</p>
-          <p className="text-xs text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Pass Grade'))}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-2 sm:mb-4 h-[40%]">
+        <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[100px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Pass Grade'); }}>
+          <h3 className="text-sm sm:text-md font-medium">Overall Passing</h3>
+          <p className="text-2xl sm:text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Pass Grade'))}</p>
+          <p className="text-[10px] sm:text-xs text-gray-500 p-2 sm:p-2">Percentile: {formatPercentile(getGradeValue('Pass Grade'))}</p>
         </div>
-        <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Overall Offense Grade'); }}>
-          <h3 className="text-md font-medium">Overall Offense</h3>
-          <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Overall Offense Grade'))}</p>
-          <p className="text-xs text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Overall Offense Grade'))}</p>
+        <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[100px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Overall Offense Grade'); }}>
+          <h3 className="text-sm sm:text-md font-medium">Overall Offense</h3>
+          <p className="text-2xl sm:text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Overall Offense Grade'))}</p>
+          <p className="text-[10px] sm:text-xs text-gray-500 p-2 sm:p-2">Percentile: {formatPercentile(getGradeValue('Overall Offense Grade'))}</p>
         </div>
-        <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Rushing Grade'); }}>
-          <h3 className="text-md font-medium">Overall Rushing</h3>
-          <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Rushing Grade'))}</p>
-          <p className="text-xs text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Rushing Grade'))}</p>
+        <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[100px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Rushing Grade'); }}>
+          <h3 className="text-sm sm:text-md font-medium">Overall Rushing</h3>
+          <p className="text-2xl sm:text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Rushing Grade'))}</p>
+          <p className="text-[10px] sm:text-xs text-gray-500 p-2 sm:p-2">Percentile: {formatPercentile(getGradeValue('Rushing Grade'))}</p>
         </div>
       </div>
-      <div className="grid grid-cols-6 gap-2 h-[40%]">
-        <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Behind LOS Pass Grade'); }}>
-          <h3 className="text-sm font-medium">BLOS Pass</h3>
-          <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Behind LOS Pass Grade'))}</p>
-          <p className="text-[11px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('Behind LOS Pass Grade'))}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-6 gap-2 sm:gap-2 h-[40%]">
+        <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[100px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Behind LOS Pass Grade'); }}>
+          <h3 className="text-xs sm:text-sm font-medium">BLOS Pass</h3>
+          <p className="text-2xl sm:text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Behind LOS Pass Grade'))}</p>
+          <p className="text-[10px] sm:text-[11px] text-gray-500 p-2 sm:p-2.5">Percentile: {formatPercentile(getGradeValue('Behind LOS Pass Grade'))}</p>
         </div>
-        <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Short Pass Grade'); }}>
-          <h3 className="text-sm font-medium">Short Pass</h3>
-          <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Short Pass Grade'))}</p>
-          <p className="text-[11px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('Short Pass Grade'))}</p>
+        <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[100px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Short Pass Grade'); }}>
+          <h3 className="text-xs sm:text-sm font-medium">Short Pass</h3>
+          <p className="text-2xl sm:text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Short Pass Grade'))}</p>
+          <p className="text-[10px] sm:text-[11px] text-gray-500 p-2 sm:p-2.5">Percentile: {formatPercentile(getGradeValue('Short Pass Grade'))}</p>
         </div>
-        <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Medium Pass Grade'); }}>
-          <h3 className="text-sm font-medium">Medium Pass</h3>
-          <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Medium Pass Grade'))}</p>
-          <p className="text-[11px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('Medium Pass Grade'))}</p>
+        <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[100px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Medium Pass Grade'); }}>
+          <h3 className="text-xs sm:text-sm font-medium">Medium Pass</h3>
+          <p className="text-2xl sm:text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Medium Pass Grade'))}</p>
+          <p className="text-[10px] sm:text-[11px] text-gray-500 p-2 sm:p-2.5">Percentile: {formatPercentile(getGradeValue('Medium Pass Grade'))}</p>
         </div>
-        <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Deep Pass Grade'); }}>
-          <h3 className="text-sm font-medium">Deep Pass</h3>
-          <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Deep Pass Grade'))}</p>
-          <p className="text-[11px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('Deep Pass Grade'))}</p>
+        <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[100px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Deep Pass Grade'); }}>
+          <h3 className="text-xs sm:text-sm font-medium">Deep Pass</h3>
+          <p className="text-2xl sm:text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Deep Pass Grade'))}</p>
+          <p className="text-[10px] sm:text-[11px] text-gray-500 p-2 sm:p-2.5">Percentile: {formatPercentile(getGradeValue('Deep Pass Grade'))}</p>
         </div>
-        <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Pressure Pass Grades'); }}>
-          <h3 className="text-sm font-medium">Pressure Pass</h3>
-          <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Pressure Pass Grades'))}</p>
-          <p className="text-[11px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('Pressure Pass Grades'))}</p>
+        <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[100px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Pressure Pass Grades'); }}>
+          <h3 className="text-xs sm:text-sm font-medium">Pressure Pass</h3>
+          <p className="text-2xl sm:text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Pressure Pass Grades'))}</p>
+          <p className="text-[10px] sm:text-[11px] text-gray-500 p-2 sm:p-2.5">Percentile: {formatPercentile(getGradeValue('Pressure Pass Grades'))}</p>
         </div>
-        <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Blitz Pass Grades'); }}>
-          <h3 className="text-sm font-medium">Blitz Pass</h3>
-          <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Blitz Pass Grades'))}</p>
-          <p className="text-[11px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('Blitz Pass Grades'))}</p>
+        <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[100px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Blitz Pass Grades'); }}>
+          <h3 className="text-xs sm:text-sm font-medium">Blitz Pass</h3>
+          <p className="text-2xl sm:text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Blitz Pass Grades'))}</p>
+          <p className="text-[10px] sm:text-[11px] text-gray-500 p-2 sm:p-2.5">Percentile: {formatPercentile(getGradeValue('Blitz Pass Grades'))}</p>
         </div>
       </div>
       {isPopupOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-4 rounded-lg shadow-lg w-1/2 h-1/2 flex flex-col" style={{ width: width, height: height }}>
-            <h3 className="text-lg font-semibold mb-2">{selectedGrade}</h3>
-            <div className="flex-1 overflow-auto"> {/* Added overflow-auto to handle content */}
+          <div className="bg-white p-2 sm:p-4 rounded-lg shadow-lg w-[95%] sm:w-1/2 h-[80%] sm:h-1/2 flex flex-col">
+            <h3 className="text-sm sm:text-lg font-semibold mb-1 sm:mb-2">{selectedGrade}</h3>
+            <div className="flex-1 overflow-auto" style={{ maxHeight: '250px' }}>
               <canvas id="trendChart" className="w-full h-full" />
             </div>
-            <div className="mt-2 flex justify-end"> {/* Moved button to fixed footer */}
+            <div className="mt-1 sm:mt-2 flex justify-end">
               <button
-                className="bg-red-500 text-white p-2 rounded hover:bg-red-700"
+                className="bg-red-500 text-white p-1 sm:p-2 rounded hover:bg-red-700"
                 onClick={() => setIsPopupOpen(false)}
               >
                 Close
