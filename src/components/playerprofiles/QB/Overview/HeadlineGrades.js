@@ -18,17 +18,17 @@ const HeadlineGrades = ({
     if (isNaN(numValue)) return 'N/A';
     if (numValue >= 100) return '#1';
     if (numValue >= 95) return 'A+';
-    if (numValue >= 90) return 'A';
-    if (numValue >= 85) return 'A-';
-    if (numValue >= 80) return 'B+';
-    if (numValue >= 75) return 'B';
-    if (numValue >= 70) return 'B-';
-    if (numValue >= 65) return 'C+';
-    if (numValue >= 60) return 'C';
-    if (numValue >= 55) return 'C-';
-    if (numValue >= 50) return 'D+';
-    if (numValue >= 45) return 'D';
-    if (numValue >= 40) return 'D-';
+    if (numValue >= 87.91666667) return 'A';
+    if (numValue >= 80.83333333) return 'A-';
+    if (numValue >= 73.75) return 'B+';
+    if (numValue >= 66.66666667) return 'B';
+    if (numValue >= 59.58333333) return 'B-';
+    if (numValue >= 52.5) return 'C+';
+    if (numValue >= 45.41666667) return 'C';
+    if (numValue >= 38.33333333) return 'C-';
+    if (numValue >= 31.25) return 'D+';
+    if (numValue >= 24.16666667) return 'D';
+    if (numValue >= 17.08333333) return 'D-';
     return 'F';
   };
 

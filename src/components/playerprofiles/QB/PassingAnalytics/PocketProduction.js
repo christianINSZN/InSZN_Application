@@ -65,16 +65,17 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
 
     if (!checkedPlayers[metricId][selectedPlayerId]) {
       try {
-        const gradesPromises = teamGames.map(game =>
-          fetch(`${process.env.REACT_APP_API_URL}/api/player_passing_weekly_all/${selectedPlayerId}/${year}/${game.week}/${game.seasonType}`, {
+        // Fetch data for all weeks (1-15) for the selected player
+        const gradesPromises = Array.from({ length: 15 }, (_, i) => i + 1).map(week =>
+          fetch(`http://localhost:3001/api/player_passing_weekly_all/${selectedPlayerId}/${year}/${week}/regular`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
           }).then(response => {
-            if (!response.ok) return { week: game.week, seasonType: game.seasonType, data: null };
-            return response.json().then(data => ({ week: game.week, seasonType: game.seasonType, data: data[0] || null }));
+            if (!response.ok) return { week, seasonType: 'regular', data: null };
+            return response.json().then(data => ({ week, seasonType: 'regular', data: data[0] || null }));
           }).catch(error => {
-            console.error(`Fetch error for player ${selectedPlayerId}: ${error.message}`);
-            return { week: game.week, seasonType: game.seasonType, data: null };
+            console.error(`Fetch error for player ${selectedPlayerId}, week ${week}: ${error.message}`);
+            return { week, seasonType: 'regular', data: null };
           })
         );
         const gradesResults = await Promise.all(gradesPromises);
@@ -129,11 +130,6 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
       return acc;
     }, {});
 
-    const labels = sortedGames.map(game => {
-      const key = `${game.week}_${game.seasonType}`;
-      return opponentLookup[key]?.opponent || `Week ${game.week} (${game.seasonType})`;
-    });
-
     const metrics = [
       { id: 'def_gen_pressures', field: 'def_gen_pressures', title: 'Defense Generated Pressures', min: 0, max: 50, unit: 'Pressures' },
       { id: 'pressure_to_sack_rate', field: 'pressure_to_sack_rate', title: 'Pressure to Sack Rate (%)', min: 0, max: 50, unit: 'Pressure to Sack Rate' },
@@ -156,12 +152,30 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
       }
 
       const ctx = canvas.getContext('2d');
+
+      // Check if any additional players are selected
+      const hasAdditionalPlayers = Object.keys(checkedPlayers[metric.id]).some(pId => checkedPlayers[metric.id][pId]);
+
+      // Default to 15 weeks
+      const sortedWeeks = Array.from({ length: 15 }, (_, i) => i + 1).map(week => ({
+        week,
+        seasonType: 'regular',
+        key: `${week}_regular`,
+      }));
+
+      // Create labels: opponent abbreviations for single player, week numbers for multiple
+      const labels = sortedWeeks.map(week => {
+        if (hasAdditionalPlayers) {
+          return `Week ${week.week}`;
+        }
+        return opponentLookup[week.key]?.opponent || 'BYE';
+      });
+
       const datasets = [
         {
           label: capitalizeName(allPlayerPercentiles[playerId]?.name),
-          data: sortedGames.map(game => {
-            const key = `${game.week}_${game.seasonType}`;
-            const weekData = weeklyGrades[key] || {};
+          data: sortedWeeks.map(week => {
+            const weekData = weeklyGrades[week.key] || {};
             const value = weekData[metric.field] !== undefined && weekData[metric.field] !== null ? weekData[metric.field] : null;
             return value;
           }),
@@ -176,9 +190,8 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
           .filter(pId => checkedPlayers[metric.id][pId])
           .map((pId, idx) => ({
             label: capitalizeName(allPlayerPercentiles[pId]?.name),
-            data: sortedGames.map(game => {
-              const key = `${game.week}_${game.seasonType}`;
-              const weekData = playerWeeklyData[metric.id][pId]?.[key] || {};
+            data: sortedWeeks.map(week => {
+              const weekData = playerWeeklyData[metric.id][pId]?.[week.key] || {};
               const value = weekData[metric.field] !== undefined && weekData[metric.field] !== null ? weekData[metric.field] : null;
               return value;
             }),

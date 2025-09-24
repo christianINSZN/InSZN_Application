@@ -1,21 +1,22 @@
-// In src/components/playerprofiles/QB/PassingAnalytics/PassingAnalytics.js
 import React, { useState, useEffect, createContext } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
+import { useClerk } from '@clerk/clerk-react';
 import Header from './Overview/Header';
 import GameLogPassing from './FieldView/GameLogPassing';
 import MetricChart from './FieldView/MetricChart';
 import FieldView from './FieldView/FieldView';
+
 export const WeeklyGradesContext = createContext({});
 
 function FieldViewInterface() {
   const { playerId } = useParams();
   const location = useLocation();
+  const { user } = useClerk(); // Access Clerk user data
   const [playerData, setPlayerData] = useState(null);
   const [basicData, setBasicData] = useState(null);
   const [teamGames, setTeamGames] = useState([]);
   const [weeklyGrades, setWeeklyGrades] = useState({});
   const [percentileGrades, setPercentileGrades] = useState(null);
-  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedZone, setSelectedZone] = useState(null);
@@ -23,9 +24,13 @@ function FieldViewInterface() {
   const [selectedDistance, setSelectedDistance] = useState('deep'); // Default distance
   const [depthData, setDepthData] = useState(null);
   const [colLabels, setColLabels] = useState(['Left', 'Center', 'Right']);
-  
+
   // Get year from navigation state, default to 2024 if not provided
   const year = location.state?.year || 2024;
+
+  // Check subscription tier
+  const subscriptionPlan = user?.publicMetadata?.subscriptionPlan;
+  const isSubscribed = subscriptionPlan === 'pro' || subscriptionPlan === 'premium';
 
   useEffect(() => {
     console.log('Component mounted with selectedMetric:', selectedMetric, 'selectedDistance:', selectedDistance);
@@ -44,38 +49,43 @@ function FieldViewInterface() {
           fetch(`${process.env.REACT_APP_API_URL}/api/player_games/${year}/${playerId}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
-          })
+          }),
         ]);
+
         if (!gradesResponse.ok) throw new Error('Failed to fetch grades data');
         if (!basicResponse.ok) throw new Error('Failed to fetch basic data');
         if (!gamesResponse.ok) {
           const errorText = await gamesResponse.text();
           throw new Error(`Failed to fetch team games data: ${errorText}`);
         }
+
         const gradesData = await gradesResponse.json();
         const basicData = await basicResponse.json();
         const gamesData = await gamesResponse.json();
+
         setPlayerData(gradesData[0] || null);
         setBasicData(basicData[0] || null);
         setTeamGames(gamesData || []);
 
         // Fetch passing depth data for each game
-        const gradesPromises = gamesData.map(game => {
+        const gradesPromises = gamesData.map((game) => {
           const url = `${process.env.REACT_APP_API_URL}/api/player_passing_weekly_all/${playerId}/${year}/${game.week}/${game.seasonType}`;
           console.log(`Fetching passing depth for game ${game.week} (${game.startDate}, ${game.seasonType}): ${url}`);
           return fetch(url, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
-          }).catch(error => {
-            console.error(`Fetch error for ${url}: ${error.message}`);
-            return { week: game.week, seasonType: game.seasonType, data: null };
-          }).then(response => {
-            if (!response.ok) {
-              console.log(`No data for ${url}, returning null`);
+          })
+            .catch((error) => {
+              console.error(`Fetch error for ${url}: ${error.message}`);
               return { week: game.week, seasonType: game.seasonType, data: null };
-            }
-            return response.json().then(data => ({ week: game.week, seasonType: game.seasonType, data: data[0] || null }));
-          });
+            })
+            .then((response) => {
+              if (!response.ok) {
+                console.log(`No data for ${url}, returning null`);
+                return { week: game.week, seasonType: game.seasonType, data: null };
+              }
+              return response.json().then((data) => ({ week: game.week, seasonType: game.seasonType, data: data[0] || null }));
+            });
         });
 
         const gradesResults = await Promise.all(gradesPromises);
@@ -120,11 +130,11 @@ function FieldViewInterface() {
   }, [selectedZone, selectedMetric, selectedDistance, weeklyGrades]);
 
   const handleZoneSelect = (data) => {
-    console.log('Handling zone select:', data); // Debug the input
-    setSelectedZone(data.zone.split('_')[0]); // Extract zone prefix (e.g., 'left' from 'left_short')
-    setSelectedMetric(data.metric || selectedMetric); // Ensure metric is set
+    console.log('Handling zone select:', data);
+    setSelectedZone(data.zone.split('_')[0]);
+    setSelectedMetric(data.metric || selectedMetric);
     const distanceMatch = data.zone.match(/(deep|medium|short|behind_los)/);
-    setSelectedDistance(distanceMatch ? distanceMatch[0] : selectedDistance); // Extract distance
+    setSelectedDistance(distanceMatch ? distanceMatch[0] : selectedDistance);
   };
 
   if (loading) return <div className="p-4 text-gray-500">Loading...</div>;
@@ -140,12 +150,11 @@ function FieldViewInterface() {
   const isFieldViewActive = location.pathname === `/players/qb/${playerId}/fieldview`;
   const ish2hActive = location.pathname === `/players/qb/${playerId}/h2h`;
 
-  // Create gradesData object from playerData
   const gradesData = {
     yards,
     touchdowns,
     interceptions,
-    grades_pass
+    grades_pass,
   };
 
   return (
@@ -162,7 +171,7 @@ function FieldViewInterface() {
             weight={weight}
             year={year}
             playerId={playerId}
-            gradesData={gradesData} // Pass the consolidated gradesData object
+            gradesData={gradesData}
           />
           <div className="border-b border-gray-300 mb-4">
             <ul className="flex gap-4">
@@ -204,14 +213,70 @@ function FieldViewInterface() {
               </li>
             </ul>
           </div>
-          <div className="grid grid-cols-[70%_30%] gap-4 w-full">
-            <div className="space-y-6">
-              <GameLogPassing playerId={playerId} year={year} selectedZone={selectedZone} selectedMetric={selectedMetric} selectedDistance={selectedDistance} teamGames={teamGames} />
-              <MetricChart playerId={playerId} year={year} selectedZone={selectedZone} selectedMetric={selectedMetric} selectedDistance={selectedDistance} teamGames={teamGames} />
-            </div>
-            <div className="grid grid-rows-[1fr] gap-4 h-[full]">
-              <FieldView playerId={playerId} year={year} onZoneSelect={handleZoneSelect} colLabels={colLabels} />
-            </div>
+          <div className="relative">
+            {isSubscribed ? (
+              <div className="grid grid-cols-[71%_28%] gap-4 w-full">
+                <div className="space-y-6">
+                  <GameLogPassing
+                    playerId={playerId}
+                    year={year}
+                    selectedZone={selectedZone}
+                    selectedMetric={selectedMetric}
+                    selectedDistance={selectedDistance}
+                    teamGames={teamGames}
+                  />
+                  <MetricChart
+                    playerId={playerId}
+                    year={year}
+                    selectedZone={selectedZone}
+                    selectedMetric={selectedMetric}
+                    selectedDistance={selectedDistance}
+                    teamGames={teamGames}
+                  />
+                </div>
+                <div className="grid grid-rows-[1fr] gap-4 h-[full]">
+                  <FieldView playerId={playerId} year={year} onZoneSelect={handleZoneSelect} colLabels={colLabels} />
+                </div>
+              </div>
+            ) : (
+              <div className="relative">
+                <div className="grid grid-cols-[71%_28%] gap-4 w-full filter blur-xs opacity-80">
+                  <div className="space-y-6">
+                    <GameLogPassing
+                      playerId={playerId}
+                      year={year}
+                      selectedZone={selectedZone}
+                      selectedMetric={selectedMetric}
+                      selectedDistance={selectedDistance}
+                      teamGames={teamGames}
+                    />
+                    <MetricChart
+                      playerId={playerId}
+                      year={year}
+                      selectedZone={selectedZone}
+                      selectedMetric={selectedMetric}
+                      selectedDistance={selectedDistance}
+                      teamGames={teamGames}
+                    />
+                  </div>
+                  <div className="grid grid-rows-[1fr] gap-4 h-[full]">
+                    <FieldView playerId={playerId} year={year} onZoneSelect={handleZoneSelect} colLabels={colLabels} />
+                  </div>
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 backdrop-filter backdrop-blur-md rounded-lg">
+                  <div className="p-6 bg-white rounded-lg shadow-lg text-center">
+                    <p className="text-gray-700 text-lg font-semibold mb-2">Exclusive Content</p>
+                    <p className="text-gray-500 mb-4">This content is exclusive to INSZN Pro subscribers.</p>
+                    <Link
+                      to="/subscribe"
+                      className="px-4 py-2 bg-[#235347] text-white rounded hover:bg-[#1b3e32]"
+                    >
+                      Subscribe Now
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

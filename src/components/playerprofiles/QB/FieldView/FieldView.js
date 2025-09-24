@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 
-const FieldView = ({ playerId, year, onZoneSelect, colLabels = ['Left', 'Center', 'Right'] }) => {
+const FieldView = ({ playerId, year, onZoneSelect, colLabels = ['Left', 'Center', 'Right'], excludedMetrics = ['bats', 'pressure_to_sack_rate', 'sack_percent', 'sacks', 'scrambles', 'spikes', 'thrown_aways'], metricRenames = {'ypa': 'YPA', 'btt_rate': 'Big Time Throw Rate', 'qb_rating': 'QB Rating', 'twp_rate': 'Turnover Worthy Play Rate'} }) => {
   const [selectedZone, setSelectedZone] = useState(null);
   const [depthData, setDepthData] = useState(null);
   const [selectedMetric, setSelectedMetric] = useState(''); // Default to empty string for placeholder
+
   useEffect(() => {
     if (playerId && year) {
       fetch(`${process.env.REACT_APP_API_URL}/api/player_passing_season_depth/${playerId}/${year}`)
@@ -29,39 +30,33 @@ const FieldView = ({ playerId, year, onZoneSelect, colLabels = ['Left', 'Center'
 
   const handleZoneClick = (zone) => {
     setSelectedZone(zone);
-    if (onZoneSelect && selectedMetric) { // Only call if a valid metric is selected
+    if (onZoneSelect && selectedMetric) {
       onZoneSelect({ zone, metric: selectedMetric });
     }
   };
 
   const getAvailableMetrics = () => {
-    if (!depthData) return [];
+    if (!depthData || typeof depthData !== 'object') return [];
     const metricSet = new Set();
     Object.keys(depthData).forEach(key => {
       const match = key.match(/^(left|center|right)_(deep|medium|short|behind_los)_([a-z_]+)$/);
-      if (match) metricSet.add(match[3]);
+      if (match && !excludedMetrics.includes(match[3])) {
+        metricSet.add(match[3]);
+      }
     });
-    return Array.from(metricSet);
+    return Array.from(metricSet).sort(); // Sort for consistent order
   };
 
   const formatMetric = (metric) => {
-    if (!metric) return 'Select Metric'; // Handle placeholder
-    return metric
+    if (!metric) return 'Select Metric';
+    return metricRenames[metric] || metric
       .split('_')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
   };
 
-  const formatZone = (zone) => {
-    if (!zone) return 'None';
-    const [position, distance] = zone.split('_');
-    const formattedPosition = position.charAt(0).toUpperCase() + position.slice(1);
-    const formattedDistance = distance === 'behind_los' ? 'Behind LOS' : distance.charAt(0).toUpperCase() + distance.slice(1);
-    return `${formattedPosition} ${formattedDistance}`;
-  };
-
   const getValue = (zone) => {
-    if (!depthData || !selectedMetric) return null; // Handle no metric selected
+    if (!depthData || !selectedMetric) return null;
     const valueKey = `${zone}_${selectedMetric}`;
     const value = depthData[valueKey];
     console.log(`Value for ${zone} with ${selectedMetric}: ${value}`);
@@ -133,8 +128,8 @@ const FieldView = ({ playerId, year, onZoneSelect, colLabels = ['Left', 'Center'
             return (
               <div
                 key={`${rowIndex}-${colIndex}`}
-                className={`border-0 border-gray-0 p-8 flex justify-center items-center text-lg font-bold cursor-pointer text-gray-100 ${
-                  selectedZone === zone ? 'bg-blue-200' : ''
+                className={`border-2 p-8 flex justify-center items-center text-lg font-bold cursor-pointer text-gray-100 ${
+                  selectedZone === zone ? 'border-black' : 'border-white'
                 }`}
                 style={{ ...backgroundStyle, gridRow: rowIndex + 1, gridColumn: colIndex + 2 }}
                 onClick={() => handleZoneClick(zone)}
@@ -145,8 +140,7 @@ const FieldView = ({ playerId, year, onZoneSelect, colLabels = ['Left', 'Center'
           })
         )}
       </div>
-      <div className="mt-2 text-lg text-gray-800 text-center text-bold">
-        <p>Selected Zone: {formatZone(selectedZone)}</p>
+      <div className="mt-2 text-lg text-gray-800 text-center font-bold">
         <p>Selected Metric: {formatMetric(selectedMetric)}</p>
       </div>
     </div>

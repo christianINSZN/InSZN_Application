@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { useUser, SignOutButton } from '@clerk/clerk-react';
 import { BsFillPersonFill } from 'react-icons/bs';
 import { RiTeamFill } from 'react-icons/ri';
-import { MdPeople, MdOutlineJoinFull, MdPersonAdd, MdLogin } from 'react-icons/md';
+import { MdPeople, MdOutlineJoinFull } from 'react-icons/md';
+import { CgProfile } from "react-icons/cg";
 
 function NavBar() {
   const [isTeamsDropdownOpen, setIsTeamsDropdownOpen] = useState(false);
@@ -36,10 +37,10 @@ function NavBar() {
           backgroundImage: 'url(/Header_Gradient.png)',
           backgroundSize: 'auto 64px',
           backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
+          backgroundRepeat: 'no-repeat',
         }}
       >
-        <div className="flex items-center justify-between px-6 max-w-7xl mx-auto h-full">
+        <div className="flex items-center justify-between px-6 max-w-10xl mx-auto h-full">
           {/* Left side nav */}
           <ul className="flex flex-row space-x-6 items-center justify-end flex-1">
             <li>
@@ -81,63 +82,64 @@ function NavBar() {
           {/* Center logo */}
           <div className="flex-none px-6">
             <Link to="/" className="flex items-center justify-center">
-              <img
-                src="/TurfLogo_RemovedBkg.png"
-                alt="INSZN Logo"
-                className="h-14 w-auto"
-              />
+              <img src="/TurfLogo_RemovedBkg.png" alt="INSZN Logo" className="h-14 w-auto" />
             </Link>
           </div>
           {/* Right side nav */}
-          <ul className="flex flex-row space-x-6 items-center justify-start flex-1">
-            <li>
-              <Link to="/h2h" className="flex items-center space-x-2 hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-lg">
-                <MdPeople /> <span>H2H</span>
-              </Link>
-            </li>
-            <li>
-              <Link to="/subscribe" className="flex items-center space-x-2 hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-lg">
-                <MdOutlineJoinFull /> <span>Subscribe</span>
-              </Link>
-            </li>
-            {isSignedIn ? (
-              <li className="relative" ref={profileDropdownRef}>
-                <button
-                  onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                  className="flex items-center space-x-2 hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-lg focus:outline-none"
-                >
-                  <BsFillPersonFill /> <span>Profile</span>
-                </button>
-                {isProfileDropdownOpen && (
-                  <ul className="absolute right-0 mt-2 w-48 bg-white border-2 border-[#235347] rounded shadow-lg z-20">
-                    <li className="px-4 py-2 text-black text-lg">
-                      {user.primaryEmailAddress?.emailAddress || 'No email'}
-                    </li>
-                    <li>
-                      <SignOutButton>
-                        <button className="block w-full text-left px-4 py-2 text-black hover:bg-[#235347]/70 hover:text-white text-lg">
-                          Logout
-                        </button>
-                      </SignOutButton>
-                    </li>
-                  </ul>
-                )}
+          <div className="flex flex-row items-center justify-start flex-1 space-x-6">
+            <ul className="flex flex-row space-x-6 items-center">
+              <li>
+                <Link to="/h2h" className="flex items-center space-x-2 hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-lg">
+                  <MdPeople /> <span>H2H</span>
+                </Link>
               </li>
-            ) : (
-              <>
-                <li>
-                  <Link to="/sign-up" className="flex items-center space-x-2 hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-lg">
-                    <MdPersonAdd /> <span>Sign Up</span>
-                  </Link>
+              <li>
+                <Link to="/subscribe" className="flex items-center space-x-2 hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-lg mr-32">
+                  <MdOutlineJoinFull /> <span>Subscribe</span>
+                </Link>
+              </li>
+              {isSignedIn && (
+                <li className="relative" ref={profileDropdownRef}>
+                  <button
+                    onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                    className="flex items-center space-x-2 bg-[#235347] text-white hover:bg-[#235347]/70 px-3 py-1 rounded text-md ml-72 text-2xl"
+                  >
+                    <CgProfile />
+                  </button>
+                  {isProfileDropdownOpen && (
+                    <ul className="absolute right-0 mt-2 w-48 bg-white border-2 border-[#235347] rounded shadow-lg z-20">
+                      <li className="px-4 py-2 text-black text-lg">
+                        {user.primaryEmailAddress?.emailAddress || 'No email'}
+                      </li>
+                      <li>
+                        <SignOutButton>
+                          <button className="block w-full text-left px-4 py-2 text-black hover:bg-[#235347]/70 hover:text-white text-lg">
+                            Logout
+                          </button>
+                        </SignOutButton>
+                      </li>
+                    </ul>
+                  )}
                 </li>
-                <li>
-                  <Link to="/sign-in" className="flex items-center space-x-2 hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-lg">
-                    <MdLogin /> <span>Sign In</span>
-                  </Link>
-                </li>
-              </>
+              )}
+            </ul>
+            {!isSignedIn && (
+              <div className="flex flex-row space-x-4 items-right">
+                <Link
+                  to="/sign-up"
+                  className="flex items-center space-x-2 bg-[#235347] text-white hover:bg-[#235347]/70 px-3 py-1 rounded text-md"
+                >
+                  <span>Sign Up</span>
+                </Link>
+                <Link
+                  to="/sign-in"
+                  className="flex items-center space-x-2 bg-[#235347] text-white hover:bg-[#235347]/70 px-3 py-1 rounded text-md"
+                >
+                  <span>Sign In</span>
+                </Link>
+              </div>
             )}
-          </ul>
+          </div>
         </div>
       </div>
     </div>

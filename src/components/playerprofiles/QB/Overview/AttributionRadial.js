@@ -1,6 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Chart } from 'chart.js/auto';
 
+// Metric explanations
+const metricExplanations = {
+  'Decisiveness': 'Evaluates how quickly the player releases the ball in standard passing situations.',
+  'Playmaking': 'Evaluates the ability to create impactful (20yd+) pass plays.',
+  'Accuracy': 'Evaluates the accuracy of a designed pass regardless of outcome (catch/drop/INT).',
+  'Throwing IQ': 'Evaluates the decision-making ability to avoid turnovers and make efficient throws.',
+  'Pocket Presence': 'Evaluates the ability of avoiding sacks in the pocket during defense pressure situations.'
+};
+
 const AttributionRadial = ({ playerId, year, percentileGrades }) => {
   // Function to get grade value from percentileGrades
   const getGradeValue = (gradeKey) => {
@@ -40,21 +49,16 @@ const AttributionRadial = ({ playerId, year, percentileGrades }) => {
   const canvasRef = useRef(null);
 
   useEffect(() => {
-    console.log('AttributionRadial props:', { playerId, year, percentileGrades });
-    console.log(`Processing data for playerId: ${playerId}, year: ${year}, percentileGrades:`, percentileGrades);
-
     if (!percentileGrades) {
-      console.warn('percentileGrades is undefined, setting empty data');
       setData({ labels: [], data: [] });
       return;
     }
 
     // Extract data for the 5 specific grades
     const gradeKeys = ['Grade A', 'Grade B', 'Grade C', 'Grade D', 'Grade E'];
-    const labels = gradeKeys.map(key => customLabels[key] || key.replace('Grade ', '').replace(/([A-Z])/g, ' $1').trim());
+    const labels = gradeKeys.map(key => customLabels[key] || key);
     const dataValues = gradeKeys.map(key => {
       const value = getGradeValue(key);
-      console.log(`Processing ${key}: ${value}`);
       let numericValue = value === 'N/A' ? 0 : parseFloat(value) || 0;
       if (key === 'Grade A' || key === 'Grade D' || key === 'Grade E') {
         numericValue = 100 - numericValue;
@@ -62,23 +66,16 @@ const AttributionRadial = ({ playerId, year, percentileGrades }) => {
       return numericValue;
     });
 
-    if (dataValues.every(v => v === 0)) {
-      console.warn('All data values are 0, chart may be blank');
-    }
-
-    console.log('Processed data:', { labels, data: dataValues });
     setData({ labels, data: dataValues });
   }, [playerId, year, percentileGrades]);
 
   useEffect(() => {
     if (chartRef.current) {
       chartRef.current.destroy();
-      console.log('Previous chart destroyed');
     }
 
     const ctx = canvasRef.current?.getContext('2d');
     if (ctx && data.labels.length > 0 && data.data.length > 0 && data.data.some(v => v > 0)) {
-      console.log('Creating chart with data:', data);
       chartRef.current = new Chart(ctx, {
         type: 'radar',
         data: {
@@ -101,7 +98,7 @@ const AttributionRadial = ({ playerId, year, percentileGrades }) => {
               ticks: {
                 stepSize: 20,
                 font: {
-                  size: 10,
+                  size: 15,
                 },
               },
               pointLabels: {
@@ -118,20 +115,83 @@ const AttributionRadial = ({ playerId, year, percentileGrades }) => {
           },
           plugins: {
             legend: { display: false },
+            tooltip: {
+              enabled: false, // disable default
+              external: (context) => {
+                const tooltipModel = context.tooltip;
+                let tooltipEl = document.getElementById('chartjs-tooltip');
+
+                if (!tooltipEl) {
+                  tooltipEl = document.createElement('div');
+                  tooltipEl.id = 'chartjs-tooltip';
+                  document.body.appendChild(tooltipEl);
+                }
+
+                if (tooltipModel.opacity === 0) {
+                  tooltipEl.style.opacity = 0;
+                  return;
+                }
+
+                // Style the tooltip
+                tooltipEl.style.maxWidth = '200px';
+                tooltipEl.style.wordWrap = 'break-word';
+                tooltipEl.style.fontFamily = 'Arial';
+                tooltipEl.style.fontSize = '14px';
+                tooltipEl.style.padding = '8px';
+                tooltipEl.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+                tooltipEl.style.color = 'white';
+                tooltipEl.style.borderRadius = '4px';
+                tooltipEl.style.pointerEvents = 'none';
+                tooltipEl.style.position = 'absolute';
+
+                // Safe title & body
+                const title = (tooltipModel.title && tooltipModel.title.length) ? tooltipModel.title[0] : '';
+                const bodyLines = tooltipModel.body ? tooltipModel.body.map(b => b.lines).flat() : [];
+
+                // Build HTML
+                let innerHtml = '';
+                if (title) {
+                  innerHtml += `<div style="font-size: 16px; font-weight: bold; margin-bottom: 4px;">${title}</div>`;
+                }
+                bodyLines.forEach(line => {
+                  if (line) {
+                    innerHtml += `<div style="margin-bottom: 2px;">${line}</div>`;
+                  }
+                });
+
+                tooltipEl.innerHTML = innerHtml;
+
+                // Position
+                const { left, top } = context.chart.canvas.getBoundingClientRect();
+                tooltipEl.style.left = left + window.pageXOffset + tooltipModel.caretX + 'px';
+                tooltipEl.style.top = top + window.pageYOffset + tooltipModel.caretY + 'px';
+                tooltipEl.style.opacity = 1;
+              },
+              callbacks: {
+                title: (tooltipItems) => {
+                  return tooltipItems[0].label;
+                },
+                label: (tooltipItem) => {
+                  const label = tooltipItem.label;
+                  const value = formatPercentile(tooltipItem.raw);
+                  const explanation = metricExplanations[label] || 'No explanation available';
+                  return [`Percentile: ${value}`, "────────────", explanation];
+                }
+              }
+            }
           },
-          maintainAspectRatio: false, // Changed to false for better size control
+          maintainAspectRatio: false,
           responsive: true,
         },
       });
-      console.log('Chart created successfully');
-    } else {
-      console.log('Chart not created - data or context missing:', { labels: data.labels.length, data: data.data, somePositive: data.data.some(v => v > 0) });
     }
   }, [data]);
 
   return (
     <div className="bg-white rounded-lg shadow-lg row-span-2">
-      <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Attribution Radial</h2>
+      <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">
+        Attribution Radial
+      </h2>
       <div className="h-[380px] bg-white flex items-center justify-center relative" style={{ position: 'relative', width: '100%' }}>
         <canvas ref={canvasRef} id="attributionChart" style={{ width: '100%', height: '100%', maxWidth: '600px', maxHeight: '320px' }} />
         {!data.labels.length && <div className="absolute text-red-500">No data available</div>}

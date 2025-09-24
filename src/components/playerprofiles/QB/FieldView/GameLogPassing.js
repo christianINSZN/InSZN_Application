@@ -2,13 +2,28 @@ import React, { useEffect, useRef, useState, useContext } from 'react';
 import Chart from 'chart.js/auto';
 import { WeeklyGradesContext } from '../FieldView';
 
-const GameLogPassing = ({ playerId, year, weeklyGrades, teamGames, allPlayerPercentiles, selectedZone, selectedMetric, selectedDistance }) => {
+const GameLogPassing = ({
+  playerId,
+  year,
+  weeklyGrades,
+  teamGames,
+  allPlayerPercentiles,
+  selectedZone,
+  selectedMetric,
+  selectedDistance,
+  excludedMetrics = ['bats', 'pressure_to_sack_rate', 'sack_percent', 'sacks', 'scrambles', 'spikes', 'thrown_aways'],
+  metricRenames = {
+    'ypa': 'YPA',
+    'btt_rate': 'Big Time Throw Rate',
+    'qb_rating': 'QB Rating',
+    'twp_rate': 'Turnover Worthy Play Rate'
+  }
+}) => {
   const distanceChartRef = useRef(null);
   const positionChartRef = useRef(null);
   const weeklyGradesContext = useContext(WeeklyGradesContext) || {};
   const [distanceData, setDistanceData] = useState([]);
   const [positionData, setPositionData] = useState([]);
-
   const distances = ['behind_los', 'short', 'medium', 'deep'];
   const positions = ['left', 'center', 'right'];
 
@@ -21,8 +36,8 @@ const GameLogPassing = ({ playerId, year, weeklyGrades, teamGames, allPlayerPerc
       positionChartRef.current.chart.destroy();
     }
 
-    // Aggregate data for distance donut chart
-    const newDistanceData = distances.map(distance => {
+    // Aggregate data for distance donut chart (modified for percentages)
+    const distanceTotals = distances.map(distance => {
       let total = 0;
       let count = 0;
       positions.forEach(position => {
@@ -40,8 +55,15 @@ const GameLogPassing = ({ playerId, year, weeklyGrades, teamGames, allPlayerPerc
       return count > 0 ? total / count : 0; // Average across valid data points
     });
 
-    // Aggregate data for position donut chart
-    const newPositionData = positions.map(position => {
+    // Calculate total for normalization
+    const totalDistanceValue = distanceTotals.reduce((sum, value) => sum + value, 0);
+    // Convert to percentages
+    const newDistanceData = distanceTotals.map(value =>
+      totalDistanceValue > 0 ? (value / totalDistanceValue) * 100 : 0
+    );
+
+    // Aggregate data for position donut chart (already percentages)
+    const positionTotals = positions.map(position => {
       let total = 0;
       let count = 0;
       distances.forEach(distance => {
@@ -59,6 +81,13 @@ const GameLogPassing = ({ playerId, year, weeklyGrades, teamGames, allPlayerPerc
       return count > 0 ? total / count : 0; // Average across valid data points
     });
 
+    // Calculate total for normalization
+    const totalPositionValue = positionTotals.reduce((sum, value) => sum + value, 0);
+    // Convert to percentages
+    const newPositionData = positionTotals.map(value =>
+      totalPositionValue > 0 ? (value / totalPositionValue) * 100 : 0
+    );
+
     setDistanceData(newDistanceData);
     setPositionData(newPositionData);
 
@@ -70,8 +99,8 @@ const GameLogPassing = ({ playerId, year, weeklyGrades, teamGames, allPlayerPerc
       'rgba(193, 121, 49, 0.8)', // Orange
     ];
 
-    // Format selectedMetric for display (e.g., "grades_pass" -> "Grades Pass")
-    const formattedMetric = selectedMetric
+    // Format selectedMetric for display
+    const formattedMetric = metricRenames[selectedMetric] || selectedMetric
       .split('_')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
@@ -87,7 +116,7 @@ const GameLogPassing = ({ playerId, year, weeklyGrades, teamGames, allPlayerPerc
             datasets: [{
               data: newDistanceData,
               backgroundColor: colors.slice(0, distances.length),
-              borderColor: colors.slice(0, distances.length).map(c => c.replace('0.6', '1')),
+              borderColor: colors.slice(0, distances.length).map(c => c.replace('0.8', '1')),
               borderWidth: 1,
             }],
           },
@@ -98,18 +127,18 @@ const GameLogPassing = ({ playerId, year, weeklyGrades, teamGames, allPlayerPerc
               legend: { position: 'top' },
               tooltip: {
                 callbacks: {
-                  label: (context) => `${context.label}: ${context.raw.toFixed(1)}`,
+                  label: (context) => `${context.label}: ${context.raw.toFixed(1)}%`,
                 },
               },
               title: {
                 display: true,
-                text: 'Per Game by Field Depth',
+                text: 'Rate (%) by Field Depth',
                 position: 'top',
                 font: { size: 16, weight: 'bold' },
                 color: 'rgba(55, 65, 81, 1)', // text-gray-700
               },
             },
-            cutout: '83%', // Create hollow center for donut
+            cutout: '70%', // Create hollow center for donut
           },
           plugins: [{
             id: 'centerText',
@@ -139,7 +168,7 @@ const GameLogPassing = ({ playerId, year, weeklyGrades, teamGames, allPlayerPerc
             datasets: [{
               data: newPositionData,
               backgroundColor: colors.slice(0, positions.length),
-              borderColor: colors.slice(0, positions.length).map(c => c.replace('0.6', '1')),
+              borderColor: colors.slice(0, positions.length).map(c => c.replace('0.8', '1')),
               borderWidth: 1,
             }],
           },
@@ -150,18 +179,18 @@ const GameLogPassing = ({ playerId, year, weeklyGrades, teamGames, allPlayerPerc
               legend: { position: 'top' },
               tooltip: {
                 callbacks: {
-                  label: (context) => `${context.label}: ${context.raw.toFixed(1)}`,
+                  label: (context) => `${context.label}: ${context.raw.toFixed(1)}%`,
                 },
               },
               title: {
                 display: true,
-                text: 'Per Game by Field Direction',
+                text: 'Rate (%) by Field Orientation',
                 position: 'top',
                 font: { size: 16, weight: 'bold' },
                 color: 'rgba(35, 83, 71, 1)', // text-gray-700
               },
             },
-            cutout: '83%', // Create hollow center for donut
+            cutout: '70%', // Create hollow center for donut
           },
           plugins: [{
             id: 'centerText',
@@ -188,7 +217,7 @@ const GameLogPassing = ({ playerId, year, weeklyGrades, teamGames, allPlayerPerc
 
   return (
     <div className="bg-white rounded-lg shadow">
-      <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Breakdown by Depth and Position</h2>
+      <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Rates by Field Depth and Orientation</h2>
       <div className="grid grid-cols-2 gap-4 h-88">
         <div className="bg-gray-0 p-4 rounded shadow" style={{ aspectRatio: '1 / 1' }}>
           {distanceData.length && distanceData.some(v => v > 0) ? (

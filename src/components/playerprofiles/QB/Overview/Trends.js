@@ -21,7 +21,21 @@ const Trends = ({ teamGames, weeklyGrades }) => {
         'avg_time_to_throw': 'Throw Time',
         'avg_depth_of_target': 'Target Depth',
         'yards': 'Yards',
-        'ypa': 'YPA'
+        'ypa': 'YPA',
+        'qb_rating': 'QB Rating',
+        'touchdowns': 'Touchdowns',
+        'interceptions': 'Interceptions',
+        'sack_percent': 'Sack Rate',
+        'fumbles': 'Fumbles', 
+        'pressure_to_sack_rate': 'Sack Rate',
+        'btt_rate': 'Big Time Throw %',
+        'twp_rate': 'TO Worthy Play %',
+        'btt_rate': 'Big Time Throw %', 
+        'scrambles': 'Scrambles', 
+        'thrown_away': 'Throwaways', 
+        'attempts': 'Attempts',
+        'firs_downs': 'First Downs',
+
       };
 
       // Filter games where the player has valid stats (at least one non-null metric)
