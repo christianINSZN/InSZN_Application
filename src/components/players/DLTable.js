@@ -1,4 +1,3 @@
-// In src/components/players/DLTable.js
 import React, { useMemo, memo } from 'react';
 import { useReactTable, getCoreRowModel, getSortedRowModel, createColumnHelper, flexRender } from '@tanstack/react-table';
 import { Link } from 'react-router-dom';
@@ -7,19 +6,19 @@ const DLTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
   const columnHelper = createColumnHelper();
   const dlColumns = useMemo(() => [
     columnHelper.accessor('name', {
-      id: 'Name',
+      id: 'Player Name',
       enableSorting: true,
       cell: ({ row }) => {
         const toPath = `/players/${row.original.position.toLowerCase()}/${row.original.playerId}`;
         return (
           <Link
             to={toPath}
-            className="text-gray-700 hover:text-gray-900 underline underline-offset-2 inline-block cursor-pointer"
+            className="text-black hover:text-gray-900 underline underline-offset-2 inline-block cursor-pointer"
             style={{ display: 'inline-block' }}
             onClick={(e) => {
               e.preventDefault();
               console.log('Navigating to:', toPath);
-              navigate(toPath);
+              navigate(toPath, { state: { year } });
             }}
           >
             {row.original.name || 'No Name'}
@@ -37,7 +36,7 @@ const DLTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
         return teamId ? (
           <Link
             to={`/teams/${teamId}/${linkYear}`}
-            className="text-gray-700 hover:text-gray-900 underline underline-offset-2 inline-block cursor-pointer"
+            className="text-black hover:text-gray-900 underline underline-offset-2 inline-block cursor-pointer"
             style={{ display: 'inline-block' }}
           >
             {team.charAt(0).toUpperCase() + team.slice(1)}
@@ -51,10 +50,7 @@ const DLTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
       id: 'Defense Grade',
       enableSorting: true,
       sortDescFirst: true,
-      cell: info => {
-        console.log('Grade Defense Value for DL:', info.getValue());
-        return info.getValue() !== null ? info.getValue() : 'N/A';
-      },
+      cell: info => (info.getValue() !== null ? info.getValue().toFixed(1) : 'N/A'),
     }),
   ], [navigate, year]);
 
@@ -78,57 +74,62 @@ const DLTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
   });
 
   return (
-    <div className="bg-gray-100 p-4 rounded-lg shadow">
-      <h2 className="text-lg font-semibold mb-2 text-gray-700">Defensive Line</h2>
-      <div className="h-80 overflow-auto relative">
-        <table className="w-full text-left border-collapse">
-          <thead className="sticky top-0 bg-gray-300 z-10">
-            {dlTableInstance.getHeaderGroups().map(headerGroup => (
-              <tr key={headerGroup.id} className="bg-gray-300">
-                {headerGroup.headers.map(column => (
-                  <th
-                    key={column.id}
-                    className="p-1 text-xs font-semibold border-b border-gray-400 text-gray-800 cursor-pointer"
-                    style={{ textAlign: 'left', lineHeight: '1.2' }}
-                    onClick={() => {
-                      const sorting = dlTableInstance.getState().sorting;
-                      const currentSort = sorting.find(s => s.id === column.id);
-                      dlTableInstance.setSorting([
-                        {
-                          id: column.id,
-                          desc: !currentSort?.desc,
-                        },
-                      ]);
-                    }}
-                  >
-                    {column.id}
-                    {dlTableInstance.getState().sorting.find(s => s.id === column.id) && (
-                      dlTableInstance.getState().sorting.find(s => s.id === column.id).desc ? ' ▼' : ' ▲'
-                    )}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody>
-            {dlTableInstance.getRowModel().rows.map((row, index) => (
-              <tr
-                key={row.id}
-                className={index % 2 === 0 ? 'bg-gray-50' : 'bg-gray-200'}
-              >
-                {row.getVisibleCells().map(cell => (
-                  <td
-                    key={cell.id}
-                    className="p-1 text-xs text-left border-b border-gray-300"
-                    style={{ verticalAlign: 'middle', lineHeight: '1.2' }}
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div className="p-0 shadow-xl rounded-lg">
+      <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Defensive Line</h2>
+      <div className="relative">
+        <div className="h-[362px] overflow-y-auto filter blur-xs opacity-80" style={{ pointerEvents: 'none' }}>
+          <table className="w-full text-center border-collapse">
+            <thead className="sticky top-0 bg-white z-10">
+              {dlTableInstance.getHeaderGroups().map(headerGroup => (
+                <tr key={headerGroup.id} className="bg-gray-0">
+                  {headerGroup.headers.map(column => (
+                    <th
+                      key={column.id}
+                      className="p-3 text-xs font-semibold border-b border-[#235347] text-black"
+                      style={{
+                        textAlign: column.id === 'Player Name' || column.id === 'Team' ? 'left' : 'center',
+                        verticalAlign: 'middle',
+                        lineHeight: '1.1',
+                      }}
+                    >
+                      {column.id}
+                      {dlTableInstance.getState().sorting.find(s => s.id === column.id) && (
+                        dlTableInstance.getState().sorting.find(s => s.id === column.id).desc ? ' ▼' : ' ▲'
+                      )}
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody>
+              {dlTableInstance.getRowModel().rows.map((row, index) => (
+                <tr
+                  key={row.id}
+                  className={index % 2 === 0 ? 'bg-gray-0' : 'bg-[#235347]/20'}
+                >
+                  {row.getVisibleCells().map(cell => (
+                    <td
+                      key={cell.id}
+                      className="p-1 text-xs text-black border-b border-gray-300"
+                      style={{
+                        textAlign: cell.column.id === 'Player Name' || cell.column.id === 'Team' ? 'left' : 'center',
+                        verticalAlign: 'middle',
+                        lineHeight: '1.2',
+                      }}
+                    >
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 backdrop-filter backdrop-blur-md rounded-lg">
+          <div className="p-6 bg-white rounded-lg shadow-lg text-center">
+            <p className="text-gray-500 mb-2">Defensive Line Player Profiles Coming Soon</p>
+          </div>
+        </div>
       </div>
     </div>
   );

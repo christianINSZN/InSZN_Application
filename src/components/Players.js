@@ -199,14 +199,14 @@ function PlayersComponent() {
               Defensive Secondary
             </button>
           </li>
-          <li>
+          {/* <li>
             <button
               className={`text-gray-700 hover:text-[#235347] pb-2 border-b-2 ${activeCategory === 'Other' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
               onClick={() => setActiveCategory('Other')}
             >
               Special Teams
             </button>
-          </li>
+          </li> */}
         </ul>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
