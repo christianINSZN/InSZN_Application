@@ -126,6 +126,7 @@ function TopTeams() {
       enableSorting: true,
       cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue() : 'NR'),
       meta: { mobileHidden: true },
+
       sortType: (rowA, rowB, columnId) => {
         const a = rowA.values[columnId];
         const b = rowB.values[columnId];
@@ -246,7 +247,7 @@ function TopTeams() {
       </div>
       <div className="h-auto sm:h-[420px] overflow-y-auto border-b border-[#235347]">
         <table className="w-full text-center border-collapse">
-          <thead className="sticky top-0 bg-white z-10">
+          <thead className="sticky top-0 bg-white z-0">
             {tableInstance.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id} className="bg-gray-0">
                 {headerGroup.headers.map(column => (
