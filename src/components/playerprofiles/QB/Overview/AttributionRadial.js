@@ -193,7 +193,7 @@ const AttributionRadial = ({ playerId, year, percentileGrades }) => {
         Attribution Radial
       </h2>
       <div className="h-[380px] bg-white flex items-center justify-center relative" style={{ position: 'relative', width: '100%' }}>
-        <canvas ref={canvasRef} id="attributionChart" style={{ width: '100%', height: '100%', maxWidth: '600px', maxHeight: '320px' }} />
+        <canvas ref={canvasRef} id="attributionChart" style={{ width: '100%', height: '100%', maxWidth: '600px', maxHeight: '400px' }} />
         {!data.labels.length && <div className="absolute text-red-500">No data available</div>}
       </div>
     </div>
