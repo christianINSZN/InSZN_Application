@@ -156,11 +156,11 @@ function PlayersComponent() {
           </select>
         </div>
       </header>
-      <div className="border-b border-[#235347] mb-4">
-        <ul className="flex gap-4 justify-center p-4">
+      <div className="border-b border-[#235347] mb-4 overflow-x-auto">
+        <ul className="flex sm:flex gap-2 sm:gap-4 sm:justify-center p-2 sm:p-4">
           <li>
             <button
-              className={`text-gray-700 hover:text-[#235347] pb-2 border-b-2 text-sm ${activeCategory === 'Skill Positions' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+              className={`text-gray-700 hover:text-[#235347] pb-2 border-b-2 text-xs sm:text-sm ${activeCategory === 'Skill Positions' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
               onClick={() => setActiveCategory('Skill Positions')}
             >
               Offensive Skill Positions
@@ -168,7 +168,7 @@ function PlayersComponent() {
           </li>
           <li>
             <button
-              className={`text-gray-700 hover:text-[#235347] pb-2 border-b-2 text-sm ${activeCategory === 'Offensive Line' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+              className={`text-gray-700 hover:text-[#235347] pb-2 border-b-2 text-xs sm:text-sm ${activeCategory === 'Offensive Line' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
               onClick={() => setActiveCategory('Offensive Line')}
             >
               Offensive Line
@@ -176,7 +176,7 @@ function PlayersComponent() {
           </li>
           <li>
             <button
-              className={`text-gray-700 hover:text-[#235347] pb-2 border-b-2 text-sm ${activeCategory === 'Defensive Line' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+              className={`text-gray-700 hover:text-[#235347] pb-2 border-b-2 text-xs sm:text-sm ${activeCategory === 'Defensive Line' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
               onClick={() => setActiveCategory('Defensive Line')}
             >
               Defensive Line
@@ -184,7 +184,7 @@ function PlayersComponent() {
           </li>
           <li>
             <button
-              className={`text-gray-700 hover:text-[#235347] pb-2 border-b-2 text-sm ${activeCategory === 'Linebackers' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+              className={`text-gray-700 hover:text-[#235347] pb-2 border-b-2 text-xs sm:text-sm ${activeCategory === 'Linebackers' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
               onClick={() => setActiveCategory('Linebackers')}
             >
               Linebackers / Edge
@@ -192,7 +192,7 @@ function PlayersComponent() {
           </li>
           <li>
             <button
-              className={`text-gray-700 hover:text-[#235347] pb-2 border-b-2 text-sm ${activeCategory === 'Secondary' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+              className={`text-gray-700 hover:text-[#235347] pb-2 border-b-2 text-xs sm:text-sm ${activeCategory === 'Secondary' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
               onClick={() => setActiveCategory('Secondary')}
             >
               Defensive Secondary
@@ -200,7 +200,7 @@ function PlayersComponent() {
           </li>
           {/* <li>
             <button
-              className={`text-gray-700 hover:text-[#235347] pb-2 border-b-2 text-sm ${activeCategory === 'Other' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+              className={`text-gray-700 hover:text-[#235347] pb-2 border-b-2 text-xs sm:text-sm ${activeCategory === 'Other' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
               onClick={() => setActiveCategory('Other')}
             >
               Special Teams
