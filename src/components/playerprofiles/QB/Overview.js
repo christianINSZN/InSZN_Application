@@ -140,13 +140,13 @@ function OverviewQB() {
           gradesData={gradesData}
           className="text-sm sm:text-base"
         />
-        <div className="border-b border-gray-300 mb-4 sm:mb-4 overflow-x-auto">
-          <ul className="flex gap-2 sm:gap-4 whitespace-nowrap">
+        <div className="border-b border-gray-300 mb-4 sm:mb-4">
+          <ul className="flex gap-1 sm:gap-4">
             <li>
               <Link
                 to={`/players/qb/${playerId || ''}`}
                 state={{ year }}
-                className={`text-[#235347] hover:text-[#235347] pb-1 sm:pb-2 border-b-2 text-sm sm:text-base px-2 sm:px-0 ${isOverviewActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+                className={`text-[#235347] hover:text-[#235347] pb-0.5 sm:pb-2 border-b-2 text-xs sm:text-base px-1 sm:px-0 ${isOverviewActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
               >
                 Overview
               </Link>
@@ -155,7 +155,7 @@ function OverviewQB() {
               <Link
                 to={`/players/qb/${playerId || ''}/passing`}
                 state={{ year }}
-                className={`text-gray-500 hover:text-gray-700 pb-1 sm:pb-2 border-b-2 text-sm sm:text-base px-2 sm:px-0 ${isPassingActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
+                className={`text-gray-500 hover:text-gray-700 pb-0.5 sm:pb-2 border-b-2 text-xs sm:text-base px-1 sm:px-0 ${isPassingActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
               >
                 Passing Analytics
               </Link>
@@ -164,7 +164,7 @@ function OverviewQB() {
               <Link
                 to={`/players/qb/${playerId || ''}/fieldview`}
                 state={{ year }}
-                className={`text-gray-500 hover:text-gray-700 pb-1 sm:pb-2 border-b-2 text-sm sm:text-base px-2 sm:px-0 ${isFieldViewActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
+                className={`text-gray-500 hover:text-gray-700 pb-0.5 sm:pb-2 border-b-2 text-xs sm:text-base px-1 sm:px-0 ${isFieldViewActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
               >
                 FieldView
               </Link>
@@ -173,7 +173,7 @@ function OverviewQB() {
               <Link
                 to={`/players/qb/${playerId || ''}/h2h`}
                 state={{ year }}
-                className={`text-gray-500 hover:text-gray-700 pb-1 sm:pb-2 border-b-2 text-sm sm:text-base px-2 sm:px-0 ${ish2hActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
+                className={`text-gray-500 hover:text-gray-700 pb-0.5 sm:pb-2 border-b-2 text-xs sm:text-base px-1 sm:px-0 ${ish2hActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
               >
                 Head-to-Head
               </Link>
