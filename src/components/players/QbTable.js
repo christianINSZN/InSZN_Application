@@ -28,6 +28,7 @@ const QbTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
     columnHelper.accessor('school', {
       id: 'School',
       enableSorting: true,
+      meta: { mobileHidden: true },
       cell: ({ row }) => {
         const school = row.original.school || 'N/A';
         const teamId = row.original.teamID;
@@ -53,6 +54,7 @@ const QbTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
     columnHelper.accessor('completion_percent', {
       id: 'Comp%',
       enableSorting: true,
+      meta: { mobileHidden: true },
       cell: info => (info.getValue() !== null ? `${info.getValue().toFixed(1)}%` : 'N/A'),
     }),
     columnHelper.accessor('yards', {
@@ -63,6 +65,7 @@ const QbTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
     columnHelper.accessor('ypa', {
       id: 'YPA',
       enableSorting: true,
+      meta: { mobileHidden: true },
       cell: info => (info.getValue() !== null ? info.getValue().toFixed(1) : 'N/A'),
     }),
     columnHelper.accessor('touchdowns', {
@@ -73,6 +76,7 @@ const QbTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
     columnHelper.accessor('interceptions', {
       id: 'INTs',
       enableSorting: true,
+      meta: { mobileHidden: true },
       cell: info => (info.getValue() !== null ? info.getValue() : 'N/A'),
     }),
     columnHelper.accessor('grades_pass', {
@@ -84,15 +88,15 @@ const QbTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
   ], [navigate, year]);
 
   const qbTableData = useMemo(() => {
-    console.log('Filtering QB data for year:', year, 'Total players:', data.length); // Debug
+    console.log('Filtering QB data for year:', year, 'Total players:', data.length);
     const filteredData = data.filter(player => {
-      const playerYear = String(player.year); // Ensure year is string for comparison
+      const playerYear = String(player.year);
       const gamesPlayed = player.player_game_count || 0;
       const nameMatch = !filterPlayerName || player.name.toLowerCase().includes(filterPlayerName.toLowerCase());
-      const teamMatch = !filterTeamName || 
-        (player.team && player.team.toLowerCase().includes(filterTeamName.toLowerCase())) || 
+      const teamMatch = !filterTeamName ||
+        (player.team && player.team.toLowerCase().includes(filterTeamName.toLowerCase())) ||
         (player.school && player.school.toLowerCase().includes(filterTeamName.toLowerCase()));
-      const yearMatch = playerYear === String(year); // Strict equality
+      const yearMatch = playerYear === String(year);
       return (
         player.position === 'QB' &&
         gamesPlayed > filterGamesPlayed &&
@@ -101,7 +105,7 @@ const QbTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
         yearMatch
       );
     });
-    console.log('Filtered QB data:', filteredData); // Debug
+    console.log('Filtered QB data:', filteredData);
     return filteredData;
   }, [data, filterGamesPlayed, filterPlayerName, filterTeamName, year]);
 
@@ -116,9 +120,9 @@ const QbTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
   });
 
   return (
-    <div className="p-0 shadow-xl rounded-lg">
+    <div className="p-0 sm:p-0 shadow-xl rounded-lg">
       <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Quarterbacks</h2>
-      <div className="h-[362px] overflow-y-auto">
+      <div className="h-[300px] sm:h-[362px] overflow-y-auto">
         <table className="w-full text-center border-collapse">
           <thead className="sticky top-0 bg-white z-10">
             {qbTableInstance.getHeaderGroups().map(headerGroup => (
@@ -126,7 +130,7 @@ const QbTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
                 {headerGroup.headers.map(column => (
                   <th
                     key={column.id}
-                    className="p-3 text-xs font-semibold border-b border-[#235347] text-black cursor-pointer"
+                    className={`p-2 sm:p-3 text-[10px] sm:text-xs font-semibold border-b border-[#235347] text-black cursor-pointer ${column.column.columnDef.meta?.mobileHidden ? 'hidden sm:table-cell' : ''}`}
                     style={{
                       textAlign: column.id === 'Player Name' || column.id === 'School' ? 'left' : 'center',
                       verticalAlign: 'middle',
@@ -161,7 +165,7 @@ const QbTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
                 {row.getVisibleCells().map(cell => (
                   <td
                     key={cell.id}
-                    className="p-1 text-xs text-black border-b border-gray-300"
+                    className={`p-0.5 sm:p-1 text-[10px] sm:text-xs text-black border-b border-gray-300 ${cell.column.columnDef.meta?.mobileHidden ? 'hidden sm:table-cell' : ''}`}
                     style={{
                       textAlign: cell.column.id === 'Player Name' || cell.column.id === 'School' ? 'left' : 'center',
                       verticalAlign: 'middle',
