@@ -6,6 +6,7 @@ function TopTeams() {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showAllColumns, setShowAllColumns] = useState(false);
   const year = 2025;
   const week = 5;
   const navigate = useNavigate();
@@ -40,76 +41,91 @@ function TopTeams() {
       id: 'HOME',
       enableSorting: true,
       cell: info => info.getValue() || '0-0',
+      meta: { mobileHidden: false },
     }),
     columnHelper.accessor('away_record', {
       id: 'AWAY',
       enableSorting: true,
       cell: info => info.getValue() || '0-0',
+      meta: { mobileHidden: false },
     }),
     columnHelper.accessor('neutral_record', {
       id: 'NEU',
       enableSorting: true,
       cell: info => info.getValue() || '0-0',
+      meta: { mobileHidden: true },
     }),
     columnHelper.accessor('quad1_record', {
       id: 'QUAD 1',
       enableSorting: true,
       cell: info => info.getValue() || '0-0',
+      meta: { mobileHidden: true },
     }),
     columnHelper.accessor('quad2_record', {
       id: 'QUAD 2',
       enableSorting: true,
       cell: info => info.getValue() || '0-0',
+      meta: { mobileHidden: true },
     }),
     columnHelper.accessor('quad3_record', {
       id: 'QUAD 3',
       enableSorting: true,
       cell: info => info.getValue() || '0-0',
+      meta: { mobileHidden: true },
     }),
     columnHelper.accessor('quad4_record', {
       id: 'QUAD 4',
       enableSorting: true,
       cell: info => info.getValue() || '0-0',
+      meta: { mobileHidden: true },
     }),
     columnHelper.accessor('SP_Rating', {
       id: 'SP+ Rating',
       enableSorting: true,
       cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue().toFixed(1) : 'N/A'),
+      meta: { mobileHidden: true },
     }),
     columnHelper.accessor('SP_Ranking', {
       id: 'SP+ Rank',
       enableSorting: true,
       cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue() : 'N/A'),
+      meta: { mobileHidden: true },
     }),
     columnHelper.accessor('SP_Off_Ranking', {
       id: 'SP+ Off. Rank',
       enableSorting: true,
       cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue() : 'N/A'),
+      meta: { mobileHidden: true },
     }),
     columnHelper.accessor('SP_Def_Ranking', {
       id: 'SP+ Def. Rank',
       enableSorting: true,
       cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue() : 'N/A'),
+      meta: { mobileHidden: true },
     }),
     columnHelper.accessor('FPI_Ranking', {
       id: 'FPI Rank',
       enableSorting: true,
       cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue() : 'N/A'),
+      meta: { mobileHidden: true },
     }),
     columnHelper.accessor('SOR', {
       id: 'SOR',
       enableSorting: true,
       cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue() : 'N/A'),
+      meta: { mobileHidden: true },
     }),
     columnHelper.accessor('SOS', {
       id: 'SOS',
       enableSorting: true,
       cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue() : 'N/A'),
+      meta: { mobileHidden: true },
     }),
     columnHelper.accessor('coaches_poll_rank', {
       id: 'Coaches Poll',
       enableSorting: true,
       cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue() : 'NR'),
+      meta: { mobileHidden: true },
       sortType: (rowA, rowB, columnId) => {
         const a = rowA.values[columnId];
         const b = rowB.values[columnId];
@@ -192,8 +208,8 @@ function TopTeams() {
 
   if (isLoading) {
     return (
-      <div className="p-0 shadow-xl rounded-lg h-full">
-        <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Top-25 Team Rankings</h2>
+      <div className="p-2 sm:p-0 shadow-xl rounded-lg min-h-0 h-auto sm:h-full">
+        <h2 className="flex items-center justify-center text-lg sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-auto sm:h-[40px] rounded">Top-25 Team Rankings</h2>
         <p className="text-gray-500 text-center p-4">Loading...</p>
       </div>
     );
@@ -201,8 +217,8 @@ function TopTeams() {
 
   if (error) {
     return (
-      <div className="p-0 shadow-xl rounded-lg h-full">
-        <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Top-25 Team Rankings</h2>
+      <div className="p-2 sm:p-0 shadow-xl rounded-lg min-h-0 h-auto sm:h-full">
+        <h2 className="flex items-center justify-center text-lg sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-auto sm:h-[40px] rounded">Top-25 Team Rankings</h2>
         <p className="text-red-500 text-center p-4">Error: {error}</p>
       </div>
     );
@@ -210,25 +226,33 @@ function TopTeams() {
 
   if (!data.length) {
     return (
-      <div className="p-0 shadow-xl rounded-lg h-full">
-        <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Top-25 Team Rankings</h2>
+      <div className="p-2 sm:p-0 shadow-xl rounded-lg min-h-0 h-auto sm:h-full">
+        <h2 className="flex items-center justify-center text-lg sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-auto sm:h-[40px] rounded">Top-25 Team Rankings</h2>
         <p className="text-gray-500 text-center p-4">No data available for {year}, week {week}.</p>
       </div>
     );
   }
 
   return (
-    <div className="p-0 shadow-xl rounded-lg h-full border-b border-[#235347]">
-      <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Top-25 Team Rankings</h2>
-      <div className="h-[420px] overflow-y-auto border-b border-[#235347]">
+    <div className="p-2 sm:p-0 shadow-xl rounded-lg min-h-0 h-auto sm:h-full border-b border-[#235347]">
+      <h2 className="flex items-center justify-center text-lg sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-auto sm:h-[40px] rounded">Top-25 Team Rankings</h2>
+      <div className="sm:hidden p-2">
+        <button
+          onClick={() => setShowAllColumns(!showAllColumns)}
+          className="text-black hover:bg-[#235347]/70 hover:text-white px-3 py-1 rounded text-sm"
+        >
+          {showAllColumns ? 'Show Key Columns' : 'Show All Columns'}
+        </button>
+      </div>
+      <div className="h-auto sm:h-[420px] overflow-y-auto border-b border-[#235347]">
         <table className="w-full text-center border-collapse">
-          <thead className="sticky top-0 bg-white z-500">
+          <thead className="sticky top-0 bg-white z-10">
             {tableInstance.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id} className="bg-gray-0">
                 {headerGroup.headers.map(column => (
                   <th
                     key={column.id}
-                    className={`p-3 text-xs font-semibold border-b border-[#235347] text-black ${column.column.columnDef.enableSorting ? 'cursor-pointer' : ''}`}
+                    className={`p-2 sm:p-3 text-sm sm:text-xs font-semibold border-b border-[#235347] text-black ${column.column.columnDef.meta?.mobileHidden && !showAllColumns ? 'hidden sm:table-cell' : ''} ${column.column.columnDef.enableSorting ? 'cursor-pointer' : ''}`}
                     style={{
                       textAlign: column.id === 'School' ? 'left' : 'center',
                       verticalAlign: 'middle',
@@ -263,7 +287,7 @@ function TopTeams() {
                 {row.getVisibleCells().map(cell => (
                   <td
                     key={cell.id}
-                    className="p-1 text-xs text-black border-b border-gray-300"
+                    className={`p-2 sm:p-1 text-sm sm:text-xs text-black border-b border-gray-300 ${cell.column.columnDef.meta?.mobileHidden && !showAllColumns ? 'hidden sm:table-cell' : ''}`}
                     style={{
                       textAlign: cell.column.id === 'School' ? 'left' : 'center',
                       verticalAlign: 'middle',
@@ -278,7 +302,7 @@ function TopTeams() {
           </tbody>
         </table>
       </div>
-      <div className="p-1 text-center text-sm">
+      <div className="p-2 sm:p-1 text-center text-sm">
         <Link
           to="/team_rankings"
           className="text-black hover:text-gray-900 underline underline-offset-2 inline-block cursor-pointer"
