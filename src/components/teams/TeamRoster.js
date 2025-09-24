@@ -12,7 +12,6 @@ const TeamRoster = () => {
   const [error, setError] = useState(null);
   const [filterPlayerName, setFilterPlayerName] = useState('');
   const [filterPosition, setFilterPosition] = useState('');
-
   // Configurable headshot size (in pixels)
   const headshotSize = 48;
 
@@ -100,19 +99,27 @@ const TeamRoster = () => {
     columnHelper.accessor('name', {
       id: 'Player Name',
       enableSorting: true,
-      cell: ({ row }) => (
-        <Link
-          to={`/players/${row.original.position.toLowerCase()}/${row.original.playerId}`}
-          state={{ year }}
-          className="text-[#235347] hover:text-[#235347]/30 underline underline-offset-2"
-          onClick={(e) => {
-            e.preventDefault();
-            navigate(`/players/${row.original.position.toLowerCase()}/${row.original.playerId}`, { state: { year } });
-          }}
-        >
-          {row.original.name || 'No Name'}
-        </Link>
-      ),
+      cell: ({ row }) => {
+        const position = row.original.position;
+        const toPath = `/players/${position.toLowerCase()}/${row.original.playerId}`;
+        // Only link for QB, WR, TE, RB positions
+        if (['QB', 'WR', 'TE', 'RB'].includes(position)) {
+          return (
+            <Link
+              to={toPath}
+              state={{ year }}
+              className="text-[#235347] hover:text-[#235347]/30 underline underline-offset-2"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate(toPath, { state: { year } });
+              }}
+            >
+              {row.original.name || 'No Name'}
+            </Link>
+          );
+        }
+        return row.original.name || 'No Name'; // Plain text for other positions
+      },
     }),
     columnHelper.accessor('jersey', {
       id: 'Jersey',

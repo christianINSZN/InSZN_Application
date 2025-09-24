@@ -127,7 +127,7 @@ const GTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTea
         </div>
         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 backdrop-filter backdrop-blur-md rounded-lg">
           <div className="p-6 bg-white rounded-lg shadow-lg text-center">
-            <p className="text-gray-500 mb-4">Guard Player Profiles Coming Soon</p>
+            <p className="text-gray-500 mb-2">Guard Player Profiles Coming Soon</p>
           </div>
         </div>
       </div>

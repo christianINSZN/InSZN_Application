@@ -13,8 +13,8 @@ DB_FILE = Path("/Users/christianberry/Desktop/Perennial Data/perennial-data-app/
 conn = sqlite3.connect(DB_FILE)
 cursor = conn.cursor()
 
-YEAR = int(os.getenv("YEAR", 2024))
-WEEK = int(os.getenv("WEEK", 3))
+YEAR = int(os.getenv("YEAR", 2025))
+WEEK = int(os.getenv("WEEK", 4))
 
 # Fetch team abbreviations
 cursor.execute("SELECT id, abbreviation FROM Teams WHERE year = ?", (YEAR,))
