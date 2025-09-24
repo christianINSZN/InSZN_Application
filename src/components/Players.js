@@ -16,10 +16,10 @@ function PlayersComponent() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [playersData, setPlayersData] = useState([]);
-  const [filterGamesPlayed, setFilterGamesPlayed] = useState(0); // Lowered default for testing
+  const [filterGamesPlayed, setFilterGamesPlayed] = useState(0);
   const [filterPlayerName, setFilterPlayerName] = useState('');
   const [filterTeamName, setFilterTeamName] = useState('');
-  const [selectedYear, setSelectedYear] = useState('2025'); // Default to 2024
+  const [selectedYear, setSelectedYear] = useState('2025');
   const [activeCategory, setActiveCategory] = useState('Skill Positions');
 
   const maxGamesPlayed = useMemo(() => {
@@ -36,8 +36,8 @@ function PlayersComponent() {
 
   useEffect(() => {
     let isMounted = true;
-    setIsLoading(true); // Reset isLoading on every year change
-    setPlayersData([]); // Clear previous data
+    setIsLoading(true);
+    setPlayersData([]);
     fetch(`${process.env.REACT_APP_API_URL}/api/playerdashboard/${selectedYear}`, {
       method: 'GET',
       headers: {
@@ -74,24 +74,23 @@ function PlayersComponent() {
           setIsLoading(false);
         }
       });
-
     return () => {
       isMounted = false;
     };
-  }, [selectedYear]); // Only depend on selectedYear
+  }, [selectedYear]);
 
   if (isLoading) {
-    return <div className="p-4"><p className="text-gray-500">Loading players...</p></div>;
+    return <div className="p-2 sm:p-4"><p className="text-gray-500 text-xs sm:text-base">Loading players...</p></div>;
   }
 
   if (playersData.length === 0) {
-    return <div className="p-4"><p className="text-gray-500">No players data available for {selectedYear}.</p></div>;
+    return <div className="p-2 sm:p-4"><p className="text-gray-500 text-xs sm:text-base">No players data available for {selectedYear}.</p></div>;
   }
 
   return (
-    <div className=" bg-gray-100 w-full" onClick={() => console.log('Component rendered with players count:', playersData.length)}>
+    <div className="bg-gray-100 w-full min-h-0 h-auto" onClick={() => console.log('Component rendered with players count:', playersData.length)}>
       <header className="mb-6 mt-3 flex flex-wrap gap-4 items-end bg-gray-200 p-2 rounded-lg shadow-xl">
-        <div className="w-full md:w-auto flex-1 mb-4">
+        <div className="w-full sm:w-auto sm:flex-1 mb-4">
           <label htmlFor="gamesPlayedFilter" className="block text-sm font-medium text-gray-700">
             Min. Games: {filterGamesPlayed}
           </label>
@@ -106,7 +105,7 @@ function PlayersComponent() {
             style={{ accentColor: '[#235347]' }}
           />
         </div>
-        <div className="w-full md:w-auto flex-1">
+        <div className="w-full sm:w-auto sm:flex-1">
           <label htmlFor="playerNameFilter" className="block text-sm font-medium text-gray-700">
             Filter by Player Name
           </label>
@@ -115,7 +114,7 @@ function PlayersComponent() {
             id="playerNameFilter"
             value={filterPlayerName}
             onChange={(e) => setFilterPlayerName(e.target.value)}
-            className="w-full p-2 border rounded"
+            className="w-full p-2 border rounded text-sm"
             placeholder="Type or scroll to select..."
           />
           <datalist id="playerNames">
@@ -124,7 +123,7 @@ function PlayersComponent() {
             ))}
           </datalist>
         </div>
-        <div className="w-full md:w-auto flex-1">
+        <div className="w-full sm:w-auto sm:flex-1">
           <label htmlFor="teamNameFilter" className="block text-sm font-medium text-gray-700">
             Filter by Team Name
           </label>
@@ -133,7 +132,7 @@ function PlayersComponent() {
             id="teamNameFilter"
             value={filterTeamName}
             onChange={(e) => setFilterTeamName(e.target.value)}
-            className="w-full p-2 border rounded"
+            className="w-full p-2 border rounded text-sm"
             placeholder="Type or scroll to select..."
           />
           <datalist id="teamNames">
@@ -142,7 +141,7 @@ function PlayersComponent() {
             ))}
           </datalist>
         </div>
-        <div className="w-full md:w-auto flex-1">
+        <div className="w-full sm:w-auto sm:flex-1">
           <label htmlFor="yearFilter" className="block text-sm font-medium text-gray-700">
             Filter by Year
           </label>
@@ -150,7 +149,7 @@ function PlayersComponent() {
             id="yearFilter"
             value={selectedYear}
             onChange={(e) => setSelectedYear(e.target.value)}
-            className="w-full p-2 border rounded"
+            className="w-full p-2 border rounded text-sm"
           >
             <option value="2024">2024</option>
             <option value="2025">2025</option>
@@ -161,7 +160,7 @@ function PlayersComponent() {
         <ul className="flex gap-4 justify-center p-4">
           <li>
             <button
-              className={`text-gray-700 hover:text-[#235347] pb-2 border-b-2 ${activeCategory === 'Skill Positions' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+              className={`text-gray-700 hover:text-[#235347] pb-2 border-b-2 text-sm ${activeCategory === 'Skill Positions' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
               onClick={() => setActiveCategory('Skill Positions')}
             >
               Offensive Skill Positions
@@ -169,7 +168,7 @@ function PlayersComponent() {
           </li>
           <li>
             <button
-              className={`text-gray-700 hover:text-[#235347] pb-2 border-b-2 ${activeCategory === 'Offensive Line' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+              className={`text-gray-700 hover:text-[#235347] pb-2 border-b-2 text-sm ${activeCategory === 'Offensive Line' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
               onClick={() => setActiveCategory('Offensive Line')}
             >
               Offensive Line
@@ -177,7 +176,7 @@ function PlayersComponent() {
           </li>
           <li>
             <button
-              className={`text-gray-700 hover:text-[#235347] pb-2 border-b-2 ${activeCategory === 'Defensive Line' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+              className={`text-gray-700 hover:text-[#235347] pb-2 border-b-2 text-sm ${activeCategory === 'Defensive Line' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
               onClick={() => setActiveCategory('Defensive Line')}
             >
               Defensive Line
@@ -185,7 +184,7 @@ function PlayersComponent() {
           </li>
           <li>
             <button
-              className={`text-gray-700 hover:text-[#235347] pb-2 border-b-2 ${activeCategory === 'Linebackers' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+              className={`text-gray-700 hover:text-[#235347] pb-2 border-b-2 text-sm ${activeCategory === 'Linebackers' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
               onClick={() => setActiveCategory('Linebackers')}
             >
               Linebackers / Edge
@@ -193,7 +192,7 @@ function PlayersComponent() {
           </li>
           <li>
             <button
-              className={`text-gray-700 hover:text-[#235347] pb-2 border-b-2 ${activeCategory === 'Secondary' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+              className={`text-gray-700 hover:text-[#235347] pb-2 border-b-2 text-sm ${activeCategory === 'Secondary' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
               onClick={() => setActiveCategory('Secondary')}
             >
               Defensive Secondary
@@ -201,7 +200,7 @@ function PlayersComponent() {
           </li>
           {/* <li>
             <button
-              className={`text-gray-700 hover:text-[#235347] pb-2 border-b-2 ${activeCategory === 'Other' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+              className={`text-gray-700 hover:text-[#235347] pb-2 border-b-2 text-sm ${activeCategory === 'Other' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
               onClick={() => setActiveCategory('Other')}
             >
               Special Teams
@@ -209,7 +208,7 @@ function PlayersComponent() {
           </li> */}
         </ul>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-4">
         {activeCategory === 'Skill Positions' && (
           <>
             <QbTable data={playersData} navigate={navigate} filterGamesPlayed={filterGamesPlayed} filterPlayerName={filterPlayerName} filterTeamName={filterTeamName} year={selectedYear} />
@@ -238,7 +237,7 @@ function PlayersComponent() {
           </>
         )}
         {activeCategory === 'Other' && (
-          <div className="p-4 text-gray-500">No tables assigned to this category yet.</div>
+          <div className="p-2 sm:p-4 text-gray-500 text-xs sm:text-sm">No tables assigned to this category yet.</div>
         )}
       </div>
     </div>
