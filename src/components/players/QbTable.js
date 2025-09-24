@@ -1,8 +1,9 @@
-import React, { useMemo, memo } from 'react';
+import React, { useMemo, useState, memo } from 'react';
 import { useReactTable, getCoreRowModel, getSortedRowModel, createColumnHelper, flexRender } from '@tanstack/react-table';
 import { Link } from 'react-router-dom';
 
 const QbTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTeamName, year }) => {
+  const [showAllColumns, setShowAllColumns] = useState(false);
   const columnHelper = createColumnHelper();
   const qbColumns = useMemo(() => [
     columnHelper.accessor('name', {
@@ -122,15 +123,23 @@ const QbTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
   return (
     <div className="p-0 sm:p-0 shadow-xl rounded-lg">
       <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Quarterbacks</h2>
+      <div className="flex justify-center p-2 sm:hidden">
+        <button
+          className="bg-[#235347] text-white text-sm font-medium py-2 px-4 rounded hover:bg-[#1c3f33]"
+          onClick={() => setShowAllColumns(!showAllColumns)}
+        >
+          {showAllColumns ? 'Hide Extra Columns' : 'Show All Columns'}
+        </button>
+      </div>
       <div className="h-[300px] sm:h-[362px] overflow-y-auto">
         <table className="w-full text-center border-collapse">
-          <thead className="sticky top-0 bg-white z-10">
+          <thead className="sticky top-0 bg-white z-0">
             {qbTableInstance.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id} className="bg-gray-0">
                 {headerGroup.headers.map(column => (
                   <th
                     key={column.id}
-                    className={`p-2 sm:p-3 text-[10px] sm:text-xs font-semibold border-b border-[#235347] text-black cursor-pointer ${column.column.columnDef.meta?.mobileHidden ? 'hidden sm:table-cell' : ''}`}
+                    className={`p-2 sm:p-3 text-[10px] sm:text-xs font-semibold border-b border-[#235347] text-black cursor-pointer ${column.column.columnDef.meta?.mobileHidden && !showAllColumns ? 'hidden sm:table-cell' : ''}`}
                     style={{
                       textAlign: column.id === 'Player Name' || column.id === 'School' ? 'left' : 'center',
                       verticalAlign: 'middle',
@@ -165,7 +174,7 @@ const QbTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
                 {row.getVisibleCells().map(cell => (
                   <td
                     key={cell.id}
-                    className={`p-0.5 sm:p-1 text-[10px] sm:text-xs text-black border-b border-gray-300 ${cell.column.columnDef.meta?.mobileHidden ? 'hidden sm:table-cell' : ''}`}
+                    className={`p-0.5 sm:p-1 text-[10px] sm:text-xs text-black border-b border-gray-300 ${cell.column.columnDef.meta?.mobileHidden && !showAllColumns ? 'hidden sm:table-cell' : ''}`}
                     style={{
                       textAlign: cell.column.id === 'Player Name' || cell.column.id === 'School' ? 'left' : 'center',
                       verticalAlign: 'middle',
