@@ -1,10 +1,10 @@
-import React, { useMemo, memo } from 'react';
+import React, { useMemo, useState, memo } from 'react';
 import { useReactTable, getCoreRowModel, getSortedRowModel, createColumnHelper, flexRender } from '@tanstack/react-table';
 import { Link } from 'react-router-dom';
 
 const WrTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTeamName, year }) => {
+  const [showAllColumns, setShowAllColumns] = useState(false);
   const columnHelper = createColumnHelper();
-
   const wrColumns = useMemo(() => [
     columnHelper.accessor('name', {
       id: 'Player Name',
@@ -14,7 +14,7 @@ const WrTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
         return (
           <Link
             to={toPath}
-            className="text-gray-700 hover:text-gray-900 underline underline-offset-2 inline-block cursor-pointer"
+            className="text-black hover:text-gray-900 underline underline-offset-2 inline-block cursor-pointer"
             style={{ display: 'inline-block' }}
             onClick={(e) => {
               e.preventDefault();
@@ -30,6 +30,7 @@ const WrTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
     columnHelper.accessor('school', {
       id: 'School',
       enableSorting: true,
+      meta: { mobileHidden: true },
       cell: ({ row }) => {
         const school = row.original.school || 'N/A';
         const teamId = row.original.teamID;
@@ -37,7 +38,7 @@ const WrTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
         return teamId ? (
           <Link
             to={`/teams/${teamId}/${linkYear}`}
-            className="text-gray-700 hover:text-gray-900 underline underline-offset-2 inline-block cursor-pointer"
+            className="text-black hover:text-gray-900 underline underline-offset-2 inline-block cursor-pointer"
             style={{ display: 'inline-block' }}
           >
             {school.charAt(0).toUpperCase() + school.slice(1)}
@@ -45,15 +46,6 @@ const WrTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
         ) : (
           school.charAt(0).toUpperCase() + school.slice(1)
         );
-      },
-    }),
-    columnHelper.accessor('grades_pass_route', {
-      id: 'Route Grade',
-      enableSorting: true,
-      sortDescFirst: true,
-      cell: info => {
-        console.log('Grade Route Value for WR:', info.getValue());
-        return info.getValue() !== null ? info.getValue() : 'N/A';
       },
     }),
     columnHelper.accessor('player_game_count', {
@@ -74,12 +66,23 @@ const WrTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
     columnHelper.accessor('yards_per_reception', {
       id: 'YPC',
       enableSorting: true,
+      meta: { mobileHidden: true },
       cell: info => (info.getValue() !== null ? info.getValue() : 'N/A'),
     }),
     columnHelper.accessor('receptions', {
       id: 'REC',
       enableSorting: true,
+      meta: { mobileHidden: true },
       cell: info => (info.getValue() !== null ? info.getValue() : 'N/A'),
+    }),
+    columnHelper.accessor('grades_pass_route', {
+      id: 'Route Grade',
+      enableSorting: true,
+      sortDescFirst: true,
+      cell: info => {
+        console.log('Grade Route Value for WR:', info.getValue());
+        return info.getValue() !== null ? info.getValue() : 'N/A';
+      },
     }),
   ], [navigate, year]);
 
@@ -98,22 +101,30 @@ const WrTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     initialState: {
-      sorting: [{ id: 'Route Grade', desc: true }],
+      sorting: [{ id: 'YDS', desc: true }],
     },
   });
 
   return (
-    <div className="p-0 shadow-xl">
+    <div className="p-0 sm:p-0 shadow-xl rounded-lg">
       <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Wide Receivers</h2>
-      <div className="h-[362px] overflow-y-auto">
+      <div className="flex justify-center p-2 sm:hidden">
+        <button
+          className="bg-[#235347] text-white text-sm font-medium py-2 px-4 rounded hover:bg-[#1c3f33]"
+          onClick={() => setShowAllColumns(!showAllColumns)}
+        >
+          {showAllColumns ? 'Hide Extra Columns' : 'Show All Columns'}
+        </button>
+      </div>
+      <div className="h-[300px] sm:h-[362px] overflow-y-auto">
         <table className="w-full text-center border-collapse">
-          <thead className="sticky top-0 bg-white z-10">
+          <thead className="sticky top-0 bg-white z-0">
             {wrTableInstance.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id} className="bg-gray-0">
                 {headerGroup.headers.map(column => (
                   <th
                     key={column.id}
-                    className="p-3 text-xs font-semibold border-b border-gray-400 text-gray-800 cursor-pointer"
+                    className={`p-2 sm:p-3 text-[10px] sm:text-xs font-semibold border-b border-[#235347] text-black cursor-pointer ${column.column.columnDef.meta?.mobileHidden && !showAllColumns ? 'hidden sm:table-cell' : ''}`}
                     style={{
                       textAlign: column.id === 'Player Name' || column.id === 'School' ? 'left' : 'center',
                       verticalAlign: 'middle',
@@ -148,7 +159,7 @@ const WrTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
                 {row.getVisibleCells().map(cell => (
                   <td
                     key={cell.id}
-                    className="p-1 text-xs border-b border-gray-300"
+                    className={`p-0.5 sm:p-1 text-[10px] sm:text-xs text-black border-b border-gray-300 ${cell.column.columnDef.meta?.mobileHidden && !showAllColumns ? 'hidden sm:table-cell' : ''}`}
                     style={{
                       textAlign: cell.column.id === 'Player Name' || cell.column.id === 'School' ? 'left' : 'center',
                       verticalAlign: 'middle',

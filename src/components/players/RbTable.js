@@ -1,10 +1,10 @@
-import React, { useMemo, memo } from 'react';
+import React, { useMemo, useState, memo } from 'react';
 import { useReactTable, getCoreRowModel, getSortedRowModel, createColumnHelper, flexRender } from '@tanstack/react-table';
 import { Link } from 'react-router-dom';
 
 const RbTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTeamName, year }) => {
+  const [showAllColumns, setShowAllColumns] = useState(false);
   const columnHelper = createColumnHelper();
-
   const rbColumns = useMemo(() => [
     columnHelper.accessor('name', {
       id: 'Player Name',
@@ -30,6 +30,7 @@ const RbTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
     columnHelper.accessor('school', {
       id: 'School',
       enableSorting: true,
+      meta: { mobileHidden: true },
       cell: ({ row }) => {
         const school = row.original.school || 'N/A';
         const teamId = row.original.teamID;
@@ -55,6 +56,7 @@ const RbTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
     columnHelper.accessor('fumbles', {
       id: 'FUM',
       enableSorting: true,
+      meta: { mobileHidden: true },
       cell: info => (info.getValue() !== null ? info.getValue() : 'N/A'),
     }),
     columnHelper.accessor('yards', {
@@ -65,6 +67,7 @@ const RbTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
     columnHelper.accessor('ypa', {
       id: 'YPA',
       enableSorting: true,
+      meta: { mobileHidden: true },
       cell: info => (info.getValue() !== null ? info.getValue() : 'N/A'),
     }),
     columnHelper.accessor('touchdowns', {
@@ -75,9 +78,10 @@ const RbTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
     columnHelper.accessor('attempts', {
       id: 'ATT',
       enableSorting: true,
+      meta: { mobileHidden: true },
       cell: info => (info.getValue() !== null ? info.getValue() : 'N/A'),
     }),
-        columnHelper.accessor('grades_run', {
+    columnHelper.accessor('grades_run', {
       id: 'Run Grade',
       enableSorting: true,
       sortDescFirst: true,
@@ -108,17 +112,25 @@ const RbTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
   });
 
   return (
-    <div className="p-0 shadow-xl">
+    <div className="p-0 sm:p-0 shadow-xl rounded-lg">
       <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Running Backs</h2>
-      <div className="h-[362px] overflow-y-auto">
+      <div className="flex justify-center p-2 sm:hidden">
+        <button
+          className="bg-[#235347] text-white text-sm font-medium py-2 px-4 rounded hover:bg-[#1c3f33]"
+          onClick={() => setShowAllColumns(!showAllColumns)}
+        >
+          {showAllColumns ? 'Hide Extra Columns' : 'Show All Columns'}
+        </button>
+      </div>
+      <div className="h-[300px] sm:h-[362px] overflow-y-auto">
         <table className="w-full text-center border-collapse">
-          <thead className="sticky top-0 bg-white z-10">
+          <thead className="sticky top-0 bg-white z-0">
             {rbTableInstance.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id} className="bg-gray-0">
                 {headerGroup.headers.map(column => (
                   <th
                     key={column.id}
-                    className="p-3 text-xs font-semibold border-b border-[#235347] text-black cursor-pointer"
+                    className={`p-2 sm:p-3 text-[10px] sm:text-xs font-semibold border-b border-[#235347] text-black cursor-pointer ${column.column.columnDef.meta?.mobileHidden && !showAllColumns ? 'hidden sm:table-cell' : ''}`}
                     style={{
                       textAlign: column.id === 'Player Name' || column.id === 'School' ? 'left' : 'center',
                       verticalAlign: 'middle',
@@ -153,7 +165,7 @@ const RbTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
                 {row.getVisibleCells().map(cell => (
                   <td
                     key={cell.id}
-                    className="p-1 text-xs text-black border-b border-gray-300"
+                    className={`p-0.5 sm:p-1 text-[10px] sm:text-xs text-black border-b border-gray-300 ${cell.column.columnDef.meta?.mobileHidden && !showAllColumns ? 'hidden sm:table-cell' : ''}`}
                     style={{
                       textAlign: cell.column.id === 'Player Name' || cell.column.id === 'School' ? 'left' : 'center',
                       verticalAlign: 'middle',
