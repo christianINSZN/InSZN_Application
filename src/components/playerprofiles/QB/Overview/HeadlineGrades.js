@@ -228,7 +228,7 @@ const HeadlineGrades = ({
         </div>
         {isPopupOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-2 rounded-lg shadow-lg w-[95%] h-[30%] flex flex-col">
+            <div className="bg-white p-2 rounded-lg shadow-lg w-[95%] h-[50%] flex flex-col">
               <h3 className="text-sm font-semibold mb-1">{selectedGrade}</h3>
               <div className="flex-1 overflow-auto" style={{ maxHeight: '250px' }}>
                 <canvas id="mobileTrendChart" className="w-full h-full" />
