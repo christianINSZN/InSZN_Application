@@ -4,13 +4,16 @@ import { useUser, SignOutButton } from '@clerk/clerk-react';
 import { BsFillPersonFill } from 'react-icons/bs';
 import { RiTeamFill } from 'react-icons/ri';
 import { MdPeople, MdOutlineJoinFull } from 'react-icons/md';
-import { CgProfile } from "react-icons/cg";
+import { CgProfile } from 'react-icons/cg';
+import { HiMenu, HiX } from 'react-icons/hi';
 
 function NavBar() {
   const [isTeamsDropdownOpen, setIsTeamsDropdownOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
   const teamsDropdownRef = useRef(null);
   const profileDropdownRef = useRef(null);
+  const hamburgerRef = useRef(null);
   const { isSignedIn, user } = useUser();
 
   useEffect(() => {
@@ -21,6 +24,9 @@ function NavBar() {
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
         setIsProfileDropdownOpen(false);
       }
+      if (hamburgerRef.current && !hamburgerRef.current.contains(event.target)) {
+        setIsHamburgerOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
@@ -29,29 +35,41 @@ function NavBar() {
   }, []);
 
   return (
-    <div className="w-full">
+    <div className="w-full fixed top-0 left-0 z-10">
       <div
-        className="text-black text-[16px] w-full fixed top-0 left-0 z-10 py-3 mb-6 border-2 border-[#235347]"
+        className="text-black text-[16px] w-full py-3 border-b-2 border-[#235347] bg-cover bg-center"
         style={{
           height: '64px',
           backgroundImage: 'url(/Header_Gradient.png)',
-          backgroundSize: 'auto 64px',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
         }}
       >
-        <div className="flex items-center justify-between px-6 max-w-10xl mx-auto h-full">
-          {/* Left side nav */}
-          <ul className="flex flex-row space-x-6 items-center justify-end flex-1">
-            <li>
-              <Link to="/players" className="flex items-center space-x-2 hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-lg">
+        <div className="max-w-7xl mx-auto flex items-center px-4 sm:px-6 h-full relative">
+          {/* Mobile: Centered Logo and Hamburger */}
+          <div className="sm:hidden flex items-center w-full relative">
+            <div className="absolute left-1/2 transform -translate-x-1/2">
+              <Link to="/" className="flex items-center">
+                <img src="/TurfLogo_RemovedBkg.png" alt="INSZN Logo" className="h-10 w-auto" />
+              </Link>
+            </div>
+            <button
+              onClick={() => setIsHamburgerOpen(!isHamburgerOpen)}
+              className="ml-auto text-black hover:text-[#235347] focus:outline-none"
+            >
+              {isHamburgerOpen ? <HiX className="h-8 w-8" /> : <HiMenu className="h-8 w-8" />}
+            </button>
+          </div>
+
+          {/* Desktop: Main navigation (centered) */}
+          <div className="hidden sm:flex absolute left-1/2 transform -translate-x-1/2 items-center justify-center gap-4 sm:gap-6">
+            <div className="flex items-center">
+              <Link to="/players" className="flex items-center space-x-2 hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base sm:text-lg">
                 <BsFillPersonFill /> <span>Players</span>
               </Link>
-            </li>
-            <li className="relative" ref={teamsDropdownRef}>
+            </div>
+            <div className="relative" ref={teamsDropdownRef}>
               <button
                 onClick={() => setIsTeamsDropdownOpen(!isTeamsDropdownOpen)}
-                className="flex items-center space-x-2 hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-lg focus:outline-none"
+                className="flex items-center space-x-2 hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base sm:text-lg focus:outline-none"
               >
                 <RiTeamFill /> <span>Teams</span>
               </button>
@@ -60,7 +78,7 @@ function NavBar() {
                   <li>
                     <Link
                       to="/teams"
-                      className="block px-4 py-2 text-black hover:bg-[#235347]/70 hover:text-white text-lg"
+                      className="block px-4 py-2 text-black hover:bg-[#235347]/70 hover:text-white text-base"
                       onClick={() => setIsTeamsDropdownOpen(false)}
                     >
                       By Conference
@@ -69,7 +87,7 @@ function NavBar() {
                   <li>
                     <Link
                       to="/team_rankings"
-                      className="block px-4 py-2 text-black hover:bg-[#235347]/70 hover:text-white text-lg"
+                      className="block px-4 py-2 text-black hover:bg-[#235347]/70 hover:text-white text-base"
                       onClick={() => setIsTeamsDropdownOpen(false)}
                     >
                       Rankings
@@ -77,69 +95,185 @@ function NavBar() {
                   </li>
                 </ul>
               )}
-            </li>
-          </ul>
-          {/* Center logo */}
-          <div className="flex-none px-6">
-            <Link to="/" className="flex items-center justify-center">
-              <img src="/TurfLogo_RemovedBkg.png" alt="INSZN Logo" className="h-14 w-auto" />
-            </Link>
+            </div>
+            <div className="flex items-center">
+              <Link to="/" className="flex items-center justify-center px-3 py-2">
+                <img src="/TurfLogo_RemovedBkg.png" alt="INSZN Logo" className="h-10 sm:h-14 w-auto" />
+              </Link>
+            </div>
+            <div className="flex items-center">
+              <Link to="/h2h" className="flex items-center space-x-2 hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base sm:text-lg">
+                <MdPeople /> <span>H2H</span>
+              </Link>
+            </div>
+            <div className="flex items-center">
+              <Link to="/subscribe" className="flex items-center space-x-2 hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base sm:text-lg">
+                <MdOutlineJoinFull /> <span>Subscribe</span>
+              </Link>
+            </div>
           </div>
-          {/* Right side nav */}
-          <div className="flex flex-row items-center justify-start flex-1 space-x-6">
-            <ul className="flex flex-row space-x-6 items-center">
-              <li>
-                <Link to="/h2h" className="flex items-center space-x-2 hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-lg">
-                  <MdPeople /> <span>H2H</span>
-                </Link>
-              </li>
-              <li>
-                <Link to="/subscribe" className="flex items-center space-x-2 hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-lg mr-32">
-                  <MdOutlineJoinFull /> <span>Subscribe</span>
-                </Link>
-              </li>
-              {isSignedIn && (
-                <li className="relative" ref={profileDropdownRef}>
-                  <button
-                    onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                    className="flex items-center space-x-2 bg-[#235347] text-white hover:bg-[#235347]/70 px-3 py-1 rounded text-md ml-72 text-2xl"
-                  >
-                    <CgProfile />
-                  </button>
-                  {isProfileDropdownOpen && (
-                    <ul className="absolute right-0 mt-2 w-48 bg-white border-2 border-[#235347] rounded shadow-lg z-20">
-                      <li className="px-4 py-2 text-black text-lg">
-                        {user.primaryEmailAddress?.emailAddress || 'No email'}
-                      </li>
-                      <li>
-                        <SignOutButton>
-                          <button className="block w-full text-left px-4 py-2 text-black hover:bg-[#235347]/70 hover:text-white text-lg">
-                            Logout
-                          </button>
-                        </SignOutButton>
-                      </li>
-                    </ul>
-                  )}
-                </li>
-              )}
-            </ul>
-            {!isSignedIn && (
-              <div className="flex flex-row space-x-4 items-right">
+
+          {/* Desktop: Profile or Sign In/Sign Up (right-aligned) */}
+          <div className="hidden sm:flex items-center ml-auto">
+            {isSignedIn ? (
+              <div className="relative" ref={profileDropdownRef}>
+                <button
+                  onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                  className="flex items-center space-x-2 text-white px-3 py-2 rounded text-base sm:text-lg focus:outline-none"
+                >
+                  <CgProfile className="text-2xl" />
+                </button>
+                {isProfileDropdownOpen && (
+                  <ul className="absolute right-0 mt-2 w-48 bg-white border-2 border-[#235347] rounded shadow-lg z-20">
+                    <li className="px-4 py-2 text-black text-base">
+                      {user.primaryEmailAddress?.emailAddress || 'No email'}
+                    </li>
+                    <li>
+                      <SignOutButton>
+                        <button className="block w-full text-left px-4 py-2 text-black hover:bg-[#235347]/70 hover:text-white text-base">
+                          Logout
+                        </button>
+                      </SignOutButton>
+                    </li>
+                  </ul>
+                )}
+              </div>
+            ) : (
+              <div className="flex space-x-4">
                 <Link
                   to="/sign-up"
-                  className="flex items-center space-x-2 bg-[#235347] text-white hover:bg-[#235347]/70 px-3 py-1 rounded text-md"
+                  className="flex items-center space-x-2 bg-[#235347] text-white hover:bg-[#235347]/70 px-3 py-1 rounded text-sm sm:text-base"
                 >
                   <span>Sign Up</span>
                 </Link>
                 <Link
                   to="/sign-in"
-                  className="flex items-center space-x-2 bg-[#235347] text-white hover:bg-[#235347]/70 px-3 py-1 rounded text-md"
+                  className="flex items-center space-x-2 bg-[#235347] text-white hover:bg-[#235347]/70 px-3 py-1 rounded text-sm sm:text-base"
                 >
                   <span>Sign In</span>
                 </Link>
               </div>
             )}
           </div>
+
+          {/* Mobile: Hamburger Dropdown */}
+          {isHamburgerOpen && (
+            <div ref={hamburgerRef} className="sm:hidden absolute top-[64px] left-0 w-full bg-white border-b-2 border-[#235347] shadow-lg z-20">
+              <ul className="flex flex-col items-start p-4 space-y-2">
+                <li>
+                  <Link
+                    to="/players"
+                    className="flex items-center space-x-2 text-black hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base"
+                    onClick={() => setIsHamburgerOpen(false)}
+                  >
+                    <BsFillPersonFill /> <span>Players</span>
+                  </Link>
+                </li>
+                <li className="relative w-full">
+                  <button
+                    onClick={() => setIsTeamsDropdownOpen(!isTeamsDropdownOpen)}
+                    className="flex items-center space-x-2 text-black hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base w-full text-left"
+                  >
+                    <RiTeamFill /> <span>Teams</span>
+                  </button>
+                  {isTeamsDropdownOpen && (
+                    <ul className="pl-6 space-y-2">
+                      <li>
+                        <Link
+                          to="/teams"
+                          className="block px-4 py-2 text-black hover:bg-[#235347]/70 hover:text-white text-base"
+                          onClick={() => {
+                            setIsTeamsDropdownOpen(false);
+                            setIsHamburgerOpen(false);
+                          }}
+                        >
+                          By Conference
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          to="/team_rankings"
+                          className="block px-4 py-2 text-black hover:bg-[#235347]/70 hover:text-white text-base"
+                          onClick={() => {
+                            setIsTeamsDropdownOpen(false);
+                            setIsHamburgerOpen(false);
+                          }}
+                        >
+                          Rankings
+                        </Link>
+                      </li>
+                    </ul>
+                  )}
+                </li>
+                <li>
+                  <Link
+                    to="/h2h"
+                    className="flex items-center space-x-2 text-black hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base"
+                    onClick={() => setIsHamburgerOpen(false)}
+                  >
+                    <MdPeople /> <span>H2H</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/subscribe"
+                    className="flex items-center space-x-2 text-black hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base"
+                    onClick={() => setIsHamburgerOpen(false)}
+                  >
+                    <MdOutlineJoinFull /> <span>Subscribe</span>
+                  </Link>
+                </li>
+                {isSignedIn ? (
+                  <li className="relative w-full">
+                    <button
+                      onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                      className="flex items-center space-x-2 text-black hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base w-full text-left"
+                    >
+                      <CgProfile className="text-2xl" /> <span>Profile</span>
+                    </button>
+                    {isProfileDropdownOpen && (
+                      <ul className="pl-6 space-y-2">
+                        <li className="px-4 py-2 text-black text-base">
+                          {user.primaryEmailAddress?.emailAddress || 'No email'}
+                        </li>
+                        <li>
+                          <SignOutButton>
+                            <button
+                              className="block w-full text-left px-4 py-2 text-black hover:bg-[#235347]/70 hover:text-white text-base"
+                              onClick={() => setIsHamburgerOpen(false)}
+                            >
+                              Logout
+                            </button>
+                          </SignOutButton>
+                        </li>
+                      </ul>
+                    )}
+                  </li>
+                ) : (
+                  <>
+                    <li>
+                      <Link
+                        to="/sign-up"
+                        className="flex items-center space-x-2 text-black hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base"
+                        onClick={() => setIsHamburgerOpen(false)}
+                      >
+                        <span>Sign Up</span>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        to="/sign-in"
+                        className="flex items-center space-x-2 text-black hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base"
+                        onClick={() => setIsHamburgerOpen(false)}
+                      >
+                        <span>Sign In</span>
+                      </Link>
+                    </li>
+                  </>
+                )}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
     </div>

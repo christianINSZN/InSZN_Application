@@ -48,6 +48,9 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
   const [selectedCustomMetric, setSelectedCustomMetric] = useState(null);
   const [activeTab, setActiveTab] = useState('Metrics');
 
+  // Define excluded metrics
+  const excludedMetrics = ['name', 'playerId', 'year', 'team', 'school', 'position'];
+
   // Persist year1 to localStorage
   useEffect(() => {
     localStorage.setItem('selectedYear', year1);
@@ -167,8 +170,8 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
           if (!statsResponse1.ok) throw new Error(`Failed to fetch stats data for Player 1: ${await statsResponse1.text()}`);
           if (!statsResponse2.ok) throw new Error(`Failed to fetch stats data for Player 2: ${await statsResponse2.text()}`);
           const [statsData1, statsData2] = await Promise.all([statsResponse1.json(), statsResponse2.json()]);
-          const metrics1 = Object.keys(statsData1).filter(key => key !== 'playerId' && key !== 'year');
-          const metrics2 = Object.keys(statsData2).filter(key => key !== 'playerId' && key !== 'year');
+          const metrics1 = Object.keys(statsData1).filter(key => !excludedMetrics.includes(key));
+          const metrics2 = Object.keys(statsData2).filter(key => !excludedMetrics.includes(key));
           const allMetrics = [...new Set([...metrics1, ...metrics2])];
           setAvailableMetrics(allMetrics.map(field => ({
             value: field,
@@ -239,7 +242,7 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
           const metadataData = await metadataResponse.json();
           if (!Array.isArray(metadataData)) throw new Error('API response is not an array');
           const years = metadataData.map(item => item.year).filter(y => y !== null && y !== undefined);
-          const uniqueYears = [...new Set([...years, Number(year1)])].sort((a, b) => b - a);
+          const uniqueYears = [...new Set([...years, Number(year2)])].sort((a, b) => b - a);
           setYearOptions2(uniqueYears.map(y => ({ value: y, label: y.toString() })));
           const latestYearData = metadataData.find(item => item.year === Number(year2)) || metadataData[0];
           setHeadshotUrl2(latestYearData?.headshotURL || null);
