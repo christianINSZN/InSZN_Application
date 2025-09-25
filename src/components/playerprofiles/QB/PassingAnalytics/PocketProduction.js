@@ -119,6 +119,10 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
     let newWeeklyData = null;
     if (isChecked) {
       newWeeklyData = await fetchPlayerData(selectedPlayerId);
+      if (!newWeeklyData || !Object.values(newWeeklyData).some(data => data && Object.keys(data).length > 0)) {
+        console.warn(`No valid data for player ${selectedPlayerId}, not adding to chart`);
+        return;
+      }
     }
 
     setPlayerWeeklyData(prev => {
@@ -138,7 +142,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
         ...prev,
         [metricId]: {
           ...prev[metricId],
-          [selectedPlayerId]: isChecked,
+          [selectedPlayerId]: isChecked && !!newWeeklyData,
         },
       };
       console.log(`Updated checkedPlayers for ${metricId}:`, updated);
@@ -224,21 +228,25 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
       },
       ...Object.keys(checkedPlayers[metric.id])
         .filter(pId => checkedPlayers[metric.id][pId])
-        .map((pId, idx) => ({
-          label: capitalizeName(allPlayerPercentiles[pId]?.name),
-          data: sortedWeeks.map(week => {
-            const weekData = playerWeeklyData[metric.id][pId]?.[week.key] || {};
-            const value = weekData[metric.field] !== undefined && weekData[metric.field] !== null ? weekData[metric.field] : null;
-            console.log(`Data for ${metric.id}, player ${pId}, week ${week.key}: ${value}`);
-            return value;
-          }),
-          borderColor: colors[(idx + 1) % colors.length],
-          backgroundColor: colors[(idx + 1) % colors.length].replace('1)', '0.2)'),
-          fill: true,
-          tension: 0.2,
-          pointRadius: 5,
-          pointHoverRadius: 7,
-        })),
+        .map((pId, idx) => {
+          const dataset = {
+            label: capitalizeName(allPlayerPercentiles[pId]?.name),
+            data: sortedWeeks.map(week => {
+              const weekData = playerWeeklyData[metric.id][pId]?.[week.key] || {};
+              const value = weekData[metric.field] !== undefined && weekData[metric.field] !== null ? weekData[metric.field] : null;
+              console.log(`Data for ${metric.id}, player ${pId}, week ${week.key}: ${value}`);
+              return value;
+            }),
+            borderColor: colors[(idx + 1) % colors.length],
+            backgroundColor: colors[(idx + 1) % colors.length].replace('1)', '0.2)'),
+            fill: true,
+            tension: 0.2,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+          };
+          console.log(`Dataset for ${metric.id}, player ${pId}:`, dataset);
+          return dataset;
+        }),
     ];
     console.log(`Datasets for ${metric.id}:`, datasets);
     const allData = datasets.flatMap(ds => ds.data.filter(value => value !== null && !isNaN(value)));
@@ -289,7 +297,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
     const opponentLookup = sortedGames.reduce((acc, game) => {
       const key = `${game.week}_${game.seasonType}`;
       const playerTeam = game.team;
-      const opponent = playerTeam === game.homeTeam ? `vs. ${game.awayTeamAbrev}` : `at ${game.homeTeamAbrev}`;
+      const opponent = playerTeam === game.homeTeam ? `vs. ${game.awayTeamAbrev}` : `at ${game.awayTeamAbrev}`;
       acc[key] = { opponent, startDate: game.startDate };
       return acc;
     }, {});
@@ -307,39 +315,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
         renderChart(metric, window.innerWidth < 640, sortedGames, opponentLookup);
       }, 0);
     });
-  }, [teamGames, allPlayerPercentiles, playerId]);
-
-  useEffect(() => {
-    if (!teamGames || teamGames.length === 0) return;
-
-    const sortedGames = [...teamGames].sort((a, b) => {
-      const dateA = new Date(a.startDate);
-      const dateB = new Date(b.startDate);
-      return isNaN(dateA) || isNaN(dateB) ? a.week - b.week : dateA - dateB;
-    });
-
-    const opponentLookup = sortedGames.reduce((acc, game) => {
-      const key = `${game.week}_${game.seasonType}`;
-      const playerTeam = game.team;
-      const opponent = playerTeam === game.homeTeam ? `vs. ${game.awayTeamAbrev}` : `at ${game.homeTeamAbrev}`;
-      acc[key] = { opponent, startDate: game.startDate };
-      return acc;
-    }, {});
-
-    const metrics = [
-      { id: 'def_gen_pressures', field: 'def_gen_pressures', title: 'Defense Generated Pressures', min: 0, max: 50, unit: 'Pressures' },
-      { id: 'pressure_to_sack_rate', field: 'pressure_to_sack_rate', title: 'Pressure to Sack Rate (%)', min: 0, max: 50, unit: 'Pressure to Sack Rate' },
-      { id: 'sack_percent', field: 'sack_percent', title: 'Sack Rate (%)', min: 0, max: 50, unit: 'Sack Rate per Play' },
-      { id: 'hit_as_threw', field: 'hit_as_threw', title: 'Hit as Thrown', min: 0, max: 5, unit: 'Hits' },
-      { id: 'avg_time_to_throw', field: 'avg_time_to_throw', title: 'Avgerage Time to Throw', min: 0, max: 10, unit: 'Avg. Time to Throw' },
-    ];
-
-    metrics.forEach(metric => {
-      setTimeout(() => {
-        renderChart(metric, window.innerWidth < 640, sortedGames, opponentLookup);
-      }, 0);
-    });
-  }, [checkedPlayers, playerWeeklyData, weeklyGrades]);
+  }, [teamGames, weeklyGrades, allPlayerPercentiles, playerId, checkedPlayers, playerWeeklyData]);
 
   return (
     <div className="pocket-production-container">
