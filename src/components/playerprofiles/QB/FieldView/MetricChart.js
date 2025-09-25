@@ -49,7 +49,6 @@ const MetricChart = ({
       return;
     }
 
-    // Check and destroy existing chart
     if (chartRef.current?.chart) {
       chartRef.current.chart.destroy();
       console.log('Previous chart destroyed');
@@ -210,7 +209,7 @@ const MetricChart = ({
   }, [selectedZone, selectedMetric, selectedDistance, weeklyGrades, teamGames, compareMode]);
 
   return (
-    <div className="bg-white rounded-lg shadow">
+    <div className="bg-white rounded-lg shadow min-h-0">
       <h2 className="flex items-center justify-center text-sm sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 sm:h-[40px] rounded">
         Game-Level Composition by Depth and Orientation
       </h2>
@@ -266,8 +265,8 @@ const MetricChart = ({
         </div>
       )}
       <div className="sub-container bg-gray-0 p-2 sm:p-0 rounded shadow">
-        <div className={isMobile ? "w-full h-240" : "w-full h-240"}>
-          <canvas id="metricChart" className="w-full h-full" />
+        <div className={isMobile ? "w-full h-126 min-h-0 max-h-[126px]" : "w-full h-80 min-h-0 max-h-[320px]"}>
+          <canvas id="metricChart" className="w-full h-full min-h-0" />
         </div>
       </div>
     </div>
