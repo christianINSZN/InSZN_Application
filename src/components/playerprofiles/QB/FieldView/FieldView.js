@@ -1,9 +1,21 @@
 import React, { useState, useEffect } from 'react';
 
-const FieldView = ({ playerId, year, onZoneSelect, colLabels = ['Left', 'Center', 'Right'], excludedMetrics = ['bats', 'pressure_to_sack_rate', 'sack_percent', 'sacks', 'scrambles', 'spikes', 'thrown_aways'], metricRenames = {'ypa': 'YPA', 'btt_rate': 'Big Time Throw Rate', 'qb_rating': 'QB Rating', 'twp_rate': 'Turnover Worthy Play Rate'} }) => {
+const FieldView = ({ 
+  playerId, 
+  year, 
+  onZoneSelect, 
+  colLabels = ['Left', 'Center', 'Right'], 
+  excludedMetrics = ['bats', 'pressure_to_sack_rate', 'sack_percent', 'sacks', 'scrambles', 'spikes', 'thrown_aways'], 
+  metricRenames = {
+    'ypa': 'YPA', 
+    'btt_rate': 'Big Time Throw Rate', 
+    'qb_rating': 'QB Rating', 
+    'twp_rate': 'Turnover Worthy Play Rate'
+  } 
+}) => {
   const [selectedZone, setSelectedZone] = useState(null);
   const [depthData, setDepthData] = useState(null);
-  const [selectedMetric, setSelectedMetric] = useState(''); // Default to empty string for placeholder
+  const [selectedMetric, setSelectedMetric] = useState('');
 
   useEffect(() => {
     if (playerId && year) {
@@ -44,7 +56,7 @@ const FieldView = ({ playerId, year, onZoneSelect, colLabels = ['Left', 'Center'
         metricSet.add(match[3]);
       }
     });
-    return Array.from(metricSet).sort(); // Sort for consistent order
+    return Array.from(metricSet).sort();
   };
 
   const formatMetric = (metric) => {
@@ -79,15 +91,13 @@ const FieldView = ({ playerId, year, onZoneSelect, colLabels = ['Left', 'Center'
 
   return (
     <div className="bg-white rounded-lg shadow h-full">
-      <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">FieldView</h2>
-      {/* Metric Dropdown */}
-      <div className="mb-2 mt-2">
-        <label htmlFor="metric-select" className="text-gray-700 ml-36"></label>
+      <h2 className="flex items-center justify-center text-base sm:text-lg bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 sm:h-10 rounded">FieldView</h2>
+      <div className="mb-2 mt-2 px-2 sm:px-4">
         <select
           id="metric-select"
           value={selectedMetric}
           onChange={(e) => setSelectedMetric(e.target.value)}
-          className="p-2 border border-gray-300 rounded text-center"
+          className="w-full p-1 sm:p-2 border border-gray-300 rounded text-sm sm:text-base text-center"
         >
           <option value="" disabled>Select Metric</option>
           {getAvailableMetrics().map(metric => (
@@ -95,52 +105,43 @@ const FieldView = ({ playerId, year, onZoneSelect, colLabels = ['Left', 'Center'
           ))}
         </select>
       </div>
-      {/* Column Headers */}
-      <div className="grid grid-cols-3 gap-2 text-center font-medium text-gray-700 pl-8 text-lg">
+      <div className="grid grid-cols-3 gap-1 sm:gap-2 text-center font-medium text-gray-700 text-xs sm:text-sm px-2 sm:px-8">
+        <div className="sm:invisible"></div>
         {colLabels.map((label, index) => (
-          <div key={index} className="p-2">
+          <div key={index} className="p-1 sm:p-2">
             {label}
           </div>
         ))}
       </div>
-      {/* Grid with Row Labels and Cells */}
-      <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-0 h-4/5 mr-4">
-        {rowLabels.map((label, index) => (
-          <div
-            key={index}
-            className="flex items-center justify-center text-gray-700 font-medium p-2 pr-8 text-lg"
-            style={{
-              width: '2rem',
-              height: '8rem',
-              marginRight: '-0.5rem',
-              transform: 'rotate(-90deg)',
-              transformOrigin: 'center',
-              whiteSpace: 'nowrap',
-            }}
-          >
+      {rowLabels.map((label, rowIndex) => (
+        <div key={rowIndex} className="grid grid-cols-[auto_1fr_1fr_1fr] gap-1 sm:gap-2 px-2 sm:pr-4">
+          <div className="flex items-center justify-center text-gray-700 font-medium text-xs sm:text-sm p-1 sm:p-2 sm:pr-8" style={{
+            width: '2rem',
+            height: window.innerWidth < 640 ? 'auto' : '6rem',
+            marginRight: window.innerWidth < 640 ? '0' : '-0.5rem',
+            transform: window.innerWidth < 640 ? 'none' : 'rotate(-90deg)',
+            transformOrigin: window.innerWidth < 640 ? 'none' : 'center',
+            whiteSpace: 'nowrap',
+          }}>
             {label}
           </div>
-        ))}
-        {zones.map((row, rowIndex) =>
-          row.map((zone, colIndex) => {
+          {zones[rowIndex].map((zone, colIndex) => {
             const value = getValue(zone);
             const backgroundStyle = getBackgroundColor(value);
             return (
               <div
                 key={`${rowIndex}-${colIndex}`}
-                className={`border-2 p-8 flex justify-center items-center text-lg font-bold cursor-pointer text-gray-100 ${
-                  selectedZone === zone ? 'border-black' : 'border-white'
-                }`}
-                style={{ ...backgroundStyle, gridRow: rowIndex + 1, gridColumn: colIndex + 2 }}
+                className={`border-2 p-2 sm:p-4 flex justify-center items-center text-xs sm:text-sm font-bold cursor-pointer text-gray-100 ${selectedZone === zone ? 'border-black' : 'border-white'}`}
+                style={{ ...backgroundStyle }}
                 onClick={() => handleZoneClick(zone)}
               >
                 {value !== null ? value.toFixed(1) : 'N/A'}
               </div>
             );
-          })
-        )}
-      </div>
-      <div className="mt-2 text-lg text-gray-800 text-center font-bold">
+          })}
+        </div>
+      ))}
+      <div className="mt-2 text-sm sm:text-lg text-gray-800 text-center font-bold px-2 sm:px-4">
         <p>Selected Metric: {formatMetric(selectedMetric)}</p>
       </div>
     </div>

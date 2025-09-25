@@ -146,7 +146,7 @@ function FieldViewInterface() {
 
   return (
     <WeeklyGradesContext.Provider value={weeklyGrades}>
-      <div className="w-full min-h-screen bg-gray-0">
+      <div className="w-full min-h-fit overflow-y-auto bg-gray-0">
         <div className="px-4 sm:px-0 py-0">
           <Header
             firstName={firstName}
@@ -203,7 +203,7 @@ function FieldViewInterface() {
           <div className="relative">
             {isSubscribed ? (
               <div className="flex flex-col sm:grid sm:grid-cols-[71%_28%] gap-4 w-full">
-                <div className="space-y-6">
+                <div className="order-1 sm:order-2 space-y-6">
                   <GameLogPassing
                     playerId={playerId}
                     year={year}
@@ -221,14 +221,14 @@ function FieldViewInterface() {
                     teamGames={teamGames}
                   />
                 </div>
-                <div className="grid grid-rows-[1fr] gap-4 h-full">
+                <div className="order-0 sm:order-1 grid grid-rows-[1fr] gap-4">
                   <FieldView playerId={playerId} year={year} onZoneSelect={handleZoneSelect} colLabels={colLabels} />
                 </div>
               </div>
             ) : (
               <div className="relative">
                 <div className="flex flex-col sm:grid sm:grid-cols-[71%_28%] gap-4 w-full filter blur-xs opacity-80">
-                  <div className="space-y-6">
+                  <div className="order-1 sm:order-2 space-y-6">
                     <GameLogPassing
                       playerId={playerId}
                       year={year}
@@ -246,7 +246,7 @@ function FieldViewInterface() {
                       teamGames={teamGames}
                     />
                   </div>
-                  <div className="grid grid-rows-[1fr] gap-4 h-full">
+                  <div className="order-0 sm:order-1 grid grid-rows-[1fr] gap-4">
                     <FieldView playerId={playerId} year={year} onZoneSelect={handleZoneSelect} colLabels={colLabels} />
                   </div>
                 </div>
