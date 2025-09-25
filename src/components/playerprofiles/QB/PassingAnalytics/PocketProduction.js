@@ -191,15 +191,14 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
 
     metrics.forEach(metric => {
       const chartRef = chartRefs[metric.id];
-      // Destroy existing chart if it exists
       if (chartRef.current && typeof chartRef.current.destroy === 'function') {
         chartRef.current.destroy();
-        chartRef.current = null; // Reset to null to ensure clean state
+        chartRef.current = null;
         console.log(`Previous ${metric.title} chart destroyed`);
       }
 
       const isMobile = window.innerWidth < 640;
-      const canvasId = `${metric.id}_${isMobile ? 'MobileChart' : 'Chart'}_${Date.now()}`; // Unique ID with timestamp
+      const canvasId = isMobile ? `${metric.id}MobileChart` : `${metric.id}Chart`;
       const canvas = document.getElementById(canvasId);
       if (!canvas || !canvas.getContext) {
         console.warn(`Canvas not available for ${canvasId}`);
@@ -225,7 +224,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
           label: capitalizeName(allPlayerPercentiles[playerId]?.name) || `Player ${playerId}`,
           data: sortedWeeks.map(week => {
             const weekData = weeklyGrades[week.key] || {};
-            const value = weekData[metric.field] !== undefined && weekData[metric.field] !== null ? weekData[metric.field] : null;
+            const value = weekData[metric.field] !== undefined && weekData[metric.field] !== null ? Number(weekData[metric.field]) : null;
             console.log(`Data for ${metric.id}, player ${playerId}, week ${week.key}: ${value}`);
             return value;
           }),
@@ -243,7 +242,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
               label: capitalizeName(allPlayerPercentiles[pId]?.name) || `Player ${pId}`,
               data: sortedWeeks.map(week => {
                 const weekData = playerWeeklyData[metric.id][pId]?.[week.key] || {};
-                const value = weekData[metric.field] !== undefined && weekData[metric.field] !== null ? weekData[metric.field] : null;
+                const value = weekData[metric.field] !== undefined && weekData[metric.field] !== null ? Number(weekData[metric.field]) : null;
                 console.log(`Data for ${metric.id}, player ${pId}, week ${week.key}: ${value}`);
                 return value;
               }),
@@ -261,7 +260,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
       console.log(`Datasets for ${metric.id}:`, datasets);
 
       const allData = datasets.flatMap(ds => ds.data.filter(value => value !== null && !isNaN(value)));
-      const buffer = (metric.max - metric.min) * 0.0;
+      const buffer = (metric.max - metric.min) * 0.1;
       const yMin = Math.max(0, metric.min - buffer);
       const yMax = metric.max + buffer;
 
@@ -298,13 +297,12 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
       }
     });
 
-    // Cleanup on unmount
     return () => {
       metrics.forEach(metric => {
         const chartRef = chartRefs[metric.id];
         if (chartRef.current && typeof chartRef.current.destroy === 'function') {
           chartRef.current.destroy();
-          chartRef.current = null; // Reset to null to ensure clean state
+          chartRef.current = null;
           console.log(`Cleaned up ${metric.title} chart on unmount`);
         }
       });
@@ -369,7 +367,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
             <div className="w-full h-80">
               <canvas
                 ref={chartRefs[metric.id]}
-                id={`${metric.id}_${window.innerWidth < 640 ? 'MobileChart' : 'Chart'}_${Date.now()}`}
+                id={window.innerWidth < 640 ? `${metric.id}MobileChart` : `${metric.id}Chart`}
                 className="w-full h-full"
               ></canvas>
             </div>
