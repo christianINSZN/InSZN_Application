@@ -191,13 +191,15 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
 
     metrics.forEach(metric => {
       const chartRef = chartRefs[metric.id];
+      // Destroy existing chart if it exists
       if (chartRef.current && typeof chartRef.current.destroy === 'function') {
         chartRef.current.destroy();
+        chartRef.current = null; // Reset to null to ensure clean state
         console.log(`Previous ${metric.title} chart destroyed`);
       }
 
       const isMobile = window.innerWidth < 640;
-      const canvasId = isMobile ? `${metric.id}MobileChart` : `${metric.id}Chart`;
+      const canvasId = `${metric.id}_${isMobile ? 'MobileChart' : 'Chart'}_${Date.now()}`; // Unique ID with timestamp
       const canvas = document.getElementById(canvasId);
       if (!canvas || !canvas.getContext) {
         console.warn(`Canvas not available for ${canvasId}`);
@@ -302,6 +304,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
         const chartRef = chartRefs[metric.id];
         if (chartRef.current && typeof chartRef.current.destroy === 'function') {
           chartRef.current.destroy();
+          chartRef.current = null; // Reset to null to ensure clean state
           console.log(`Cleaned up ${metric.title} chart on unmount`);
         }
       });
@@ -366,7 +369,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
             <div className="w-full h-80">
               <canvas
                 ref={chartRefs[metric.id]}
-                id={window.innerWidth < 640 ? `${metric.id}MobileChart` : `${metric.id}Chart`}
+                id={`${metric.id}_${window.innerWidth < 640 ? 'MobileChart' : 'Chart'}_${Date.now()}`}
                 className="w-full h-full"
               ></canvas>
             </div>
@@ -404,7 +407,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
                 </thead>
                 <tbody>
                   {getTopPerformers(metric.field, searchTerms[metric.id]).map((player, idx) => (
-                    <tr key={idx} className="border-b border-gray-200">
+                    <tr key={idx} className="border-b border-gray-100">
                       <td className="py-1">
                         <Link
                           to={`/players/qb/${player.playerId}`}
