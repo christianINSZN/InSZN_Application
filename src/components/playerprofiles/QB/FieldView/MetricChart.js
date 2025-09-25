@@ -48,11 +48,13 @@ const MetricChart = ({
       console.warn('teamGames is empty or not iterable, using empty dataset');
       return;
     }
-    let chartInstance = chartRef.current ? chartRef.current.chart : null;
-    if (chartInstance) {
-      chartInstance.destroy();
+
+    // Check and destroy existing chart
+    if (chartRef.current?.chart) {
+      chartRef.current.chart.destroy();
       console.log('Previous chart destroyed');
     }
+
     const ctx = document.getElementById('metricChart')?.getContext('2d');
     if (!ctx) {
       console.warn('Canvas not available for metricChart');
@@ -160,7 +162,7 @@ const MetricChart = ({
     const yMin = Math.max(0, minValue - buffer);
     const yMax = maxValue + buffer;
 
-    chartInstance = new Chart(ctx, {
+    const chartInstance = new Chart(ctx, {
       type: 'line',
       data: {
         labels,
@@ -200,14 +202,16 @@ const MetricChart = ({
     console.log('Chart created with data:', { labels, datasets });
 
     return () => {
-      if (chartInstance) chartInstance.destroy();
-      console.log('Chart destroyed on cleanup');
+      if (chartRef.current?.chart) {
+        chartRef.current.chart.destroy();
+        console.log('Chart destroyed on cleanup');
+      }
     };
   }, [selectedZone, selectedMetric, selectedDistance, weeklyGrades, teamGames, compareMode]);
 
   return (
     <div className="bg-white rounded-lg shadow">
-      <h2 className="flex items-center justify-center text-base sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 sm:h-[40px] rounded">
+      <h2 className="flex items-center justify-center text-sm sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 sm:h-[40px] rounded">
         Game-Level Composition by Depth and Orientation
       </h2>
       {isMobile ? (
@@ -262,7 +266,7 @@ const MetricChart = ({
         </div>
       )}
       <div className="sub-container bg-gray-0 p-2 sm:p-0 rounded shadow">
-        <div className={isMobile ? "w-full h-64" : "w-full h-80"}>
+        <div className={isMobile ? "w-full h-160" : "w-full h-80"}>
           <canvas id="metricChart" className="w-full h-full" />
         </div>
       </div>
