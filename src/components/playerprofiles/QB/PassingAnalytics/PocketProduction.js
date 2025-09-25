@@ -11,6 +11,14 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
     avg_time_to_throw: useRef(null),
   };
 
+  const mobileChartRefs = {
+    def_gen_pressures: useRef(null),
+    pressure_to_sack_rate: useRef(null),
+    sack_percent: useRef(null),
+    hit_as_threw: useRef(null),
+    avg_time_to_throw: useRef(null),
+  };
+
   const [checkedPlayers, setCheckedPlayers] = useState({
     def_gen_pressures: {},
     pressure_to_sack_rate: {},
@@ -115,6 +123,24 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
     }));
   };
 
+  const getTopPerformers = (metricField, searchTerm = '') => {
+    if (!allPlayerPercentiles || typeof allPlayerPercentiles !== 'object') return [];
+    return Object.entries(allPlayerPercentiles)
+      .filter(([pId, data]) => data && data[metricField] !== undefined && data[metricField] !== null)
+      .map(([pId, data]) => ({
+        playerId: pId,
+        name: capitalizeName(data.name),
+        value: Number(data[metricField]),
+      }))
+      .filter(player => player.name.toLowerCase().includes(searchTerm.toLowerCase()))
+      .sort((a, b) => b.value - a.value)
+      .map(player => ({
+        playerId: player.playerId,
+        name: player.name,
+        value: player.value.toFixed(metricField === 'def_gen_pressures' || metricField === 'hit_as_threw' ? 2 : 1),
+      }));
+  };
+
   useEffect(() => {
     if (!teamGames || teamGames.length === 0) {
       console.warn('teamGames is empty or not iterable, using empty dataset');
@@ -143,15 +169,18 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
       { id: 'avg_time_to_throw', field: 'avg_time_to_throw', title: 'Avgerage Time to Throw', min: 0, max: 10, unit: 'Avg. Time to Throw' },
     ];
 
+    const isMobile = window.innerWidth < 640;
+
     metrics.forEach(metric => {
-      const chartRef = chartRefs[metric.id];
+      const chartRef = isMobile ? mobileChartRefs[metric.id] : chartRefs[metric.id];
       if (chartRef.current) {
         chartRef.current.destroy();
         console.log(`Previous ${metric.title} chart destroyed`);
       }
-      const canvas = document.getElementById(`${metric.id}Chart`);
+      const canvasId = isMobile ? `${metric.id}MobileChart` : `${metric.id}Chart`;
+      const canvas = document.getElementById(canvasId);
       if (!canvas || !canvas.getContext) {
-        console.warn(`Canvas not available for ${metric.id}Chart`);
+        console.warn(`Canvas not available for ${canvasId}`);
         return;
       }
       const ctx = canvas.getContext('2d');
@@ -233,24 +262,6 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
     });
   }, [weeklyGrades, teamGames, checkedPlayers, playerWeeklyData, allPlayerPercentiles, playerId]);
 
-  const getTopPerformers = (metricField, searchTerm = '') => {
-    if (!allPlayerPercentiles || typeof allPlayerPercentiles !== 'object') return [];
-    return Object.entries(allPlayerPercentiles)
-      .filter(([pId, data]) => data && data[metricField] !== undefined && data[metricField] !== null)
-      .map(([pId, data]) => ({
-        playerId: pId,
-        name: capitalizeName(data.name),
-        value: Number(data[metricField]),
-      }))
-      .filter(player => player.name.toLowerCase().includes(searchTerm.toLowerCase()))
-      .sort((a, b) => b.value - a.value)
-      .map(player => ({
-        playerId: player.playerId,
-        name: player.name,
-        value: player.value.toFixed(metricField === 'def_gen_pressures' || metricField === 'hit_as_threw' ? 2 : 1),
-      }));
-  };
-
   return (
     <div className="pocket-production-container">
       {[
@@ -261,7 +272,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
         { id: 'avg_time_to_throw', title: 'Avgerage Time to Throw', field: 'avg_time_to_throw' },
       ].map((metric) => (
         <div key={metric.id} className="sm:grid sm:grid-cols-[80%_18%] sm:gap-4 mb-4">
-          {/* Mobile: Search Button and Dropdown Above Chart */}
+          {/* Mobile: Search Button and Combobox Above Chart */}
           <div className="sm:hidden bg-gray-50 p-4 rounded shadow mb-2">
             <div className="flex items-center justify-center">
               <h4 className="text-md font-medium text-gray-700">{metric.title}</h4>
@@ -275,34 +286,39 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
               </button>
             </div>
             {showSearch[metric.id] && (
-              <select
-                value={searchTerms[metric.id]}
-                onChange={(e) => {
-                  const selectedPlayerId = e.target.value;
-                  if (selectedPlayerId) {
-                    handleCheckboxChange(metric.id, selectedPlayerId);
-                    setSearchTerms(prev => ({ ...prev, [metric.id]: '' })); // Reset search term
-                    setShowSearch(prev => ({ ...prev, [metric.id]: false })); // Hide dropdown
-                  }
-                }}
-                className="w-full mt-2 p-1 text-xs text-gray-700 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-              >
-                <option value="">Select a player...</option>
-                {getTopPerformers(metric.field, searchTerms[metric.id]).map((player) => (
-                  <option key={player.playerId} value={player.playerId}>
-                    {player.name} ({player.value})
-                  </option>
-                ))}
-                {getTopPerformers(metric.field, searchTerms[metric.id]).length === 0 && (
-                  <option value="" disabled>No players found</option>
-                )}
-              </select>
+              <div className="mt-2">
+                <input
+                  type="text"
+                  value={searchTerms[metric.id]}
+                  onChange={(e) => handleSearchChange(metric.id, e.target.value)}
+                  placeholder="Search players..."
+                  className="w-full p-1 text-xs text-gray-700 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+                <ul className="max-h-40 overflow-y-auto bg-white border border-gray-300 rounded mt-1">
+                  {getTopPerformers(metric.field, searchTerms[metric.id]).map((player) => (
+                    <li
+                      key={player.playerId}
+                      className="p-1 text-xs text-gray-700 hover:bg-gray-100 cursor-pointer"
+                      onClick={() => {
+                        handleCheckboxChange(metric.id, player.playerId);
+                        setSearchTerms(prev => ({ ...prev, [metric.id]: '' }));
+                        setShowSearch(prev => ({ ...prev, [metric.id]: false }));
+                      }}
+                    >
+                      {player.name} ({player.value})
+                    </li>
+                  ))}
+                  {getTopPerformers(metric.field, searchTerms[metric.id]).length === 0 && (
+                    <li className="p-1 text-xs text-gray-500 text-center">No players found</li>
+                  )}
+                </ul>
+              </div>
             )}
           </div>
           {/* Chart */}
           <div className="sub-container bg-gray-0 p-0 rounded shadow">
             <div className="w-full h-80">
-              <canvas id={`${metric.id}Chart`} className="w-full h-full"></canvas>
+              <canvas id={window.innerWidth < 640 ? `${metric.id}MobileChart` : `${metric.id}Chart`} className="w-full h-full"></canvas>
             </div>
           </div>
           {/* Non-Mobile: Top Performers Table */}
