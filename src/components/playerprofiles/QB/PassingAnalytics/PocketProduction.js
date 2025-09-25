@@ -327,7 +327,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
               </div>
             )}
           </div>
-          <div className="w-full" style={{ height: '320px' }}>
+          <div className="w-full" style={{ height: '240px' }}>
             <canvas id={`${metric.id}Chart`} className="w-full" />
           </div>
         </div>
