@@ -3,13 +3,8 @@ import { Link } from 'react-router-dom';
 import Chart from 'chart.js/auto';
 
 const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPercentiles }) => {
-  const chartRefs = {
-    def_gen_pressures: useRef(null),
-    pressure_to_sack_rate: useRef(null),
-    sack_percent: useRef(null),
-    hit_as_threw: useRef(null),
-    avg_time_to_throw: useRef(null),
-  };
+  // single ref object to hold Chart instances
+  const chartRefs = useRef({});
 
   const [checkedPlayers, setCheckedPlayers] = useState({
     def_gen_pressures: {},
@@ -59,6 +54,16 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
       .join(' ');
   };
 
+  // Reusable metrics list (used both for rendering and chart logic)
+  const metricsList = [
+    { id: 'def_gen_pressures', field: 'def_gen_pressures', title: 'Defense Generated Pressures', max: 50, unit: 'Pressures' },
+    { id: 'pressure_to_sack_rate', field: 'pressure_to_sack_rate', title: 'Pressure to Sack Rate (%)', max: 50, unit: 'Pressure to Sack Rate' },
+    { id: 'sack_percent', field: 'sack_percent', title: 'Sack Rate (%)', max: 50, unit: 'Sack Rate per Play' },
+    { id: 'hit_as_threw', field: 'hit_as_threw', title: 'Hit as Thrown', max: 5, unit: 'Hits' },
+    { id: 'avg_time_to_throw', field: 'avg_time_to_throw', title: 'Average Time to Throw', max: 10, unit: 'Avg. Time to Throw' },
+  ];
+
+  // Fetch weekly data for a player (same as your original fetch) — returns object like { "1_regular": {...}, ... }
   const fetchPlayerData = async (selectedPlayerId) => {
     try {
       const gradesPromises = Array.from({ length: 15 }, (_, i) => i + 1).map(week =>
@@ -86,39 +91,56 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
     }
   };
 
-  const handleCheckboxChange = async (metricId, selectedPlayerId) => {
-    setCheckedPlayers(prev => ({
+  // Helper to fetch & set player weekly data if not already present
+  const fetchAndSetPlayerData = async (metricId, selectedPlayerId) => {
+    // avoid duplicate fetches if we already have data
+    if (playerWeeklyData[metricId]?.[selectedPlayerId]) {
+      return;
+    }
+
+    const newWeeklyData = await fetchPlayerData(selectedPlayerId);
+    if (!newWeeklyData) {
+      // if fetch failed, uncheck that player for this metric
+      setCheckedPlayers(prev => ({
+        ...prev,
+        [metricId]: {
+          ...prev[metricId],
+          [selectedPlayerId]: false,
+        },
+      }));
+      return;
+    }
+
+    setPlayerWeeklyData(prev => ({
       ...prev,
       [metricId]: {
         ...prev[metricId],
-        [selectedPlayerId]: !prev[metricId][selectedPlayerId],
+        [selectedPlayerId]: newWeeklyData,
       },
     }));
 
-    if (!checkedPlayers[metricId][selectedPlayerId]) {
-      try {
-        const newWeeklyData = await fetchPlayerData(selectedPlayerId);
-        if (!newWeeklyData) {
-          setCheckedPlayers(prev => ({
-            ...prev,
-            [metricId]: {
-              ...prev[metricId],
-              [selectedPlayerId]: false,
-            },
-          }));
-          return;
-        }
-        setPlayerWeeklyData(prev => ({
-          ...prev,
-          [metricId]: {
-            ...prev[metricId],
-            [selectedPlayerId]: newWeeklyData,
-          },
-        }));
-      } catch (err) {
-        console.error(`Error fetching weekly data for player ${selectedPlayerId}: ${err.message}`);
+    console.log(`Fetched weekly data for player ${selectedPlayerId} (metric ${metricId})`, newWeeklyData);
+  };
+
+  // Toggle checkbox: update checkedPlayers state and start fetch if enabling
+  const handleCheckboxChange = (metricId, selectedPlayerId) => {
+    setCheckedPlayers(prev => {
+      const currentlyChecked = !!(prev[metricId] && prev[metricId][selectedPlayerId]);
+      const willBeChecked = !currentlyChecked;
+
+      // start fetch when enabling (fetchAndSetPlayerData checks if data already exists)
+      if (willBeChecked) {
+        fetchAndSetPlayerData(metricId, selectedPlayerId);
       }
-    }
+
+      return {
+        ...prev,
+        [metricId]: {
+          ...prev[metricId],
+          [selectedPlayerId]: willBeChecked,
+        },
+      };
+    });
   };
 
   const handleSearchChange = (metricId, value) => {
@@ -153,13 +175,15 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
       }));
   };
 
+  // Main charting effect — update/create charts in-place
   useEffect(() => {
     if (!teamGames || teamGames.length === 0) {
       console.warn('teamGames is empty or not iterable, using empty dataset');
-      return;
+      // still proceed (we'll fallback labels to Week N)
     }
 
-    const sortedGames = [...teamGames].sort((a, b) => {
+    // Build opponent lookup by week_key
+    const sortedGames = (teamGames || []).slice().sort((a, b) => {
       const dateA = new Date(a.startDate);
       const dateB = new Date(b.startDate);
       return isNaN(dateA) || isNaN(dateB) ? a.week - b.week : dateA - dateB;
@@ -173,116 +197,149 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
       return acc;
     }, {});
 
-    const metrics = [
-      { id: 'def_gen_pressures', field: 'def_gen_pressures', title: 'Defense Generated Pressures', max: 50, unit: 'Pressures' },
-      { id: 'pressure_to_sack_rate', field: 'pressure_to_sack_rate', title: 'Pressure to Sack Rate (%)', max: 50, unit: 'Pressure to Sack Rate' },
-      { id: 'sack_percent', field: 'sack_percent', title: 'Sack Rate (%)', max: 50, unit: 'Sack Rate per Play' },
-      { id: 'hit_as_threw', field: 'hit_as_threw', title: 'Hit as Thrown', max: 5, unit: 'Hits' },
-      { id: 'avg_time_to_throw', field: 'avg_time_to_throw', title: 'Average Time to Throw', max: 10, unit: 'Avg. Time to Throw' },
-    ];
-
-    metrics.forEach(metric => {
-      const chartRef = chartRefs[metric.id];
+    metricsList.forEach(metric => {
       const canvas = document.getElementById(`${metric.id}Chart`);
-      if (!canvas || !canvas.getContext) return;
+      if (!canvas || !canvas.getContext) {
+        // canvas not mounted yet -> skip
+        return;
+      }
       const ctx = canvas.getContext('2d');
 
-      const sortedWeeks = Array.from({ length: 15 }, (_, i) => i + 1).map(week => ({
-        week,
+      const sortedWeeks = Array.from({ length: 15 }, (_, i) => i + 1).map(weekNum => ({
+        week: weekNum,
         seasonType: 'regular',
-        key: `${week}_regular`,
+        key: `${weekNum}_regular`,
       }));
 
+      const hasAdditionalPlayers = Object.keys(checkedPlayers[metric.id] || {}).some(pId => checkedPlayers[metric.id][pId]);
+
       const labels = sortedWeeks.map(week => {
-        const hasAdditionalPlayers = Object.keys(checkedPlayers[metric.id]).some(pId => checkedPlayers[metric.id][pId]);
         if (hasAdditionalPlayers) return `Week ${week.week}`;
-        return opponentLookup[week.key]?.opponent || 'BYE';
+        return opponentLookup[week.key]?.opponent || `Week ${week.week}`;
       });
 
       const datasets = [];
 
-      // Main player dataset
+      // Main player dataset (use weeklyGrades prop)
       const mainData = sortedWeeks.map(week => {
-        const weekData = weeklyGrades[week.key] || {};
-        return weekData[metric.field] != null ? Number(weekData[metric.field]) : null;
+        const weekData = weeklyGrades?.[week.key] || {};
+        return weekData && weekData[metric.field] != null ? Number(weekData[metric.field]) : null;
       });
-      if (!mainData.every(v => v == null)) {
-        datasets.push({
-          label: capitalizeName(allPlayerPercentiles[playerId]?.name) || `Player ${playerId}`,
-          data: mainData,
-          borderColor: colors[0],
-          backgroundColor: colors[0].replace('1)', '0.2)'),
-          fill: true,
-          tension: 0.2,
-          pointRadius: 5,
-          pointHoverRadius: 7,
-        });
-      }
 
-      // Additional checked players
-      Object.keys(checkedPlayers[metric.id])
+      datasets.push({
+        label: capitalizeName(allPlayerPercentiles?.[playerId]?.name) || `Player ${playerId}`,
+        data: mainData,
+        borderColor: colors[0],
+        backgroundColor: colors[0].replace('1)', '0.2)'),
+        fill: true,
+        tension: 0.2,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+      });
+
+      // Additional checked players — always include (legend consistency).
+      Object.keys(checkedPlayers[metric.id] || {})
         .filter(pId => checkedPlayers[metric.id][pId])
         .forEach((pId, idx) => {
-          const playerData = sortedWeeks.map(week => {
-            const weekData = playerWeeklyData[metric.id][pId]?.[week.key] || {};
-            return weekData[metric.field] != null ? Number(weekData[metric.field]) : null;
+          // If we don't have fetched data yet, this will produce an array of nulls (so legend appears immediately).
+          const playerDataArray = sortedWeeks.map(week => {
+            const weekData = playerWeeklyData[metric.id]?.[pId]?.[week.key] || {};
+            return weekData && weekData[metric.field] != null ? Number(weekData[metric.field]) : null;
           });
 
-          if (!playerData.every(v => v == null)) {
-            datasets.push({
-              label: capitalizeName(allPlayerPercentiles[pId]?.name) || `Player ${pId}`,
-              data: playerData,
-              borderColor: colors[(idx + 1) % colors.length],
-              backgroundColor: colors[(idx + 1) % colors.length].replace('1)', '0.2)'),
-              fill: true,
-              tension: 0.2,
-              pointRadius: 5,
-              pointHoverRadius: 7,
-            });
-          }
+          datasets.push({
+            label: capitalizeName(allPlayerPercentiles?.[pId]?.name) || `Player ${pId}`,
+            data: playerDataArray,
+            borderColor: colors[(idx + 1) % colors.length],
+            backgroundColor: colors[(idx + 1) % colors.length].replace('1)', '0.2)'),
+            fill: true,
+            tension: 0.2,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+          });
         });
 
-      // ✅ Update instead of destroy/recreate
-      if (chartRef.current) {
-        chartRef.current.data.labels = labels;
-        chartRef.current.data.datasets = datasets;
-        chartRef.current.update();
+      // Debug: show what we're sending to Chart
+      // eslint-disable-next-line no-console
+      console.log(`[PocketProduction] datasets for ${metric.id}:`, datasets);
+
+      // Update existing Chart instance or create new
+      if (chartRefs.current[metric.id]) {
+        try {
+          chartRefs.current[metric.id].data.labels = labels;
+          chartRefs.current[metric.id].data.datasets = datasets;
+          chartRefs.current[metric.id].update();
+        } catch (err) {
+          console.warn(`Error updating chart ${metric.id}:`, err);
+        }
       } else {
-        chartRef.current = new Chart(ctx, {
-          type: 'line',
-          data: { labels, datasets },
-          options: {
-            scales: {
-              x: { ticks: { autoSkip: false, maxRotation: 45, minRotation: 45, labelOffset: 10 } },
-              y: { beginAtZero: true, max: metric.max, ticks: { stepSize: metric.max / 5 }, title: { display: true, text: metric.unit } },
+        // Create chart instance and store on ref
+        try {
+          chartRefs.current[metric.id] = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels,
+              datasets,
             },
-            plugins: {
-              legend: { display: true, position: 'top' },
-              tooltip: { mode: 'index', intersect: false },
-              title: {
-                display: true,
-                text: metric.title,
-                font: { size: 16, weight: 'bold' },
-                color: '#374151',
+            options: {
+              scales: {
+                x: {
+                  title: { display: false, text: 'Opponent / Week' },
+                  ticks: { autoSkip: false, maxRotation: 45, minRotation: 45, labelOffset: 10 },
+                },
+                y: {
+                  beginAtZero: true,
+                  max: metric.max,
+                  ticks: { stepSize: metric.max / 5 },
+                  title: { display: true, text: metric.unit },
+                },
               },
+              plugins: {
+                legend: { display: true, position: 'top' },
+                tooltip: { mode: 'index', intersect: false },
+                title: {
+                  display: true,
+                  text: metric.title,
+                  font: { size: 16, weight: 'bold' },
+                  color: '#374151',
+                  padding: { top: 10, bottom: 10 },
+                },
+              },
+              responsive: true,
+              maintainAspectRatio: false,
             },
-            responsive: true,
-            maintainAspectRatio: false,
-          },
-        });
+          });
+        } catch (err) {
+          console.error(`Error creating chart for ${metric.id}:`, err);
+        }
       }
     });
-  }, [weeklyGrades, teamGames, checkedPlayers, playerWeeklyData, allPlayerPercentiles, playerId]);
+
+    // NOTE: we DO NOT destroy charts here — we keep them and update in place.
+    // A separate unmount-only cleanup below will destroy them when component unmounts.
+  }, [weeklyGrades, teamGames, checkedPlayers, playerWeeklyData, allPlayerPercentiles, playerId, year]);
+
+  // Destroy chart instances on unmount only
+  useEffect(() => {
+    return () => {
+      Object.keys(chartRefs.current).forEach(key => {
+        const c = chartRefs.current[key];
+        if (c) {
+          try {
+            c.destroy();
+          } catch (err) {
+            // ignore
+          }
+          chartRefs.current[key] = null;
+        }
+      });
+    };
+    // empty dependency => runs once on unmount
+  }, []);
 
   return (
     <div className="pocket-production-container space-y-4">
-      {[
-        { id: 'def_gen_pressures', title: 'Def. Generated Pressures' },
-        { id: 'pressure_to_sack_rate', title: 'Pressure to Sack Rate (%)' },
-        { id: 'sack_percent', title: 'Sack Rate (%)' },
-        { id: 'hit_as_threw', title: 'Hit as Thrown' },
-        { id: 'avg_time_to_throw', title: 'Average Time to Throw' },
-      ].map((metric) => (
+      {metricsList.map((metric) => (
         <div key={metric.id} className="sub-container bg-gray-50 p-4 rounded shadow">
           <div className="relative mb-4">
             <div className="flex items-center justify-between">
@@ -291,11 +348,12 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
                 onClick={() => toggleDropdown(metric.id)}
                 className="text-gray-500 hover:text-gray-700 focus:outline-none"
               >
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
               </button>
             </div>
+
             {showDropdown[metric.id] && (
               <div className="absolute z-10 w-full bg-white border border-gray-300 rounded shadow-lg mt-2 max-h-64 overflow-y-auto">
                 <input
@@ -306,31 +364,35 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
                   className="w-full p-2 text-sm text-gray-700 border-b border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
                 <ul className="text-sm text-gray-500">
-                  {getTopPerformers(metric.id, searchTerms[metric.id]).map((player, idx) => (
+                  {getTopPerformers(metric.field, searchTerms[metric.id]).map((player, idx) => (
                     <li key={idx} className="flex items-center justify-between p-2 hover:bg-gray-100">
-                      <Link to={`/players/qb/${player.playerId}`} className="text-blue-600 hover:underline">
+                      <Link
+                        to={`/players/qb/${player.playerId}`}
+                        className="text-blue-600 hover:underline"
+                      >
                         {player.name}
                       </Link>
                       <div className="flex items-center">
                         <span className="mr-2">{player.value}</span>
                         <input
                           type="checkbox"
-                          checked={!!checkedPlayers[metric.id][player.playerId]}
+                          checked={!!(checkedPlayers[metric.id] && checkedPlayers[metric.id][player.playerId])}
                           onChange={() => handleCheckboxChange(metric.id, player.playerId)}
                           className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                         />
                       </div>
                     </li>
                   ))}
-                  {getTopPerformers(metric.id, searchTerms[metric.id]).length === 0 && (
+                  {getTopPerformers(metric.field, searchTerms[metric.id]).length === 0 && (
                     <li className="p-2 text-center">No players found</li>
                   )}
                 </ul>
               </div>
             )}
           </div>
+
           <div className="w-full" style={{ height: '320px' }}>
-            <canvas id={`${metric.id}Chart`} className="w-full"></canvas>
+            <canvas id={`${metric.id}Chart`} className="w-full" />
           </div>
         </div>
       ))}
