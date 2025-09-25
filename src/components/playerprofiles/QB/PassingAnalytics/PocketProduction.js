@@ -44,7 +44,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
   });
 
   const colors = [
-    'rgba(153, 102, 255, 1)', // Purple
+    'rgba(153, 102, 255, 1)', // Purple (default)
     'rgba(54, 162, 235, 1)', // Blue
     'rgba(255, 99, 132, 1)', // Red
     'rgba(75, 192, 192, 1)', // Teal
@@ -59,7 +59,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
       .join(' ');
   };
 
-  const fetchPlayerData = async (selectedPlayerId, metricField) => {
+  const fetchPlayerData = async (selectedPlayerId) => {
     try {
       const gradesPromises = Array.from({ length: 15 }, (_, i) => i + 1).map(week =>
         fetch(`http://localhost:3001/api/player_passing_weekly_all/${selectedPlayerId}/${year}/${week}/regular`, {
@@ -82,8 +82,8 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
         ...acc,
         [`${week}_${seasonType}`]: data,
       }), {});
-      console.log(`Fetched data for player ${selectedPlayerId}, metric ${metricField}:`, newWeeklyData);
-      const hasValidData = Object.values(newWeeklyData).some(data => data && data[metricField] !== undefined && data[metricField] !== null);
+      console.log(`Fetched data for player ${selectedPlayerId}:`, newWeeklyData);
+      const hasValidData = Object.values(newWeeklyData).some(data => data && Object.keys(data).length > 0);
       return hasValidData ? newWeeklyData : null;
     } catch (err) {
       console.error(`Error fetching weekly data for player ${selectedPlayerId}: ${err.message}`);
@@ -91,40 +91,42 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
     }
   };
 
-  const handleCheckboxChange = async (metricId, selectedPlayerId, metricField) => {
+  const handleCheckboxChange = async (metricId, selectedPlayerId) => {
     const isChecked = !checkedPlayers[metricId][selectedPlayerId];
-    let newWeeklyData = null;
+    setCheckedPlayers(prev => ({
+      ...prev,
+      [metricId]: {
+        ...prev[metricId],
+        [selectedPlayerId]: isChecked,
+      },
+    }));
+
     if (isChecked) {
-      newWeeklyData = await fetchPlayerData(selectedPlayerId, metricField);
+      const newWeeklyData = await fetchPlayerData(selectedPlayerId);
       if (!newWeeklyData) {
-        console.warn(`No valid data for player ${selectedPlayerId}, metric ${metricField}, not adding to chart`);
+        console.warn(`No valid data for player ${selectedPlayerId}, metric ${metricId}, not adding to chart`);
+        setCheckedPlayers(prev => ({
+          ...prev,
+          [metricId]: {
+            ...prev[metricId],
+            [selectedPlayerId]: false,
+          },
+        }));
         return;
       }
+
+      setPlayerWeeklyData(prev => {
+        const updated = {
+          ...prev,
+          [metricId]: {
+            ...prev[metricId],
+            [selectedPlayerId]: newWeeklyData,
+          },
+        };
+        console.log(`Updated playerWeeklyData for ${metricId}, player ${selectedPlayerId}:`, updated);
+        return updated;
+      });
     }
-
-    setPlayerWeeklyData(prev => {
-      const updated = {
-        ...prev,
-        [metricId]: {
-          ...prev[metricId],
-          ...(newWeeklyData ? { [selectedPlayerId]: newWeeklyData } : {}),
-        },
-      };
-      console.log(`Updated playerWeeklyData for ${metricId}, player ${selectedPlayerId}:`, updated);
-      return updated;
-    });
-
-    setCheckedPlayers(prev => {
-      const updated = {
-        ...prev,
-        [metricId]: {
-          ...prev[metricId],
-          [selectedPlayerId]: isChecked && !!newWeeklyData,
-        },
-      };
-      console.log(`Updated checkedPlayers for ${metricId}, player ${selectedPlayerId}:`, updated);
-      return updated;
-    });
   };
 
   const handleSearchChange = (metricId, value) => {
@@ -259,37 +261,33 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
       ];
       console.log(`Datasets for ${metric.id}:`, datasets);
 
-      try {
-        chartRef.current = new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels,
-            datasets,
+      chartRef.current = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets,
+        },
+        options: {
+          scales: {
+            x: { title: { display: false, text: 'Opponent' }, ticks: { autoSkip: false, maxRotation: 45, minRotation: 45, labelOffset: 10 } },
+            y: { title: { display: true, text: metric.unit }, beginAtZero: true, min: 0, max: metric.max, ticks: { stepSize: metric.max / 5 } },
           },
-          options: {
-            scales: {
-              x: { title: { display: false, text: 'Opponent' }, ticks: { autoSkip: false, maxRotation: 45, minRotation: 45, labelOffset: 10 } },
-              y: { title: { display: true, text: metric.unit }, beginAtZero: true, min: 0, max: metric.max, ticks: { stepSize: metric.max / 5 } },
+          plugins: {
+            legend: { display: true, position: 'top' },
+            tooltip: { mode: 'index', intersect: false },
+            title: {
+              display: true,
+              text: metric.title,
+              font: { size: 16, weight: 'bold' },
+              color: '#374151',
+              padding: { top: 10, bottom: 10 },
             },
-            plugins: {
-              legend: { display: true, position: 'top' },
-              tooltip: { mode: 'index', intersect: false },
-              title: {
-                display: true,
-                text: metric.title,
-                font: { size: 16, weight: 'bold' },
-                color: '#374151',
-                padding: { top: 10, bottom: 10 },
-              },
-            },
-            responsive: true,
-            maintainAspectRatio: false,
           },
-        });
-        console.log(`Line chart created for ${metric.title}`);
-      } catch (err) {
-        console.error(`Error creating chart for ${metric.title}: ${err.message}`);
-      }
+          responsive: true,
+          maintainAspectRatio: false,
+        },
+      });
+      console.log(`Line chart created for ${metric.title}`);
     });
 
     return () => {
@@ -342,7 +340,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
                       key={player.playerId}
                       className="p-1 text-xs text-gray-700 hover:bg-gray-100 cursor-pointer"
                       onClick={() => {
-                        handleCheckboxChange(metric.id, player.playerId, metric.field);
+                        handleCheckboxChange(metric.id, player.playerId);
                         setSearchTerms(prev => ({ ...prev, [metric.id]: '' }));
                         setShowSearch(prev => ({ ...prev, [metric.id]: false }));
                       }}
@@ -414,7 +412,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
                         <input
                           type="checkbox"
                           checked={!!checkedPlayers[metric.id][player.playerId]}
-                          onChange={() => handleCheckboxChange(metric.id, player.playerId, metric.field)}
+                          onChange={() => handleCheckboxChange(metric.id, player.playerId)}
                           className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                         />
                       </td>
