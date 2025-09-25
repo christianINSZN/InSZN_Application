@@ -28,7 +28,6 @@ const GameLogPassing = ({
   const positions = ['left', 'center', 'right'];
 
   useEffect(() => {
-    // Cleanup previous charts
     if (distanceChartRef.current?.chart) {
       distanceChartRef.current.chart.destroy();
     }
@@ -36,7 +35,6 @@ const GameLogPassing = ({
       positionChartRef.current.chart.destroy();
     }
 
-    // Aggregate data for distance donut chart (modified for percentages)
     const distanceTotals = distances.map(distance => {
       let total = 0;
       let count = 0;
@@ -52,17 +50,14 @@ const GameLogPassing = ({
           }
         });
       });
-      return count > 0 ? total / count : 0; // Average across valid data points
+      return count > 0 ? total / count : 0;
     });
 
-    // Calculate total for normalization
     const totalDistanceValue = distanceTotals.reduce((sum, value) => sum + value, 0);
-    // Convert to percentages
     const newDistanceData = distanceTotals.map(value =>
       totalDistanceValue > 0 ? (value / totalDistanceValue) * 100 : 0
     );
 
-    // Aggregate data for position donut chart (already percentages)
     const positionTotals = positions.map(position => {
       let total = 0;
       let count = 0;
@@ -78,12 +73,10 @@ const GameLogPassing = ({
           }
         });
       });
-      return count > 0 ? total / count : 0; // Average across valid data points
+      return count > 0 ? total / count : 0;
     });
 
-    // Calculate total for normalization
     const totalPositionValue = positionTotals.reduce((sum, value) => sum + value, 0);
-    // Convert to percentages
     const newPositionData = positionTotals.map(value =>
       totalPositionValue > 0 ? (value / totalPositionValue) * 100 : 0
     );
@@ -91,7 +84,6 @@ const GameLogPassing = ({
     setDistanceData(newDistanceData);
     setPositionData(newPositionData);
 
-    // Colors for donut charts
     const colors = [
       'rgba(171, 62, 86, 0.8)', // Red
       'rgba(41, 121, 175, 0.8)', // Blue
@@ -99,13 +91,11 @@ const GameLogPassing = ({
       'rgba(193, 121, 49, 0.8)', // Orange
     ];
 
-    // Format selectedMetric for display
     const formattedMetric = metricRenames[selectedMetric] || selectedMetric
       .split('_')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
 
-    // Distance Donut Chart
     const distanceCtx = document.getElementById('distanceDonutChart')?.getContext('2d');
     if (distanceCtx) {
       distanceChartRef.current = {
@@ -124,7 +114,7 @@ const GameLogPassing = ({
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-              legend: { position: 'top' },
+              legend: { position: 'top', labels: { font: { size: window.innerWidth < 640 ? 10 : 12 } } },
               tooltip: {
                 callbacks: {
                   label: (context) => `${context.label}: ${context.raw.toFixed(1)}%`,
@@ -134,11 +124,11 @@ const GameLogPassing = ({
                 display: true,
                 text: 'Rate (%) by Field Depth',
                 position: 'top',
-                font: { size: 16, weight: 'bold' },
-                color: 'rgba(55, 65, 81, 1)', // text-gray-700
+                font: { size: window.innerWidth < 640 ? 12 : 14, weight: 'bold' },
+                color: 'rgba(55, 65, 81, 1)',
               },
             },
-            cutout: '70%', // Create hollow center for donut
+            cutout: window.innerWidth < 640 ? '60%' : '70%',
           },
           plugins: [{
             id: 'centerText',
@@ -147,8 +137,8 @@ const GameLogPassing = ({
               ctx.save();
               ctx.textAlign = 'center';
               ctx.textBaseline = 'middle';
-              ctx.font = "24px system-ui";
-              ctx.fillStyle = 'rgba(55, 65, 81, 1)'; // text-gray-700
+              ctx.font = window.innerWidth < 640 ? "14px system-ui" : "18px system-ui";
+              ctx.fillStyle = 'rgba(55, 65, 81, 1)';
               ctx.fillText(formattedMetric, width / 2, height / 1.72);
               ctx.restore();
             },
@@ -157,7 +147,6 @@ const GameLogPassing = ({
       };
     }
 
-    // Position Donut Chart
     const positionCtx = document.getElementById('positionDonutChart')?.getContext('2d');
     if (positionCtx) {
       positionChartRef.current = {
@@ -176,7 +165,7 @@ const GameLogPassing = ({
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-              legend: { position: 'top' },
+              legend: { position: 'top', labels: { font: { size: window.innerWidth < 640 ? 10 : 12 } } },
               tooltip: {
                 callbacks: {
                   label: (context) => `${context.label}: ${context.raw.toFixed(1)}%`,
@@ -186,11 +175,11 @@ const GameLogPassing = ({
                 display: true,
                 text: 'Rate (%) by Field Orientation',
                 position: 'top',
-                font: { size: 16, weight: 'bold' },
-                color: 'rgba(35, 83, 71, 1)', // text-gray-700
+                font: { size: window.innerWidth < 640 ? 12 : 14, weight: 'bold' },
+                color: 'rgba(35, 83, 71, 1)',
               },
             },
-            cutout: '70%', // Create hollow center for donut
+            cutout: window.innerWidth < 640 ? '60%' : '70%',
           },
           plugins: [{
             id: 'centerText',
@@ -199,8 +188,8 @@ const GameLogPassing = ({
               ctx.save();
               ctx.textAlign = 'center';
               ctx.textBaseline = 'middle';
-              ctx.font = "24px system-ui";
-              ctx.fillStyle = 'rgba(35, 83, 71, 1)'; // text-gray-700
+              ctx.font = window.innerWidth < 640 ? "14px system-ui" : "18px system-ui";
+              ctx.fillStyle = 'rgba(35, 83, 71, 1)';
               ctx.fillText(formattedMetric, width / 2, height / 1.72);
               ctx.restore();
             },
@@ -217,20 +206,20 @@ const GameLogPassing = ({
 
   return (
     <div className="bg-white rounded-lg shadow">
-      <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Rates by Field Depth and Orientation</h2>
-      <div className="grid grid-cols-2 gap-4 h-88">
-        <div className="bg-gray-0 p-4 rounded shadow" style={{ aspectRatio: '1 / 1' }}>
+      <h2 className="flex items-center justify-center text-base sm:text-lg bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 sm:h-10 rounded">Rates by Field Depth and Orientation</h2>
+      <div className="flex flex-col sm:grid sm:grid-cols-2 gap-2 sm:gap-4 h-auto sm:h-88 w-full">
+        <div className="bg-gray-0 p-2 sm:p-4 rounded shadow h-64 sm:h-full">
           {distanceData.length && distanceData.some(v => v > 0) ? (
             <canvas id="distanceDonutChart" className="w-full h-full" />
           ) : (
-            <p className="text-sm text-gray-500 text-center">No data available for Distance Breakdown</p>
+            <p className="text-xs sm:text-sm text-gray-500 text-center">No data available for Distance Breakdown</p>
           )}
         </div>
-        <div className="bg-gray-0 p-4 rounded shadow" style={{ aspectRatio: '1 / 1' }}>
+        <div className="bg-gray-0 p-2 sm:p-4 rounded shadow h-64 sm:h-full">
           {positionData.length && positionData.some(v => v > 0) ? (
             <canvas id="positionDonutChart" className="w-full h-full" />
           ) : (
-            <p className="text-sm text-gray-500 text-center">No data available for Position Breakdown</p>
+            <p className="text-xs sm:text-sm text-gray-500 text-center">No data available for Position Breakdown</p>
           )}
         </div>
       </div>

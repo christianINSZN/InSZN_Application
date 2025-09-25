@@ -11,7 +11,7 @@ export const WeeklyGradesContext = createContext({});
 function FieldViewInterface() {
   const { playerId } = useParams();
   const location = useLocation();
-  const { user } = useClerk(); // Access Clerk user data
+  const { user } = useClerk();
   const [playerData, setPlayerData] = useState(null);
   const [basicData, setBasicData] = useState(null);
   const [teamGames, setTeamGames] = useState([]);
@@ -20,15 +20,11 @@ function FieldViewInterface() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedZone, setSelectedZone] = useState(null);
-  const [selectedMetric, setSelectedMetric] = useState('grades_pass'); // Default metric
-  const [selectedDistance, setSelectedDistance] = useState('deep'); // Default distance
+  const [selectedMetric, setSelectedMetric] = useState('grades_pass');
+  const [selectedDistance, setSelectedDistance] = useState('deep');
   const [depthData, setDepthData] = useState(null);
   const [colLabels, setColLabels] = useState(['Left', 'Center', 'Right']);
-
-  // Get year from navigation state, default to 2024 if not provided
   const year = location.state?.year || 2024;
-
-  // Check subscription tier
   const subscriptionPlan = user?.publicMetadata?.subscriptionPlan;
   const isSubscribed = subscriptionPlan === 'pro' || subscriptionPlan === 'premium';
 
@@ -51,23 +47,18 @@ function FieldViewInterface() {
             headers: { 'Content-Type': 'application/json' },
           }),
         ]);
-
         if (!gradesResponse.ok) throw new Error('Failed to fetch grades data');
         if (!basicResponse.ok) throw new Error('Failed to fetch basic data');
         if (!gamesResponse.ok) {
           const errorText = await gamesResponse.text();
           throw new Error(`Failed to fetch team games data: ${errorText}`);
         }
-
         const gradesData = await gradesResponse.json();
         const basicData = await basicResponse.json();
         const gamesData = await gamesResponse.json();
-
         setPlayerData(gradesData[0] || null);
         setBasicData(basicData[0] || null);
         setTeamGames(gamesData || []);
-
-        // Fetch passing depth data for each game
         const gradesPromises = gamesData.map((game) => {
           const url = `${process.env.REACT_APP_API_URL}/api/player_passing_weekly_all/${playerId}/${year}/${game.week}/${game.seasonType}`;
           console.log(`Fetching passing depth for game ${game.week} (${game.startDate}, ${game.seasonType}): ${url}`);
@@ -87,7 +78,6 @@ function FieldViewInterface() {
               return response.json().then((data) => ({ week: game.week, seasonType: game.seasonType, data: data[0] || null }));
             });
         });
-
         const gradesResults = await Promise.all(gradesPromises);
         const aggregatedGrades = gradesResults.reduce((acc, { week, seasonType, data }) => {
           const key = `${week}_${seasonType}`;
@@ -101,7 +91,6 @@ function FieldViewInterface() {
         setLoading(false);
       }
     };
-
     const fetchDepthData = async () => {
       if (playerId && year) {
         try {
@@ -118,7 +107,6 @@ function FieldViewInterface() {
         }
       }
     };
-
     if (playerId) {
       fetchPlayerData();
       fetchDepthData();
@@ -149,7 +137,6 @@ function FieldViewInterface() {
   const isPassingActive = location.pathname === `/players/qb/${playerId}/passing`;
   const isFieldViewActive = location.pathname === `/players/qb/${playerId}/fieldview`;
   const ish2hActive = location.pathname === `/players/qb/${playerId}/h2h`;
-
   const gradesData = {
     yards,
     touchdowns,
@@ -160,7 +147,7 @@ function FieldViewInterface() {
   return (
     <WeeklyGradesContext.Provider value={weeklyGrades}>
       <div className="w-full min-h-screen bg-gray-0">
-        <div className="px-0 py-0">
+        <div className="px-4 sm:px-0 py-0">
           <Header
             firstName={firstName}
             lastName={lastName}
@@ -174,7 +161,7 @@ function FieldViewInterface() {
             gradesData={gradesData}
           />
           <div className="border-b border-gray-300 mb-4">
-            <ul className="flex gap-4">
+            <ul className="flex gap-4 overflow-x-auto whitespace-nowrap">
               <li>
                 <Link
                   to={`/players/qb/${playerId || ''}`}
@@ -215,7 +202,7 @@ function FieldViewInterface() {
           </div>
           <div className="relative">
             {isSubscribed ? (
-              <div className="grid grid-cols-[71%_28%] gap-4 w-full">
+              <div className="flex flex-col sm:grid sm:grid-cols-[71%_28%] gap-4 w-full">
                 <div className="space-y-6">
                   <GameLogPassing
                     playerId={playerId}
@@ -234,13 +221,13 @@ function FieldViewInterface() {
                     teamGames={teamGames}
                   />
                 </div>
-                <div className="grid grid-rows-[1fr] gap-4 h-[full]">
+                <div className="grid grid-rows-[1fr] gap-4 h-full">
                   <FieldView playerId={playerId} year={year} onZoneSelect={handleZoneSelect} colLabels={colLabels} />
                 </div>
               </div>
             ) : (
               <div className="relative">
-                <div className="grid grid-cols-[71%_28%] gap-4 w-full filter blur-xs opacity-80">
+                <div className="flex flex-col sm:grid sm:grid-cols-[71%_28%] gap-4 w-full filter blur-xs opacity-80">
                   <div className="space-y-6">
                     <GameLogPassing
                       playerId={playerId}
@@ -259,17 +246,17 @@ function FieldViewInterface() {
                       teamGames={teamGames}
                     />
                   </div>
-                  <div className="grid grid-rows-[1fr] gap-4 h-[full]">
+                  <div className="grid grid-rows-[1fr] gap-4 h-full">
                     <FieldView playerId={playerId} year={year} onZoneSelect={handleZoneSelect} colLabels={colLabels} />
                   </div>
                 </div>
                 <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 backdrop-filter backdrop-blur-md rounded-lg">
-                  <div className="p-6 bg-white rounded-lg shadow-lg text-center">
-                    <p className="text-gray-700 text-lg font-semibold mb-2">Exclusive Content</p>
-                    <p className="text-gray-500 mb-4">This content is exclusive to INSZN Pro subscribers.</p>
+                  <div className="p-4 sm:p-6 bg-white rounded-lg shadow-lg text-center">
+                    <p className="text-gray-700 text-base sm:text-lg font-semibold mb-2">Exclusive Content</p>
+                    <p className="text-gray-500 text-sm sm:text-base mb-4">This content is exclusive to INSZN Pro subscribers.</p>
                     <Link
                       to="/subscribe"
-                      className="px-4 py-2 bg-[#235347] text-white rounded hover:bg-[#1b3e32]"
+                      className="px-3 sm:px-4 py-1 sm:py-2 bg-[#235347] text-white text-sm sm:text-base rounded hover:bg-[#1b3e32]"
                     >
                       Subscribe Now
                     </Link>
