@@ -3,9 +3,7 @@ import { Link } from 'react-router-dom';
 import Chart from 'chart.js/auto';
 
 const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPercentiles }) => {
-  // single ref object to hold Chart instances
   const chartRefs = useRef({});
-
   const [checkedPlayers, setCheckedPlayers] = useState({
     def_gen_pressures: {},
     pressure_to_sack_rate: {},
@@ -13,7 +11,6 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
     hit_as_threw: {},
     avg_time_to_throw: {},
   });
-
   const [playerWeeklyData, setPlayerWeeklyData] = useState({
     def_gen_pressures: {},
     pressure_to_sack_rate: {},
@@ -21,7 +18,6 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
     hit_as_threw: {},
     avg_time_to_throw: {},
   });
-
   const [searchTerms, setSearchTerms] = useState({
     def_gen_pressures: '',
     pressure_to_sack_rate: '',
@@ -29,7 +25,6 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
     hit_as_threw: '',
     avg_time_to_throw: '',
   });
-
   const [showDropdown, setShowDropdown] = useState({
     def_gen_pressures: false,
     pressure_to_sack_rate: false,
@@ -37,7 +32,6 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
     hit_as_threw: false,
     avg_time_to_throw: false,
   });
-
   const colors = [
     'rgba(255, 99, 132, 1)',
     'rgba(54, 162, 235, 1)',
@@ -45,7 +39,6 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
     'rgba(255, 159, 64, 1)',
     'rgba(153, 102, 255, 1)',
   ];
-
   const capitalizeName = (name) => {
     if (!name) return `Player ${playerId}`;
     return name
@@ -53,8 +46,6 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
       .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
   };
-
-  // Reusable metrics list (used both for rendering and chart logic)
   const metricsList = [
     { id: 'def_gen_pressures', field: 'def_gen_pressures', title: 'Defense Generated Pressures', max: 50, unit: 'Pressures' },
     { id: 'pressure_to_sack_rate', field: 'pressure_to_sack_rate', title: 'Pressure to Sack Rate (%)', max: 50, unit: 'Pressure to Sack Rate' },
@@ -62,8 +53,6 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
     { id: 'hit_as_threw', field: 'hit_as_threw', title: 'Hit as Thrown', max: 5, unit: 'Hits' },
     { id: 'avg_time_to_throw', field: 'avg_time_to_throw', title: 'Average Time to Throw', max: 10, unit: 'Avg. Time to Throw' },
   ];
-
-  // Fetch weekly data for a player (same as your original fetch) — returns object like { "1_regular": {...}, ... }
   const fetchPlayerData = async (selectedPlayerId) => {
     try {
       const gradesPromises = Array.from({ length: 15 }, (_, i) => i + 1).map(week =>
@@ -78,7 +67,6 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
           return { week, seasonType: 'regular', data: null };
         })
       );
-
       const gradesResults = await Promise.all(gradesPromises);
       const newWeeklyData = gradesResults.reduce((acc, { week, seasonType, data }) => ({
         ...acc,
@@ -90,17 +78,12 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
       return null;
     }
   };
-
-  // Helper to fetch & set player weekly data if not already present
   const fetchAndSetPlayerData = async (metricId, selectedPlayerId) => {
-    // avoid duplicate fetches if we already have data
     if (playerWeeklyData[metricId]?.[selectedPlayerId]) {
       return;
     }
-
     const newWeeklyData = await fetchPlayerData(selectedPlayerId);
     if (!newWeeklyData) {
-      // if fetch failed, uncheck that player for this metric
       setCheckedPlayers(prev => ({
         ...prev,
         [metricId]: {
@@ -110,7 +93,6 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
       }));
       return;
     }
-
     setPlayerWeeklyData(prev => ({
       ...prev,
       [metricId]: {
@@ -118,21 +100,15 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
         [selectedPlayerId]: newWeeklyData,
       },
     }));
-
     console.log(`Fetched weekly data for player ${selectedPlayerId} (metric ${metricId})`, newWeeklyData);
   };
-
-  // Toggle checkbox: update checkedPlayers state and start fetch if enabling
   const handleCheckboxChange = (metricId, selectedPlayerId) => {
     setCheckedPlayers(prev => {
       const currentlyChecked = !!(prev[metricId] && prev[metricId][selectedPlayerId]);
       const willBeChecked = !currentlyChecked;
-
-      // start fetch when enabling (fetchAndSetPlayerData checks if data already exists)
       if (willBeChecked) {
         fetchAndSetPlayerData(metricId, selectedPlayerId);
       }
-
       return {
         ...prev,
         [metricId]: {
@@ -142,21 +118,18 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
       };
     });
   };
-
   const handleSearchChange = (metricId, value) => {
     setSearchTerms(prev => ({
       ...prev,
       [metricId]: value,
     }));
   };
-
   const toggleDropdown = (metricId) => {
     setShowDropdown(prev => ({
       ...prev,
       [metricId]: !prev[metricId],
     }));
   };
-
   const getTopPerformers = (metricField, searchTerm = '') => {
     if (!allPlayerPercentiles || typeof allPlayerPercentiles !== 'object') return [];
     return Object.entries(allPlayerPercentiles)
@@ -174,21 +147,15 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
         value: player.value.toFixed(metricField === 'def_gen_pressures' || metricField === 'hit_as_threw' ? 2 : 1),
       }));
   };
-
-  // Main charting effect — update/create charts in-place
   useEffect(() => {
     if (!teamGames || teamGames.length === 0) {
       console.warn('teamGames is empty or not iterable, using empty dataset');
-      // still proceed (we'll fallback labels to Week N)
     }
-
-    // Build opponent lookup by week_key
     const sortedGames = (teamGames || []).slice().sort((a, b) => {
       const dateA = new Date(a.startDate);
       const dateB = new Date(b.startDate);
       return isNaN(dateA) || isNaN(dateB) ? a.week - b.week : dateA - dateB;
     });
-
     const opponentLookup = sortedGames.reduce((acc, game) => {
       const key = `${game.week}_${game.seasonType}`;
       const playerTeam = game.team;
@@ -196,36 +163,27 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
       acc[key] = { opponent, startDate: game.startDate };
       return acc;
     }, {});
-
     metricsList.forEach(metric => {
       const canvas = document.getElementById(`${metric.id}Chart`);
       if (!canvas || !canvas.getContext) {
-        // canvas not mounted yet -> skip
         return;
       }
       const ctx = canvas.getContext('2d');
-
       const sortedWeeks = Array.from({ length: 15 }, (_, i) => i + 1).map(weekNum => ({
         week: weekNum,
         seasonType: 'regular',
         key: `${weekNum}_regular`,
       }));
-
       const hasAdditionalPlayers = Object.keys(checkedPlayers[metric.id] || {}).some(pId => checkedPlayers[metric.id][pId]);
-
       const labels = sortedWeeks.map(week => {
         if (hasAdditionalPlayers) return `Week ${week.week}`;
         return opponentLookup[week.key]?.opponent || `Week ${week.week}`;
       });
-
       const datasets = [];
-
-      // Main player dataset (use weeklyGrades prop)
       const mainData = sortedWeeks.map(week => {
         const weekData = weeklyGrades?.[week.key] || {};
         return weekData && weekData[metric.field] != null ? Number(weekData[metric.field]) : null;
       });
-
       datasets.push({
         label: capitalizeName(allPlayerPercentiles?.[playerId]?.name) || `Player ${playerId}`,
         data: mainData,
@@ -236,17 +194,13 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
         pointRadius: 5,
         pointHoverRadius: 7,
       });
-
-      // Additional checked players — always include (legend consistency).
       Object.keys(checkedPlayers[metric.id] || {})
         .filter(pId => checkedPlayers[metric.id][pId])
         .forEach((pId, idx) => {
-          // If we don't have fetched data yet, this will produce an array of nulls (so legend appears immediately).
           const playerDataArray = sortedWeeks.map(week => {
             const weekData = playerWeeklyData[metric.id]?.[pId]?.[week.key] || {};
             return weekData && weekData[metric.field] != null ? Number(weekData[metric.field]) : null;
           });
-
           datasets.push({
             label: capitalizeName(allPlayerPercentiles?.[pId]?.name) || `Player ${pId}`,
             data: playerDataArray,
@@ -258,12 +212,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
             pointHoverRadius: 7,
           });
         });
-
-      // Debug: show what we're sending to Chart
-      // eslint-disable-next-line no-console
       console.log(`[PocketProduction] datasets for ${metric.id}:`, datasets);
-
-      // Update existing Chart instance or create new
       if (chartRefs.current[metric.id]) {
         try {
           chartRefs.current[metric.id].data.labels = labels;
@@ -273,7 +222,6 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
           console.warn(`Error updating chart ${metric.id}:`, err);
         }
       } else {
-        // Create chart instance and store on ref
         try {
           chartRefs.current[metric.id] = new Chart(ctx, {
             type: 'line',
@@ -314,46 +262,35 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
         }
       }
     });
-
-    // NOTE: we DO NOT destroy charts here — we keep them and update in place.
-    // A separate unmount-only cleanup below will destroy them when component unmounts.
-  }, [weeklyGrades, teamGames, checkedPlayers, playerWeeklyData, allPlayerPercentiles, playerId, year]);
-
-  // Destroy chart instances on unmount only
-  useEffect(() => {
     return () => {
       Object.keys(chartRefs.current).forEach(key => {
         const c = chartRefs.current[key];
         if (c) {
           try {
             c.destroy();
-          } catch (err) {
-            // ignore
-          }
+          } catch (err) {}
           chartRefs.current[key] = null;
         }
       });
     };
-    // empty dependency => runs once on unmount
-  }, []);
+  }, [weeklyGrades, teamGames, checkedPlayers, playerWeeklyData, allPlayerPercentiles, playerId, year]);
 
   return (
     <div className="pocket-production-container space-y-4">
       {metricsList.map((metric) => (
-        <div key={metric.id} className="sub-container bg-gray-50 p-4 rounded shadow">
-          <div className="relative mb-4">
-            <div className="flex items-center justify-between">
-              <h4 className="text-md font-medium text-gray-700">Top Performers</h4>
+        <div key={metric.id} className="sub-container bg-gray-white p-4 rounded shadow">
+          <div className="relative mb-0">
+            <div className="flex items-center">
+              <h4 className="text-md font-medium text-gray-700">Compare Against:</h4>
               <button
                 onClick={() => toggleDropdown(metric.id)}
-                className="text-gray-500 hover:text-gray-700 focus:outline-none"
+                className="ml-2 text-gray-500 hover:text-gray-700 focus:outline-none"
               >
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
               </button>
             </div>
-
             {showDropdown[metric.id] && (
               <div className="absolute z-10 w-full bg-white border border-gray-300 rounded shadow-lg mt-2 max-h-64 overflow-y-auto">
                 <input
@@ -390,7 +327,6 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
               </div>
             )}
           </div>
-
           <div className="w-full" style={{ height: '320px' }}>
             <canvas id={`${metric.id}Chart`} className="w-full" />
           </div>
