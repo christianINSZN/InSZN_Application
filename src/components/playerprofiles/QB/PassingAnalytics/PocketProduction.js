@@ -90,7 +90,10 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
         }).then(response => {
-          if (!response.ok) return { week, seasonType: 'regular', data: null };
+          if (!response.ok) {
+            console.warn(`Fetch failed for player ${selectedPlayerId}, week ${week}: ${response.status}`);
+            return { week, seasonType: 'regular', data: null };
+          }
           return response.json().then(data => ({ week, seasonType: 'regular', data: data[0] || null }));
         }).catch(error => {
           console.error(`Fetch error for player ${selectedPlayerId}, week ${week}: ${error.message}`);
@@ -118,21 +121,29 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
       newWeeklyData = await fetchPlayerData(selectedPlayerId);
     }
 
-    setPlayerWeeklyData(prev => ({
-      ...prev,
-      [metricId]: {
-        ...prev[metricId],
-        ...(newWeeklyData ? { [selectedPlayerId]: newWeeklyData } : {}),
-      },
-    }));
+    setPlayerWeeklyData(prev => {
+      const updated = {
+        ...prev,
+        [metricId]: {
+          ...prev[metricId],
+          ...(newWeeklyData ? { [selectedPlayerId]: newWeeklyData } : {}),
+        },
+      };
+      console.log(`Updated playerWeeklyData for ${metricId}:`, updated);
+      return updated;
+    });
 
-    setCheckedPlayers(prev => ({
-      ...prev,
-      [metricId]: {
-        ...prev[metricId],
-        [selectedPlayerId]: isChecked,
-      },
-    }));
+    setCheckedPlayers(prev => {
+      const updated = {
+        ...prev,
+        [metricId]: {
+          ...prev[metricId],
+          [selectedPlayerId]: isChecked,
+        },
+      };
+      console.log(`Updated checkedPlayers for ${metricId}:`, updated);
+      return updated;
+    });
   };
 
   const handleSearchChange = (metricId, value) => {
@@ -151,7 +162,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
 
   const getTopPerformers = (metricField, searchTerm = '') => {
     if (!allPlayerPercentiles || typeof allPlayerPercentiles !== 'object') return [];
-    return Object.entries(allPlayerPercentiles)
+    const performers = Object.entries(allPlayerPercentiles)
       .filter(([pId, data]) => data && data[metricField] !== undefined && data[metricField] !== null)
       .map(([pId, data]) => ({
         playerId: pId,
@@ -165,6 +176,8 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
         name: player.name,
         value: player.value.toFixed(metricField === 'def_gen_pressures' || metricField === 'hit_as_threw' ? 2 : 1),
       }));
+    console.log(`Top performers for ${metricField}:`, performers);
+    return performers;
   };
 
   const renderChart = (metric, isMobile, sortedGames, opponentLookup) => {
@@ -289,14 +302,44 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
       { id: 'avg_time_to_throw', field: 'avg_time_to_throw', title: 'Avgerage Time to Throw', min: 0, max: 10, unit: 'Avg. Time to Throw' },
     ];
 
-    const isMobile = window.innerWidth < 640;
+    metrics.forEach(metric => {
+      setTimeout(() => {
+        renderChart(metric, window.innerWidth < 640, sortedGames, opponentLookup);
+      }, 0);
+    });
+  }, [teamGames, allPlayerPercentiles, playerId]);
+
+  useEffect(() => {
+    if (!teamGames || teamGames.length === 0) return;
+
+    const sortedGames = [...teamGames].sort((a, b) => {
+      const dateA = new Date(a.startDate);
+      const dateB = new Date(b.startDate);
+      return isNaN(dateA) || isNaN(dateB) ? a.week - b.week : dateA - dateB;
+    });
+
+    const opponentLookup = sortedGames.reduce((acc, game) => {
+      const key = `${game.week}_${game.seasonType}`;
+      const playerTeam = game.team;
+      const opponent = playerTeam === game.homeTeam ? `vs. ${game.awayTeamAbrev}` : `at ${game.homeTeamAbrev}`;
+      acc[key] = { opponent, startDate: game.startDate };
+      return acc;
+    }, {});
+
+    const metrics = [
+      { id: 'def_gen_pressures', field: 'def_gen_pressures', title: 'Defense Generated Pressures', min: 0, max: 50, unit: 'Pressures' },
+      { id: 'pressure_to_sack_rate', field: 'pressure_to_sack_rate', title: 'Pressure to Sack Rate (%)', min: 0, max: 50, unit: 'Pressure to Sack Rate' },
+      { id: 'sack_percent', field: 'sack_percent', title: 'Sack Rate (%)', min: 0, max: 50, unit: 'Sack Rate per Play' },
+      { id: 'hit_as_threw', field: 'hit_as_threw', title: 'Hit as Thrown', min: 0, max: 5, unit: 'Hits' },
+      { id: 'avg_time_to_throw', field: 'avg_time_to_throw', title: 'Avgerage Time to Throw', min: 0, max: 10, unit: 'Avg. Time to Throw' },
+    ];
 
     metrics.forEach(metric => {
       setTimeout(() => {
-        renderChart(metric, isMobile, sortedGames, opponentLookup);
+        renderChart(metric, window.innerWidth < 640, sortedGames, opponentLookup);
       }, 0);
     });
-  }, [weeklyGrades, teamGames, checkedPlayers, playerWeeklyData, allPlayerPercentiles, playerId]);
+  }, [checkedPlayers, playerWeeklyData, weeklyGrades]);
 
   return (
     <div className="pocket-production-container">
