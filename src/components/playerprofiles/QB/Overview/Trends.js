@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronDoubleUpIcon, ChevronDoubleDownIcon } from '@heroicons/react/24/solid';
 
 const Trends = ({ teamGames, weeklyGrades }) => {
@@ -10,9 +10,7 @@ const Trends = ({ teamGames, weeklyGrades }) => {
   useEffect(() => {
     console.log('teamGames:', teamGames);
     console.log('weeklyGrades:', weeklyGrades);
-
     if (teamGames && weeklyGrades && teamGames.length >= 1) {
-      // Relevant metrics for QB trends
       const metrics = {
         'grades_pass': 'Pass Grade',
         'grades_run': 'Rush Grade',
@@ -26,19 +24,17 @@ const Trends = ({ teamGames, weeklyGrades }) => {
         'touchdowns': 'Touchdowns',
         'interceptions': 'Interceptions',
         'sack_percent': 'Sack Rate',
-        'fumbles': 'Fumbles', 
+        'fumbles': 'Fumbles',
         'pressure_to_sack_rate': 'Sack Rate',
         'btt_rate': 'Big Time Throw %',
         'twp_rate': 'TO Worthy Play %',
-        'btt_rate': 'Big Time Throw %', 
-        'scrambles': 'Scrambles', 
-        'thrown_away': 'Throwaways', 
+        'btt_rate': 'Big Time Throw %',
+        'scrambles': 'Scrambles',
+        'thrown_away': 'Throwaways',
         'attempts': 'Attempts',
         'firs_downs': 'First Downs',
-
       };
 
-      // Filter games where the player has valid stats (at least one non-null metric)
       const gamesWithStats = teamGames
         .map(game => {
           const key = `${game.week}_${game.seasonType}`;
@@ -48,10 +44,10 @@ const Trends = ({ teamGames, weeklyGrades }) => {
         })
         .filter(game => game !== null)
         .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
-        .slice(-3); // Last 3 games with stats
+        .slice(-3);
+
       console.log('gamesWithStats:', gamesWithStats);
 
-      // Calculate trends for each metric
       const trends = {};
       Object.keys(metrics).forEach(metric => {
         const values = gamesWithStats
@@ -62,8 +58,7 @@ const Trends = ({ teamGames, weeklyGrades }) => {
           })
           .filter(value => value !== null);
         console.log(`Metric ${metric} values:`, values);
-
-        if (values.length >= 2) { // Need at least 2 points for trend
+        if (values.length >= 2) {
           const startValue = values[0];
           const midValue = values[1];
           const endValue = values[values.length - 1];
@@ -84,7 +79,6 @@ const Trends = ({ teamGames, weeklyGrades }) => {
         }
       });
 
-      // Convert to array and sort by weighted trend
       const trendArray = Object.values(trends).sort((a, b) => b.value - a.value);
       const trendUp = trendArray.filter(trend => trend.value >= 0).slice(0, 3);
       const trendDown = trendArray.filter(trend => trend.value < 0).slice(-3).reverse();
@@ -100,7 +94,7 @@ const Trends = ({ teamGames, weeklyGrades }) => {
     <div className="h-80 bg-white rounded-lg shadow-lg">
       <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Trends (3 Game)</h2>
       {trendData.trendUp.length === 0 && trendData.trendDown.length === 0 ? (
-        <p className="text-gray-500 text-center p-4">Trends populate after 3 played games</p>
+        <p className="text-gray-500 text-center p-4 text-sm sm:text-base">Trends populate after 3 played games</p>
       ) : (
         <>
           <div className="grid grid-cols-3 gap-4 mb-4 h-[40%]">
@@ -110,14 +104,14 @@ const Trends = ({ teamGames, weeklyGrades }) => {
                   key={trend.label}
                   className="bg-gray-0 p-2 rounded text-center h-full shadow-lg"
                 >
-                  <h3 className="text-md font-medium">{trend.label}</h3>
+                  <h3 className="text-sm sm:text-md font-medium">{trend.label}</h3>
                   <p className="text-3xl font-bold text-gray-800 p-3">
                     <ChevronDoubleUpIcon className="h-14 w-14 inline-block text-green-500" />
                   </p>
                 </div>
               ))
             ) : (
-              <p className="text-gray-500 text-center p-4 col-span-3">No upward trends</p>
+              <p className="text-gray-500 text-center p-4 col-span-3 text-sm sm:text-base">No upward trends</p>
             )}
           </div>
           <div className="grid grid-cols-3 gap-2 h-[40%]">
@@ -127,14 +121,14 @@ const Trends = ({ teamGames, weeklyGrades }) => {
                   key={trend.label}
                   className="bg-gray-0 p-2 rounded text-center h-full shadow-lg"
                 >
-                  <h3 className="text-md font-medium">{trend.label}</h3>
+                  <h3 className="text-sm sm:text-md font-medium">{trend.label}</h3>
                   <p className="text-3xl font-bold text-gray-800 p-3">
                     <ChevronDoubleDownIcon className="h-14 w-14 inline-block text-red-500" />
                   </p>
                 </div>
               ))
             ) : (
-              <p className="text-gray-500 text-center p-4 col-span-3">No downward trends</p>
+              <p className="text-gray-500 text-center p-4 col-span-3 text-sm sm:text-base">No downward trends</p>
             )}
           </div>
         </>
