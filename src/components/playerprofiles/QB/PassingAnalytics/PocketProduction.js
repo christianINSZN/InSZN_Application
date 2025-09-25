@@ -117,6 +117,10 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
         },
       };
     });
+    setShowDropdown(prev => ({
+      ...prev,
+      [metricId]: false,
+    }));
   };
   const handleSearchChange = (metricId, value) => {
     setSearchTerms(prev => ({
@@ -278,10 +282,10 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
   return (
     <div className="pocket-production-container space-y-4">
       {metricsList.map((metric) => (
-        <div key={metric.id} className="sub-container bg-gray-white p-4 rounded shadow">
+        <div key={metric.id} className="sub-container bg-gray-white p-0 rounded shadow">
           <div className="relative mb-0">
             <div className="flex items-center">
-              <h4 className="text-md font-medium text-gray-700">Compare Against:</h4>
+              <h4 className="text-md font-medium text-gray-700 ml-2 mt-2">Compare Against:</h4>
               <button
                 onClick={() => toggleDropdown(metric.id)}
                 className="ml-2 text-gray-500 hover:text-gray-700 focus:outline-none"
@@ -327,7 +331,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
               </div>
             )}
           </div>
-          <div className="w-full" style={{ height: '240px' }}>
+          <div className="w-full" style={{ height: window.innerWidth < 640 ? '240px' : '320px' }}>
             <canvas id={`${metric.id}Chart`} className="w-full" />
           </div>
         </div>

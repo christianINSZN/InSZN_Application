@@ -194,7 +194,7 @@ function PassingAnalytics() {
               </li>
             </ul>
           </div>
-          <div className="flex flex-col gap-2 sm:gap-4 px-2 sm:px-4">
+          <div className="flex flex-col gap-2 sm:gap-4 px-2 sm:px-2">
             {isPassingActive && (
               <>
                 <div className="analytics-container bg-white rounded-lg shadow-lg mt-2 sm:mt-4 text-sm sm:text-base">
