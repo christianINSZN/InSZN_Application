@@ -51,6 +51,22 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
     avg_time_to_throw: false,
   });
 
+  const canvasRefs = {
+    def_gen_pressures: useRef(null),
+    pressure_to_sack_rate: useRef(null),
+    sack_percent: useRef(null),
+    hit_as_threw: useRef(null),
+    avg_time_to_throw: useRef(null),
+  };
+
+  const mobileCanvasRefs = {
+    def_gen_pressures: useRef(null),
+    pressure_to_sack_rate: useRef(null),
+    sack_percent: useRef(null),
+    hit_as_threw: useRef(null),
+    avg_time_to_throw: useRef(null),
+  };
+
   const colors = [
     'rgba(153, 102, 255, 1)', // Purple
     'rgba(54, 162, 235, 1)', // Blue
@@ -67,7 +83,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
       .join(' ');
   };
 
-  const fetchPlayerData = async (metricId, selectedPlayerId) => {
+  const fetchPlayerData = async (selectedPlayerId) => {
     try {
       const gradesPromises = Array.from({ length: 15 }, (_, i) => i + 1).map(week =>
         fetch(`http://localhost:3001/api/player_passing_weekly_all/${selectedPlayerId}/${year}/${week}/regular`, {
@@ -87,7 +103,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
         ...acc,
         [`${week}_${seasonType}`]: data,
       }), {});
-      console.log(`Fetched data for ${metricId}, player ${selectedPlayerId}:`, newWeeklyData);
+      console.log(`Fetched data for player ${selectedPlayerId}:`, newWeeklyData);
       return newWeeklyData;
     } catch (err) {
       console.error(`Error fetching weekly data for player ${selectedPlayerId}: ${err.message}`);
@@ -99,7 +115,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
     const isChecked = !checkedPlayers[metricId][selectedPlayerId];
     let newWeeklyData = null;
     if (isChecked) {
-      newWeeklyData = await fetchPlayerData(metricId, selectedPlayerId);
+      newWeeklyData = await fetchPlayerData(selectedPlayerId);
     }
 
     setPlayerWeeklyData(prev => ({
@@ -151,6 +167,99 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
       }));
   };
 
+  const renderChart = (metric, isMobile) => {
+    const chartRef = isMobile ? mobileChartRefs[metric.id] : chartRefs[metric.id];
+    const canvasRef = isMobile ? mobileCanvasRefs[metric.id] : canvasRefs[metric.id];
+    if (chartRef.current) {
+      chartRef.current.destroy();
+      console.log(`Previous ${metric.title} chart destroyed`);
+    }
+    const canvas = canvasRef.current;
+    if (!canvas || !canvas.getContext) {
+      console.warn(`Canvas not available for ${isMobile ? metric.id + 'MobileChart' : metric.id + 'Chart'}`);
+      return;
+    }
+    const ctx = canvas.getContext('2d');
+    const hasAdditionalPlayers = Object.keys(checkedPlayers[metric.id]).some(pId => checkedPlayers[metric.id][pId]);
+    const sortedWeeks = Array.from({ length: 15 }, (_, i) => i + 1).map(week => ({
+      week,
+      seasonType: 'regular',
+      key: `${week}_regular`,
+    }));
+    const labels = sortedWeeks.map(week => {
+      if (hasAdditionalPlayers) {
+        return `Week ${week.week}`;
+      }
+      return opponentLookup[week.key]?.opponent || 'BYE';
+    });
+    const datasets = [
+      {
+        label: capitalizeName(allPlayerPercentiles[playerId]?.name),
+        data: sortedWeeks.map(week => {
+          const weekData = weeklyGrades[week.key] || {};
+          const value = weekData[metric.field] !== undefined && weekData[metric.field] !== null ? weekData[metric.field] : null;
+          console.log(`Data for ${metric.id}, player ${playerId}, week ${week.key}: ${value}`);
+          return value;
+        }),
+        borderColor: colors[0],
+        backgroundColor: colors[0].replace('1)', '0.2)'),
+        fill: true,
+        tension: 0.2,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+      },
+      ...Object.keys(checkedPlayers[metric.id])
+        .filter(pId => checkedPlayers[metric.id][pId])
+        .map((pId, idx) => ({
+          label: capitalizeName(allPlayerPercentiles[pId]?.name),
+          data: sortedWeeks.map(week => {
+            const weekData = playerWeeklyData[metric.id][pId]?.[week.key] || {};
+            const value = weekData[metric.field] !== undefined && weekData[metric.field] !== null ? weekData[metric.field] : null;
+            console.log(`Data for ${metric.id}, player ${pId}, week ${week.key}: ${value}`);
+            return value;
+          }),
+          borderColor: colors[(idx + 1) % colors.length],
+          backgroundColor: colors[(idx + 1) % colors.length].replace('1)', '0.2)'),
+          fill: true,
+          tension: 0.2,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+        })),
+    ];
+    console.log(`Datasets for ${metric.id}:`, datasets);
+    const allData = datasets.flatMap(ds => ds.data.filter(value => value !== null && !isNaN(value)));
+    const buffer = (metric.max - metric.min) * 0.0;
+    const yMin = Math.max(0, metric.min - buffer);
+    const yMax = metric.max + buffer;
+    chartRef.current = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets,
+      },
+      options: {
+        scales: {
+          x: { title: { display: false, text: 'Opponent' }, ticks: { autoSkip: false, maxRotation: 45, minRotation: 45, labelOffset: 10 } },
+          y: { title: { display: true, text: metric.unit }, beginAtZero: true, min: yMin, max: yMax, ticks: { stepSize: (yMax - yMin) / 5 } },
+        },
+        plugins: {
+          legend: { display: true, position: 'top' },
+          tooltip: { mode: 'index', intersect: false },
+          title: {
+            display: true,
+            text: metric.title,
+            font: { size: 16, weight: 'bold' },
+            color: '#374151',
+            padding: { top: 10, bottom: 10 },
+          },
+        },
+        responsive: true,
+        maintainAspectRatio: false,
+      },
+    });
+    console.log(`Line chart created for ${metric.title}`);
+  };
+
   useEffect(() => {
     if (!teamGames || teamGames.length === 0) {
       console.warn('teamGames is empty or not iterable, using empty dataset');
@@ -181,100 +290,11 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
 
     const isMobile = window.innerWidth < 640;
 
-    const renderChart = (metric) => {
-      const chartRef = isMobile ? mobileChartRefs[metric.id] : chartRefs[metric.id];
-      if (chartRef.current) {
-        chartRef.current.destroy();
-        console.log(`Previous ${metric.title} chart destroyed`);
-      }
-      const canvasId = isMobile ? `${metric.id}MobileChart` : `${metric.id}Chart`;
-      const canvas = document.getElementById(canvasId);
-      if (!canvas || !canvas.getContext) {
-        console.warn(`Canvas not available for ${canvasId}`);
-        return;
-      }
-      const ctx = canvas.getContext('2d');
-      const hasAdditionalPlayers = Object.keys(checkedPlayers[metric.id]).some(pId => checkedPlayers[metric.id][pId]);
-      const sortedWeeks = Array.from({ length: 15 }, (_, i) => i + 1).map(week => ({
-        week,
-        seasonType: 'regular',
-        key: `${week}_regular`,
-      }));
-      const labels = sortedWeeks.map(week => {
-        if (hasAdditionalPlayers) {
-          return `Week ${week.week}`;
-        }
-        return opponentLookup[week.key]?.opponent || 'BYE';
-      });
-      const datasets = [
-        {
-          label: capitalizeName(allPlayerPercentiles[playerId]?.name),
-          data: sortedWeeks.map(week => {
-            const weekData = weeklyGrades[week.key] || {};
-            const value = weekData[metric.field] !== undefined && weekData[metric.field] !== null ? weekData[metric.field] : null;
-            console.log(`Data for ${metric.id}, player ${playerId}, week ${week.key}: ${value}`);
-            return value;
-          }),
-          borderColor: colors[0],
-          backgroundColor: colors[0].replace('1)', '0.2)'),
-          fill: true,
-          tension: 0.2,
-          pointRadius: 5,
-          pointHoverRadius: 7,
-        },
-        ...Object.keys(checkedPlayers[metric.id])
-          .filter(pId => checkedPlayers[metric.id][pId])
-          .map((pId, idx) => ({
-            label: capitalizeName(allPlayerPercentiles[pId]?.name),
-            data: sortedWeeks.map(week => {
-              const weekData = playerWeeklyData[metric.id][pId]?.[week.key] || {};
-              const value = weekData[metric.field] !== undefined && weekData[metric.field] !== null ? weekData[metric.field] : null;
-              console.log(`Data for ${metric.id}, player ${pId}, week ${week.key}: ${value}`);
-              return value;
-            }),
-            borderColor: colors[(idx + 1) % colors.length],
-            backgroundColor: colors[(idx + 1) % colors.length].replace('1)', '0.2)'),
-            fill: true,
-            tension: 0.2,
-            pointRadius: 5,
-            pointHoverRadius: 7,
-          })),
-      ];
-      console.log(`Datasets for ${metric.id}:`, datasets);
-      const allData = datasets.flatMap(ds => ds.data.filter(value => value !== null && !isNaN(value)));
-      const buffer = (metric.max - metric.min) * 0.0;
-      const yMin = Math.max(0, metric.min - buffer);
-      const yMax = metric.max + buffer;
-      chartRef.current = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels,
-          datasets,
-        },
-        options: {
-          scales: {
-            x: { title: { display: false, text: 'Opponent' }, ticks: { autoSkip: false, maxRotation: 45, minRotation: 45, labelOffset: 10 } },
-            y: { title: { display: true, text: metric.unit }, beginAtZero: true, min: yMin, max: yMax, ticks: { stepSize: (yMax - yMin) / 5 } },
-          },
-          plugins: {
-            legend: { display: true, position: 'top' },
-            tooltip: { mode: 'index', intersect: false },
-            title: {
-              display: true,
-              text: metric.title,
-              font: { size: 16, weight: 'bold' },
-              color: '#374151',
-              padding: { top: 10, bottom: 10 },
-            },
-          },
-          responsive: true,
-          maintainAspectRatio: false,
-        },
-      });
-      console.log(`Line chart created for ${metric.title}`);
-    };
-
-    metrics.forEach(metric => renderChart(metric));
+    metrics.forEach(metric => {
+      setTimeout(() => {
+        renderChart(metric, isMobile);
+      }, 0);
+    });
   }, [weeklyGrades, teamGames, checkedPlayers, playerWeeklyData, allPlayerPercentiles, playerId]);
 
   return (
@@ -333,7 +353,11 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
           {/* Chart */}
           <div className="sub-container bg-gray-0 p-0 rounded shadow">
             <div className="w-full h-80">
-              <canvas id={window.innerWidth < 640 ? `${metric.id}MobileChart` : `${metric.id}Chart`} className="w-full h-full"></canvas>
+              <canvas
+                ref={window.innerWidth < 640 ? mobileCanvasRefs[metric.id] : canvasRefs[metric.id]}
+                id={window.innerWidth < 640 ? `${metric.id}MobileChart` : `${metric.id}Chart`}
+                className="w-full h-full"
+              ></canvas>
             </div>
           </div>
           {/* Non-Mobile: Top Performers Table */}
