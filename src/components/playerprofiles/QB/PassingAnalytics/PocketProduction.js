@@ -110,7 +110,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
           ...(newWeeklyData ? { [selectedPlayerId]: newWeeklyData } : {}),
         },
       };
-      console.log(`Updated playerWeeklyData for ${metricId}:`, updated);
+      console.log(`Updated playerWeeklyData for ${metricId}, player ${selectedPlayerId}:`, updated);
       return updated;
     });
 
@@ -122,7 +122,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
           [selectedPlayerId]: isChecked && !!newWeeklyData,
         },
       };
-      console.log(`Updated checkedPlayers for ${metricId}:`, updated);
+      console.log(`Updated checkedPlayers for ${metricId}, player ${selectedPlayerId}:`, updated);
       return updated;
     });
   };
@@ -162,8 +162,8 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
   };
 
   useEffect(() => {
-    if (!teamGames || teamGames.length === 0) {
-      console.warn('teamGames is empty or not iterable, using empty dataset');
+    if (!teamGames || teamGames.length === 0 || !weeklyGrades || !allPlayerPercentiles) {
+      console.warn('Missing required props:', { teamGames, weeklyGrades, allPlayerPercentiles });
       return;
     }
 
@@ -259,11 +259,6 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
       ];
       console.log(`Datasets for ${metric.id}:`, datasets);
 
-      const allData = datasets.flatMap(ds => ds.data.filter(value => value !== null && !isNaN(value)));
-      const buffer = (metric.max - metric.min) * 0.1;
-      const yMin = Math.max(0, metric.min - buffer);
-      const yMax = metric.max + buffer;
-
       try {
         chartRef.current = new Chart(ctx, {
           type: 'line',
@@ -274,7 +269,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
           options: {
             scales: {
               x: { title: { display: false, text: 'Opponent' }, ticks: { autoSkip: false, maxRotation: 45, minRotation: 45, labelOffset: 10 } },
-              y: { title: { display: true, text: metric.unit }, beginAtZero: true, min: yMin, max: yMax, ticks: { stepSize: (yMax - yMin) / 5 } },
+              y: { title: { display: true, text: metric.unit }, beginAtZero: true, min: 0, max: metric.max, ticks: { stepSize: metric.max / 5 } },
             },
             plugins: {
               legend: { display: true, position: 'top' },
@@ -312,11 +307,11 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
   return (
     <div className="pocket-production-container">
       {[
-        { id: 'def_gen_pressures', title: 'Def. Generated Pressures', field: 'def_gen_pressures' },
-        { id: 'pressure_to_sack_rate', title: 'Pressure to Sack Rate (%)', field: 'pressure_to_sack_rate' },
-        { id: 'sack_percent', title: 'Sack Rate (%)', field: 'sack_percent' },
-        { id: 'hit_as_threw', title: 'Hit as Thrown', field: 'hit_as_threw' },
-        { id: 'avg_time_to_throw', title: 'Avgerage Time to Throw', field: 'avg_time_to_throw' },
+        { id: 'def_gen_pressures', title: 'Def. Generated Pressures', field: 'def_gen_pressures', max: 50 },
+        { id: 'pressure_to_sack_rate', title: 'Pressure to Sack Rate (%)', field: 'pressure_to_sack_rate', max: 50 },
+        { id: 'sack_percent', title: 'Sack Rate (%)', field: 'sack_percent', max: 50 },
+        { id: 'hit_as_threw', title: 'Hit as Thrown', field: 'hit_as_threw', max: 5 },
+        { id: 'avg_time_to_throw', title: 'Avgerage Time to Throw', field: 'avg_time_to_throw', max: 10 },
       ].map((metric) => (
         <div key={metric.id} className="sm:grid sm:grid-cols-[80%_18%] sm:gap-4 mb-4">
           {/* Mobile: Search Button and Combobox Above Chart */}
