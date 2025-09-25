@@ -87,6 +87,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
         ...acc,
         [`${week}_${seasonType}`]: data,
       }), {});
+      console.log(`Fetched data for ${metricId}, player ${selectedPlayerId}:`, newWeeklyData);
       return newWeeklyData;
     } catch (err) {
       console.error(`Error fetching weekly data for player ${selectedPlayerId}: ${err.message}`);
@@ -95,23 +96,25 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
   };
 
   const handleCheckboxChange = async (metricId, selectedPlayerId) => {
-    if (!checkedPlayers[metricId][selectedPlayerId]) {
-      const newWeeklyData = await fetchPlayerData(metricId, selectedPlayerId);
-      if (newWeeklyData) {
-        setPlayerWeeklyData(prev => ({
-          ...prev,
-          [metricId]: {
-            ...prev[metricId],
-            [selectedPlayerId]: newWeeklyData,
-          },
-        }));
-      }
+    const isChecked = !checkedPlayers[metricId][selectedPlayerId];
+    let newWeeklyData = null;
+    if (isChecked) {
+      newWeeklyData = await fetchPlayerData(metricId, selectedPlayerId);
     }
+
+    setPlayerWeeklyData(prev => ({
+      ...prev,
+      [metricId]: {
+        ...prev[metricId],
+        ...(newWeeklyData ? { [selectedPlayerId]: newWeeklyData } : {}),
+      },
+    }));
+
     setCheckedPlayers(prev => ({
       ...prev,
       [metricId]: {
         ...prev[metricId],
-        [selectedPlayerId]: !prev[metricId][selectedPlayerId],
+        [selectedPlayerId]: isChecked,
       },
     }));
   };
@@ -178,7 +181,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
 
     const isMobile = window.innerWidth < 640;
 
-    metrics.forEach(metric => {
+    const renderChart = (metric) => {
       const chartRef = isMobile ? mobileChartRefs[metric.id] : chartRefs[metric.id];
       if (chartRef.current) {
         chartRef.current.destroy();
@@ -237,6 +240,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
             pointHoverRadius: 7,
           })),
       ];
+      console.log(`Datasets for ${metric.id}:`, datasets);
       const allData = datasets.flatMap(ds => ds.data.filter(value => value !== null && !isNaN(value)));
       const buffer = (metric.max - metric.min) * 0.0;
       const yMin = Math.max(0, metric.min - buffer);
@@ -268,7 +272,9 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
         },
       });
       console.log(`Line chart created for ${metric.title}`);
-    });
+    };
+
+    metrics.forEach(metric => renderChart(metric));
   }, [weeklyGrades, teamGames, checkedPlayers, playerWeeklyData, allPlayerPercentiles, playerId]);
 
   return (
