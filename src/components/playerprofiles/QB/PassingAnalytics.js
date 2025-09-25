@@ -116,14 +116,15 @@ function PassingAnalytics() {
     if (playerId) fetchPlayerData();
   }, [playerId, year]);
 
-  if (loading) return <div className="p-4 text-gray-500">Loading...</div>;
-  if (error) return <div className="p-4 text-red-500">Error: {error}</div>;
-  if (!playerData || !basicData) return <div className="p-4 text-gray-500">No player data available.</div>;
+  if (loading) return <div className="p-2 sm:p-4 text-gray-500 text-sm sm:text-base">Loading...</div>;
+  if (error) return <div className="p-2 sm:p-4 text-red-500 text-sm sm:text-base">Error: {error}</div>;
+  if (!playerData || !basicData) return <div className="p-2 sm:p-4 text-gray-500 text-sm sm:text-base">No player data available.</div>;
 
   const { name, school, position, yards, touchdowns, interceptions, grades_pass } = playerData;
   const [firstName, lastName] = name ? name.split(' ') : ['', ''];
   const { height, weight, jersey } = basicData;
   const teamID = basicData && 'teamID' in basicData ? basicData.teamID : (teamGames.length > 0 ? teamGames[0].homeId || teamGames[0].awayId : null);
+
   const isOverviewActive = location.pathname === `/players/qb/${playerId}`;
   const isPassingActive = location.pathname === `/players/qb/${playerId}/passing`;
   const isFieldViewActive = location.pathname === `/players/qb/${playerId}/fieldview`;
@@ -139,7 +140,7 @@ function PassingAnalytics() {
   return (
     <WeeklyGradesContext.Provider value={weeklyGrades}>
       <div className="w-full min-h-screen bg-gray-0">
-        <div className="px-0 py-0">
+        <div className="px-2 sm:px-0 py-4 sm:py-0">
           <Header
             firstName={firstName}
             lastName={lastName}
@@ -151,14 +152,15 @@ function PassingAnalytics() {
             year={year}
             playerId={playerId}
             gradesData={gradesData}
+            className="text-sm sm:text-base"
           />
-          <div className="border-b border-gray-300 mb-4">
-            <ul className="flex gap-4">
+          <div className="border-b border-gray-300 mb-4 sm:mb-4">
+            <ul className="flex gap-1 sm:gap-4">
               <li>
                 <Link
                   to={`/players/qb/${playerId || ''}`}
                   state={{ year }}
-                  className={`text-gray-500 hover:text-gray-700 pb-2 border-b-2 ${isOverviewActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
+                  className={`text-gray-500 hover:text-gray-700 pb-1 sm:pb-2 border-b-2 text-xs sm:text-base px-1 sm:px-0 ${isOverviewActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
                 >
                   Overview
                 </Link>
@@ -167,7 +169,7 @@ function PassingAnalytics() {
                 <Link
                   to={`/players/qb/${playerId || ''}/passing`}
                   state={{ year }}
-                  className={`text-[#235347] hover:text-[#235347] pb-2 border-b-2 ${isPassingActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+                  className={`text-[#235347] hover:text-[#235347] pb-1 sm:pb-2 border-b-2 text-xs sm:text-base px-1 sm:px-0 ${isPassingActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
                 >
                   Passing Analytics
                 </Link>
@@ -176,7 +178,7 @@ function PassingAnalytics() {
                 <Link
                   to={`/players/qb/${playerId || ''}/fieldview`}
                   state={{ year }}
-                  className={`text-gray-500 hover:text-gray-700 pb-2 border-b-2 ${isFieldViewActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
+                  className={`text-gray-500 hover:text-gray-700 pb-1 sm:pb-2 border-b-2 text-xs sm:text-base px-1 sm:px-0 ${isFieldViewActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
                 >
                   FieldView
                 </Link>
@@ -185,18 +187,18 @@ function PassingAnalytics() {
                 <Link
                   to={`/players/qb/${playerId || ''}/h2h`}
                   state={{ year }}
-                  className={`text-gray-500 hover:text-gray-700 pb-2 border-b-2 ${isFieldViewActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
+                  className={`text-gray-500 hover:text-gray-700 pb-1 sm:pb-2 border-b-2 text-xs sm:text-base px-1 sm:px-0 ${ish2hActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
                 >
                   Head-to-Head
                 </Link>
               </li>
             </ul>
           </div>
-          <div className="px-4">
+          <div className="flex flex-col gap-2 sm:gap-4 px-2 sm:px-4">
             {isPassingActive && (
               <>
-                <div className="analytics-container bg-white rounded-lg shadow-lg mt-4">
-                  <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Headline Analytics</h2>
+                <div className="analytics-container bg-white rounded-lg shadow-lg mt-2 sm:mt-4 text-sm sm:text-base">
+                  <h2 className="flex items-center justify-center text-lg sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Headline Analytics</h2>
                   <div className="top-container">
                     <HeadlineAnalytics
                       playerId={playerId}
@@ -208,37 +210,41 @@ function PassingAnalytics() {
                       setIsPopupOpen={setIsPopupOpen}
                       setSelectedContainer={setSelectedContainer}
                       selectedContainer={selectedContainer}
+                      className="text-sm sm:text-base"
                     />
                   </div>
                 </div>
-                <div className="production-container bg-white rounded-lg shadow-lg mt-4">
-                <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Production Metrics</h2>
+                <div className="production-container bg-white rounded-lg shadow-lg mt-2 sm:mt-4 text-sm sm:text-base">
+                  <h2 className="flex items-center justify-center text-lg sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Production Metrics</h2>
                   <ProductionContainer
                     playerId={playerId}
                     year={year}
                     weeklyGrades={weeklyGrades}
                     teamGames={teamGames}
                     allPlayerPercentiles={allPlayerPercentiles}
+                    className="text-sm sm:text-base"
                   />
                 </div>
-                <div className="production-container bg-white rounded-lg shadow-lg mt-4">
-                <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Performance Metrics</h2>
+                <div className="production-container bg-white rounded-lg shadow-lg mt-2 sm:mt-4 text-sm sm:text-base">
+                  <h2 className="flex items-center justify-center text-lg sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Performance Metrics</h2>
                   <ConsistencyContainer
                     playerId={playerId}
                     year={year}
                     weeklyGrades={weeklyGrades}
                     teamGames={teamGames}
                     allPlayerPercentiles={allPlayerPercentiles}
+                    className="text-sm sm:text-base"
                   />
                 </div>
-                  <div className="production-container bg-white rounded-lg shadow-lg mt-4">
-                <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Pocket Metrics</h2>
+                <div className="production-container bg-white rounded-lg shadow-lg mt-2 sm:mt-4 text-sm sm:text-base">
+                  <h2 className="flex items-center justify-center text-lg sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Pocket Metrics</h2>
                   <PocketProduction
                     playerId={playerId}
                     year={year}
                     weeklyGrades={weeklyGrades}
                     teamGames={teamGames}
                     allPlayerPercentiles={allPlayerPercentiles}
+                    className="text-sm sm:text-base"
                   />
                 </div>
               </>

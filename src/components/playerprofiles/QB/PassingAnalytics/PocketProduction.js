@@ -10,6 +10,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
     hit_as_threw: useRef(null),
     avg_time_to_throw: useRef(null),
   };
+
   const [checkedPlayers, setCheckedPlayers] = useState({
     def_gen_pressures: {},
     pressure_to_sack_rate: {},
@@ -17,6 +18,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
     hit_as_threw: {},
     avg_time_to_throw: {},
   });
+
   const [playerWeeklyData, setPlayerWeeklyData] = useState({
     def_gen_pressures: {},
     pressure_to_sack_rate: {},
@@ -24,6 +26,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
     hit_as_threw: {},
     avg_time_to_throw: {},
   });
+
   const [searchTerms, setSearchTerms] = useState({
     def_gen_pressures: '',
     pressure_to_sack_rate: '',
@@ -31,6 +34,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
     hit_as_threw: '',
     avg_time_to_throw: '',
   });
+
   const [showSearch, setShowSearch] = useState({
     def_gen_pressures: false,
     pressure_to_sack_rate: false,
@@ -38,6 +42,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
     hit_as_threw: false,
     avg_time_to_throw: false,
   });
+
   const colors = [
     'rgba(153, 102, 255, 1)', // Purple
     'rgba(54, 162, 235, 1)', // Blue
@@ -65,7 +70,6 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
 
     if (!checkedPlayers[metricId][selectedPlayerId]) {
       try {
-        // Fetch data for all weeks (1-15) for the selected player
         const gradesPromises = Array.from({ length: 15 }, (_, i) => i + 1).map(week =>
           fetch(`http://localhost:3001/api/player_passing_weekly_all/${selectedPlayerId}/${year}/${week}/regular`, {
             method: 'GET',
@@ -78,6 +82,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
             return { week, seasonType: 'regular', data: null };
           })
         );
+
         const gradesResults = await Promise.all(gradesPromises);
         const newWeeklyData = gradesResults.reduce((acc, { week, seasonType, data }) => ({
           ...acc,
@@ -144,33 +149,24 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
         chartRef.current.destroy();
         console.log(`Previous ${metric.title} chart destroyed`);
       }
-
       const canvas = document.getElementById(`${metric.id}Chart`);
       if (!canvas || !canvas.getContext) {
         console.warn(`Canvas not available for ${metric.id}Chart`);
         return;
       }
-
       const ctx = canvas.getContext('2d');
-
-      // Check if any additional players are selected
       const hasAdditionalPlayers = Object.keys(checkedPlayers[metric.id]).some(pId => checkedPlayers[metric.id][pId]);
-
-      // Default to 15 weeks
       const sortedWeeks = Array.from({ length: 15 }, (_, i) => i + 1).map(week => ({
         week,
         seasonType: 'regular',
         key: `${week}_regular`,
       }));
-
-      // Create labels: opponent abbreviations for single player, week numbers for multiple
       const labels = sortedWeeks.map(week => {
         if (hasAdditionalPlayers) {
           return `Week ${week.week}`;
         }
         return opponentLookup[week.key]?.opponent || 'BYE';
       });
-
       const datasets = [
         {
           label: capitalizeName(allPlayerPercentiles[playerId]?.name),
@@ -203,12 +199,10 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
             pointHoverRadius: 7,
           })),
       ];
-
       const allData = datasets.flatMap(ds => ds.data.filter(value => value !== null && !isNaN(value)));
       const buffer = (metric.max - metric.min) * 0.0;
       const yMin = Math.max(0, metric.min - buffer);
       const yMax = metric.max + buffer;
-
       chartRef.current = new Chart(ctx, {
         type: 'line',
         data: {
@@ -227,7 +221,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
               display: true,
               text: metric.title,
               font: { size: 16, weight: 'bold' },
-              color: '#374151', // Matches text-gray-700
+              color: '#374151',
               padding: { top: 10, bottom: 10 },
             },
           },
@@ -258,23 +252,61 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
   };
 
   return (
-    <div className="pocket-production-container grid grid-cols-[80%_18%] gap-4">
+    <div className="pocket-production-container">
       {[
         { id: 'def_gen_pressures', title: 'Def. Generated Pressures', field: 'def_gen_pressures' },
         { id: 'pressure_to_sack_rate', title: 'Pressure to Sack Rate (%)', field: 'pressure_to_sack_rate' },
         { id: 'sack_percent', title: 'Sack Rate (%)', field: 'sack_percent' },
         { id: 'hit_as_threw', title: 'Hit as Thrown', field: 'hit_as_threw' },
-        { id: 'avg_time_to_throw', title: 'Avg. Time to Throw', field: 'avg_time_to_throw' },
-      ].map((metric, index) => (
-        <React.Fragment key={metric.id}>
-          {/* Left Column (80%) */}
+        { id: 'avg_time_to_throw', title: 'Avgerage Time to Throw', field: 'avg_time_to_throw' },
+      ].map((metric) => (
+        <div key={metric.id} className="sm:grid sm:grid-cols-[80%_18%] sm:gap-4 mb-4">
+          {/* Mobile: Search Button and Dropdown Above Chart */}
+          <div className="sm:hidden bg-gray-50 p-4 rounded shadow mb-2">
+            <div className="flex items-center justify-center">
+              <h4 className="text-md font-medium text-gray-700">{metric.title}</h4>
+              <button
+                onClick={() => toggleSearch(metric.id)}
+                className="ml-4 text-gray-500 hover:text-gray-700 focus:outline-none"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+              </button>
+            </div>
+            {showSearch[metric.id] && (
+              <select
+                value={searchTerms[metric.id]}
+                onChange={(e) => {
+                  const selectedPlayerId = e.target.value;
+                  if (selectedPlayerId) {
+                    handleCheckboxChange(metric.id, selectedPlayerId);
+                    setSearchTerms(prev => ({ ...prev, [metric.id]: '' })); // Reset search term
+                    setShowSearch(prev => ({ ...prev, [metric.id]: false })); // Hide dropdown
+                  }
+                }}
+                className="w-full mt-2 p-1 text-xs text-gray-700 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="">Select a player...</option>
+                {getTopPerformers(metric.field, searchTerms[metric.id]).map((player) => (
+                  <option key={player.playerId} value={player.playerId}>
+                    {player.name} ({player.value})
+                  </option>
+                ))}
+                {getTopPerformers(metric.field, searchTerms[metric.id]).length === 0 && (
+                  <option value="" disabled>No players found</option>
+                )}
+              </select>
+            )}
+          </div>
+          {/* Chart */}
           <div className="sub-container bg-gray-0 p-0 rounded shadow">
             <div className="w-full h-80">
               <canvas id={`${metric.id}Chart`} className="w-full h-full"></canvas>
             </div>
           </div>
-          {/* Right Column (20%) */}
-          <div className="sub-container bg-gray-50 p-4 rounded shadow">
+          {/* Non-Mobile: Top Performers Table */}
+          <div className="hidden sm:block bg-gray-50 p-4 rounded shadow">
             <div className="flex items-center justify-center mb-4">
               <h4 className="text-md font-medium text-gray-700">Top Performers</h4>
               <button
@@ -335,7 +367,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
               </table>
             </div>
           </div>
-        </React.Fragment>
+        </div>
       ))}
     </div>
   );

@@ -35,7 +35,6 @@ const HeadlineAnalytics = ({ playerId, year, weeklyGrades, teamGames, isPopupOpe
       chartRef.current.destroy();
       console.log('Previous chart destroyed');
     }
-
     if (isPopupOpen && selectedGrade) {
       const canvas = document.getElementById('trendChart');
       if (!canvas || !canvas.getContext) {
@@ -47,13 +46,11 @@ const HeadlineAnalytics = ({ playerId, year, weeklyGrades, teamGames, isPopupOpe
         console.warn('teamGames is empty or not iterable, using empty dataset');
         return;
       }
-
       const sortedGames = [...teamGames].sort((a, b) => {
         const dateA = new Date(a.startDate);
         const dateB = new Date(b.startDate);
         return isNaN(dateA) || isNaN(dateB) ? a.week - b.week : dateA - dateB;
       });
-
       const opponentLookup = sortedGames.reduce((acc, game) => {
         const key = `${game.week}_${game.seasonType}`;
         const playerTeam = game.team;
@@ -61,12 +58,10 @@ const HeadlineAnalytics = ({ playerId, year, weeklyGrades, teamGames, isPopupOpe
         acc[key] = { opponent, startDate: game.startDate };
         return acc;
       }, {});
-
       const labels = sortedGames.map(game => {
         const key = `${game.week}_${game.seasonType}`;
         return opponentLookup[key]?.opponent || `Week ${game.week} (${game.seasonType})`;
       });
-
       const gradeToField = {
         'Yards': 'yards',
         'Completion (%)': 'completion_percent',
@@ -74,7 +69,6 @@ const HeadlineAnalytics = ({ playerId, year, weeklyGrades, teamGames, isPopupOpe
         'Time-to-Throw': 'avg_time_to_throw',
         'Avg. Target Depth': 'avg_depth_of_target',
       };
-
       const metricRanges = {
         'Yards': { min: 0, max: 600, unit: 'Yards' },
         'Completion (%)': { min: 0, max: 100, unit: 'Percent' },
@@ -82,13 +76,11 @@ const HeadlineAnalytics = ({ playerId, year, weeklyGrades, teamGames, isPopupOpe
         'Time-to-Throw': { min: 0, max: 5, unit: 'Seconds' },
         'Avg. Target Depth': { min: 0, max: 20, unit: 'Yards' },
       };
-
       const gradeField = gradeToField[selectedGrade];
       if (!gradeField) {
         console.warn('No grade field found for', selectedGrade);
         return;
       }
-
       const dataValues = sortedGames.map(game => {
         const key = `${game.week}_${game.seasonType}`;
         const weekData = weeklyGrades[key] || {};
@@ -96,7 +88,6 @@ const HeadlineAnalytics = ({ playerId, year, weeklyGrades, teamGames, isPopupOpe
         console.log(`Trend data for ${key}, ${gradeField}: ${value}`);
         return value;
       });
-
       const allData = dataValues.filter(value => value !== null && !isNaN(value));
       const range = metricRanges[selectedGrade] || { min: 0, max: 100, unit: 'Grade' };
       const minValue = range.min;
@@ -104,7 +95,6 @@ const HeadlineAnalytics = ({ playerId, year, weeklyGrades, teamGames, isPopupOpe
       const buffer = (maxValue - minValue) * 0.0;
       const yMin = Math.max(0, minValue - buffer);
       const yMax = maxValue + buffer;
-
       chartRef.current = new Chart(ctx, {
         type: 'line',
         data: {
@@ -122,8 +112,17 @@ const HeadlineAnalytics = ({ playerId, year, weeklyGrades, teamGames, isPopupOpe
         },
         options: {
           scales: {
-            x: { title: { display: false, text: 'Opponent' }, ticks: { autoSkip: false, maxRotation: 45, minRotation: 45, labelOffset: 10 } },
-            y: { title: { display: true, text: range.unit }, beginAtZero: true, min: yMin, max: yMax, ticks: { stepSize: (yMax - yMin) / 5 } },
+            x: {
+              title: { display: false, text: 'Opponent' },
+              ticks: { autoSkip: false, maxRotation: 45, minRotation: 45, labelOffset: 10, font: { size: window.innerWidth < 640 ? 10 : undefined } },
+            },
+            y: {
+              title: { display: true, text: range.unit, font: { size: window.innerWidth < 640 ? 12 : undefined } },
+              beginAtZero: true,
+              min: yMin,
+              max: yMax,
+              ticks: { stepSize: (yMax - yMin) / 5, font: { size: window.innerWidth < 640 ? 10 : undefined } },
+            },
           },
           plugins: { legend: { display: true, position: 'top' }, tooltip: { mode: 'index', intersect: false } },
           responsive: true,
@@ -135,31 +134,33 @@ const HeadlineAnalytics = ({ playerId, year, weeklyGrades, teamGames, isPopupOpe
   }, [isPopupOpen, selectedGrade, weeklyGrades, teamGames]);
 
   return (
-    <div className="top-container grid grid-cols-5 gap-4">
+    <div className="top-container grid grid-cols-1 sm:grid-cols-5 gap-2 sm:gap-4">
       {containerTitles.map((title, index) => (
         <div
           key={title}
-          className="bg-gray-50 p-4 rounded shadow cursor-pointer hover:bg-[#235347]/20"
+          className="bg-gray-50 p-2 sm:p-4 rounded shadow cursor-pointer hover:bg-[#235347]/20 min-h-[80px]"
           onClick={() => handleContainerClick(index)}
         >
-          <h3 className="text-md font-medium text-gray-700 text-center">{title}</h3>
-          <p className="text-4xl font-bold text-gray-900 text-center">{getGradeValue(title).value}</p>
-          <p className="text-xs text-gray-500 text-center">Percentile: {formatPercentile(getGradeValue(title).percentile)}</p>
+          <h3 className="text-sm sm:text-md font-medium text-gray-700 text-center">{title}</h3>
+          <p className="text-2xl sm:text-4xl font-bold text-gray-900 text-center">{getGradeValue(title).value}</p>
+          <p className="text-[10px] sm:text-xs text-gray-500 text-center">Percentile: {formatPercentile(getGradeValue(title).percentile)}</p>
         </div>
       ))}
       {isPopupOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-4 rounded-lg shadow-lg w-3/4 h-3/4">
-            <h3 className="text-lg font-semibold mb-2">{selectedContainer || 'Selected Container'}</h3>
-            <div className="w-full h-5/6">
+          <div className="bg-white p-2 sm:p-4 rounded-lg shadow-lg w-[95%] sm:w-3/4 h-[70%] sm:h-3/4 flex flex-col">
+            <h3 className="text-sm sm:text-lg font-semibold mb-1 sm:mb-2">{selectedContainer || 'Selected Container'}</h3>
+            <div className="flex-1 overflow-auto" style={{ maxHeight: window.innerWidth < 640 ? '250px' : undefined }}>
               <canvas id="trendChart" className="w-full h-full"></canvas>
             </div>
-            <button
-              className="mt-4 bg-red-500 text-white p-2 rounded hover:bg-red-700"
-              onClick={() => setIsPopupOpen(false)}
-            >
-              Close
-            </button>
+            <div className="mt-2 sm:mt-4 flex justify-end">
+              <button
+                className="bg-red-500 text-white p-1 sm:p-2 rounded hover:bg-red-700"
+                onClick={() => setIsPopupOpen(false)}
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
