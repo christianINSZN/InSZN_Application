@@ -10,6 +10,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
     hit_as_threw: useRef(null),
     avg_time_to_throw: useRef(null),
   };
+
   const [checkedPlayers, setCheckedPlayers] = useState({
     def_gen_pressures: {},
     pressure_to_sack_rate: {},
@@ -17,6 +18,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
     hit_as_threw: {},
     avg_time_to_throw: {},
   });
+
   const [playerWeeklyData, setPlayerWeeklyData] = useState({
     def_gen_pressures: {},
     pressure_to_sack_rate: {},
@@ -24,6 +26,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
     hit_as_threw: {},
     avg_time_to_throw: {},
   });
+
   const [searchTerms, setSearchTerms] = useState({
     def_gen_pressures: '',
     pressure_to_sack_rate: '',
@@ -31,6 +34,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
     hit_as_threw: '',
     avg_time_to_throw: '',
   });
+
   const [showDropdown, setShowDropdown] = useState({
     def_gen_pressures: false,
     pressure_to_sack_rate: false,
@@ -69,6 +73,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
           return { week, seasonType: 'regular', data: null };
         })
       );
+
       const gradesResults = await Promise.all(gradesPromises);
       const newWeeklyData = gradesResults.reduce((acc, { week, seasonType, data }) => ({
         ...acc,
@@ -89,6 +94,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
         [selectedPlayerId]: !prev[metricId][selectedPlayerId],
       },
     }));
+
     if (!checkedPlayers[metricId][selectedPlayerId]) {
       try {
         const newWeeklyData = await fetchPlayerData(selectedPlayerId);
@@ -152,11 +158,13 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
       console.warn('teamGames is empty or not iterable, using empty dataset');
       return;
     }
+
     const sortedGames = [...teamGames].sort((a, b) => {
       const dateA = new Date(a.startDate);
       const dateB = new Date(b.startDate);
       return isNaN(dateA) || isNaN(dateB) ? a.week - b.week : dateA - dateB;
     });
+
     const opponentLookup = sortedGames.reduce((acc, game) => {
       const key = `${game.week}_${game.seasonType}`;
       const playerTeam = game.team;
@@ -164,113 +172,116 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
       acc[key] = { opponent, startDate: game.startDate };
       return acc;
     }, {});
+
     const metrics = [
-      { id: 'def_gen_pressures', field: 'def_gen_pressures', title: 'Defense Generated Pressures', min: 0, max: 50, unit: 'Pressures' },
-      { id: 'pressure_to_sack_rate', field: 'pressure_to_sack_rate', title: 'Pressure to Sack Rate (%)', min: 0, max: 50, unit: 'Pressure to Sack Rate' },
-      { id: 'sack_percent', field: 'sack_percent', title: 'Sack Rate (%)', min: 0, max: 50, unit: 'Sack Rate per Play' },
-      { id: 'hit_as_threw', field: 'hit_as_threw', title: 'Hit as Thrown', min: 0, max: 5, unit: 'Hits' },
-      { id: 'avg_time_to_throw', field: 'avg_time_to_throw', title: 'Avgerage Time to Throw', min: 0, max: 10, unit: 'Avg. Time to Throw' },
+      { id: 'def_gen_pressures', field: 'def_gen_pressures', title: 'Defense Generated Pressures', max: 50, unit: 'Pressures' },
+      { id: 'pressure_to_sack_rate', field: 'pressure_to_sack_rate', title: 'Pressure to Sack Rate (%)', max: 50, unit: 'Pressure to Sack Rate' },
+      { id: 'sack_percent', field: 'sack_percent', title: 'Sack Rate (%)', max: 50, unit: 'Sack Rate per Play' },
+      { id: 'hit_as_threw', field: 'hit_as_threw', title: 'Hit as Thrown', max: 5, unit: 'Hits' },
+      { id: 'avg_time_to_throw', field: 'avg_time_to_throw', title: 'Average Time to Throw', max: 10, unit: 'Avg. Time to Throw' },
     ];
+
     metrics.forEach(metric => {
       const chartRef = chartRefs[metric.id];
-      if (chartRef.current) {
-        chartRef.current.destroy();
-        chartRef.current = null;
-      }
       const canvas = document.getElementById(`${metric.id}Chart`);
-      if (!canvas || !canvas.getContext) {
-        console.warn(`Canvas not available for ${metric.id}Chart`);
-        return;
-      }
+      if (!canvas || !canvas.getContext) return;
       const ctx = canvas.getContext('2d');
-      const hasAdditionalPlayers = Object.keys(checkedPlayers[metric.id]).some(pId => checkedPlayers[metric.id][pId]);
+
       const sortedWeeks = Array.from({ length: 15 }, (_, i) => i + 1).map(week => ({
         week,
         seasonType: 'regular',
         key: `${week}_regular`,
       }));
+
       const labels = sortedWeeks.map(week => {
+        const hasAdditionalPlayers = Object.keys(checkedPlayers[metric.id]).some(pId => checkedPlayers[metric.id][pId]);
         if (hasAdditionalPlayers) return `Week ${week.week}`;
         return opponentLookup[week.key]?.opponent || 'BYE';
       });
-      const datasets = [
-        {
+
+      const datasets = [];
+
+      // Main player dataset
+      const mainData = sortedWeeks.map(week => {
+        const weekData = weeklyGrades[week.key] || {};
+        return weekData[metric.field] != null ? Number(weekData[metric.field]) : null;
+      });
+      if (!mainData.every(v => v == null)) {
+        datasets.push({
           label: capitalizeName(allPlayerPercentiles[playerId]?.name) || `Player ${playerId}`,
-          data: sortedWeeks.map(week => {
-            const weekData = weeklyGrades[week.key] || {};
-            const value = weekData[metric.field] !== undefined && weekData[metric.field] !== null ? Number(weekData[metric.field]) : null;
-            return value;
-          }),
+          data: mainData,
           borderColor: colors[0],
           backgroundColor: colors[0].replace('1)', '0.2)'),
           fill: true,
           tension: 0.2,
           pointRadius: 5,
           pointHoverRadius: 7,
-        },
-        ...Object.keys(checkedPlayers[metric.id])
-          .filter(pId => checkedPlayers[metric.id][pId])
-          .map((pId, idx) => ({
-            label: capitalizeName(allPlayerPercentiles[pId]?.name) || `Player ${pId}`,
-            data: sortedWeeks.map(week => {
-              const weekData = playerWeeklyData[metric.id][pId]?.[week.key] || {};
-              const value = weekData[metric.field] !== undefined && weekData[metric.field] !== null ? Number(weekData[metric.field]) : null;
-              return value;
-            }),
-            borderColor: colors[(idx + 1) % colors.length],
-            backgroundColor: colors[(idx + 1) % colors.length].replace('1)', '0.2)'),
-            fill: true,
-            tension: 0.2,
-            pointRadius: 5,
-            pointHoverRadius: 7,
-          })),
-      ];
-      chartRef.current = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels,
-          datasets,
-        },
-        options: {
-          scales: {
-            x: { title: { display: false, text: 'Opponent' }, ticks: { autoSkip: false, maxRotation: 45, minRotation: 45, labelOffset: 10 } },
-            y: { title: { display: true, text: metric.unit }, beginAtZero: true, min: 0, max: metric.max, ticks: { stepSize: metric.max / 5 } },
-          },
-          plugins: {
-            legend: { display: true, position: 'top' },
-            tooltip: { mode: 'index', intersect: false },
-            title: {
-              display: true,
-              text: metric.title,
-              font: { size: 16, weight: 'bold' },
-              color: '#374151',
-              padding: { top: 10, bottom: 10 },
+        });
+      }
+
+      // Additional checked players
+      Object.keys(checkedPlayers[metric.id])
+        .filter(pId => checkedPlayers[metric.id][pId])
+        .forEach((pId, idx) => {
+          const playerData = sortedWeeks.map(week => {
+            const weekData = playerWeeklyData[metric.id][pId]?.[week.key] || {};
+            return weekData[metric.field] != null ? Number(weekData[metric.field]) : null;
+          });
+
+          if (!playerData.every(v => v == null)) {
+            datasets.push({
+              label: capitalizeName(allPlayerPercentiles[pId]?.name) || `Player ${pId}`,
+              data: playerData,
+              borderColor: colors[(idx + 1) % colors.length],
+              backgroundColor: colors[(idx + 1) % colors.length].replace('1)', '0.2)'),
+              fill: true,
+              tension: 0.2,
+              pointRadius: 5,
+              pointHoverRadius: 7,
+            });
+          }
+        });
+
+      // ✅ Update instead of destroy/recreate
+      if (chartRef.current) {
+        chartRef.current.data.labels = labels;
+        chartRef.current.data.datasets = datasets;
+        chartRef.current.update();
+      } else {
+        chartRef.current = new Chart(ctx, {
+          type: 'line',
+          data: { labels, datasets },
+          options: {
+            scales: {
+              x: { ticks: { autoSkip: false, maxRotation: 45, minRotation: 45, labelOffset: 10 } },
+              y: { beginAtZero: true, max: metric.max, ticks: { stepSize: metric.max / 5 }, title: { display: true, text: metric.unit } },
             },
+            plugins: {
+              legend: { display: true, position: 'top' },
+              tooltip: { mode: 'index', intersect: false },
+              title: {
+                display: true,
+                text: metric.title,
+                font: { size: 16, weight: 'bold' },
+                color: '#374151',
+              },
+            },
+            responsive: true,
+            maintainAspectRatio: false,
           },
-          responsive: true,
-          maintainAspectRatio: false,
-        },
-      });
+        });
+      }
     });
-    return () => {
-      metrics.forEach(metric => {
-        const chartRef = chartRefs[metric.id];
-        if (chartRef.current) {
-          chartRef.current.destroy();
-          chartRef.current = null;
-        }
-      });
-    };
   }, [weeklyGrades, teamGames, checkedPlayers, playerWeeklyData, allPlayerPercentiles, playerId]);
 
   return (
     <div className="pocket-production-container space-y-4">
       {[
-        { id: 'def_gen_pressures', title: 'Def. Generated Pressures', field: 'def_gen_pressures', max: 50 },
-        { id: 'pressure_to_sack_rate', title: 'Pressure to Sack Rate (%)', field: 'pressure_to_sack_rate', max: 50 },
-        { id: 'sack_percent', title: 'Sack Rate (%)', field: 'sack_percent', max: 50 },
-        { id: 'hit_as_threw', title: 'Hit as Thrown', field: 'hit_as_threw', max: 5 },
-        { id: 'avg_time_to_throw', title: 'Avgerage Time to Throw', field: 'avg_time_to_throw', max: 10 },
+        { id: 'def_gen_pressures', title: 'Def. Generated Pressures' },
+        { id: 'pressure_to_sack_rate', title: 'Pressure to Sack Rate (%)' },
+        { id: 'sack_percent', title: 'Sack Rate (%)' },
+        { id: 'hit_as_threw', title: 'Hit as Thrown' },
+        { id: 'avg_time_to_throw', title: 'Average Time to Throw' },
       ].map((metric) => (
         <div key={metric.id} className="sub-container bg-gray-50 p-4 rounded shadow">
           <div className="relative mb-4">
@@ -280,8 +291,8 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
                 onClick={() => toggleDropdown(metric.id)}
                 className="text-gray-500 hover:text-gray-700 focus:outline-none"
               >
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </button>
             </div>
@@ -295,12 +306,9 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
                   className="w-full p-2 text-sm text-gray-700 border-b border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
                 <ul className="text-sm text-gray-500">
-                  {getTopPerformers(metric.field, searchTerms[metric.id]).map((player, idx) => (
+                  {getTopPerformers(metric.id, searchTerms[metric.id]).map((player, idx) => (
                     <li key={idx} className="flex items-center justify-between p-2 hover:bg-gray-100">
-                      <Link
-                        to={`/players/qb/${player.playerId}`}
-                        className="text-blue-600 hover:underline"
-                      >
+                      <Link to={`/players/qb/${player.playerId}`} className="text-blue-600 hover:underline">
                         {player.name}
                       </Link>
                       <div className="flex items-center">
@@ -314,15 +322,15 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
                       </div>
                     </li>
                   ))}
-                  {getTopPerformers(metric.field, searchTerms[metric.id]).length === 0 && (
+                  {getTopPerformers(metric.id, searchTerms[metric.id]).length === 0 && (
                     <li className="p-2 text-center">No players found</li>
                   )}
                 </ul>
               </div>
             )}
           </div>
-          <div className="w-full h-80">
-            <canvas id={`${metric.id}Chart`} className="w-full h-full"></canvas>
+          <div className="w-full" style={{ height: '320px' }}>
+            <canvas id={`${metric.id}Chart`} className="w-full"></canvas>
           </div>
         </div>
       ))}
