@@ -19,6 +19,22 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
     avg_time_to_throw: useRef(null),
   };
 
+  const canvasRefs = {
+    def_gen_pressures: useRef(null),
+    pressure_to_sack_rate: useRef(null),
+    sack_percent: useRef(null),
+    hit_as_threw: useRef(null),
+    avg_time_to_throw: useRef(null),
+  };
+
+  const mobileCanvasRefs = {
+    def_gen_pressures: useRef(null),
+    pressure_to_sack_rate: useRef(null),
+    sack_percent: useRef(null),
+    hit_as_threw: useRef(null),
+    avg_time_to_throw: useRef(null),
+  };
+
   const [checkedPlayers, setCheckedPlayers] = useState({
     def_gen_pressures: {},
     pressure_to_sack_rate: {},
@@ -50,22 +66,6 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
     hit_as_threw: false,
     avg_time_to_throw: false,
   });
-
-  const canvasRefs = {
-    def_gen_pressures: useRef(null),
-    pressure_to_sack_rate: useRef(null),
-    sack_percent: useRef(null),
-    hit_as_threw: useRef(null),
-    avg_time_to_throw: useRef(null),
-  };
-
-  const mobileCanvasRefs = {
-    def_gen_pressures: useRef(null),
-    pressure_to_sack_rate: useRef(null),
-    sack_percent: useRef(null),
-    hit_as_threw: useRef(null),
-    avg_time_to_throw: useRef(null),
-  };
 
   const colors = [
     'rgba(153, 102, 255, 1)', // Purple
@@ -167,16 +167,17 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
       }));
   };
 
-  const renderChart = (metric, isMobile) => {
+  const renderChart = (metric, isMobile, sortedGames, opponentLookup) => {
     const chartRef = isMobile ? mobileChartRefs[metric.id] : chartRefs[metric.id];
     const canvasRef = isMobile ? mobileCanvasRefs[metric.id] : canvasRefs[metric.id];
     if (chartRef.current) {
       chartRef.current.destroy();
       console.log(`Previous ${metric.title} chart destroyed`);
     }
+    const canvasId = isMobile ? `${metric.id}MobileChart` : `${metric.id}Chart`;
     const canvas = canvasRef.current;
     if (!canvas || !canvas.getContext) {
-      console.warn(`Canvas not available for ${isMobile ? metric.id + 'MobileChart' : metric.id + 'Chart'}`);
+      console.warn(`Canvas not available for ${canvasId}`);
       return;
     }
     const ctx = canvas.getContext('2d');
@@ -292,7 +293,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
 
     metrics.forEach(metric => {
       setTimeout(() => {
-        renderChart(metric, isMobile);
+        renderChart(metric, isMobile, sortedGames, opponentLookup);
       }, 0);
     });
   }, [weeklyGrades, teamGames, checkedPlayers, playerWeeklyData, allPlayerPercentiles, playerId]);
