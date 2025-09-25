@@ -136,40 +136,49 @@ const FieldView = ({
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-0 h-4/5 mr-4">
-          {rowLabels.map((label, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-center text-gray-700 font-medium p-2 pr-8 text-lg"
-              style={{
-                width: '2rem',
-                height: '8rem',
-                marginRight: '-0.5rem',
-                transform: 'rotate(-90deg)',
-                transformOrigin: 'center',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {label}
-            </div>
-          ))}
-          {zones.map((row, rowIndex) =>
-            row.map((zone, colIndex) => {
-              const value = getValue(zone);
-              const backgroundStyle = getBackgroundColor(value);
-              return (
-                <div
-                  key={`${rowIndex}-${colIndex}`}
-                  className={`border-2 p-8 flex justify-center items-center text-lg font-bold cursor-pointer text-gray-100 ${selectedZone === zone ? 'border-black' : 'border-white'}`}
-                  style={{ ...backgroundStyle, gridRow: rowIndex + 1, gridColumn: colIndex + 2 }}
-                  onClick={() => handleZoneClick(zone)}
-                >
-                  {value !== null ? value.toFixed(1) : 'N/A'}
-                </div>
-              );
-            })
-          )}
-        </div>
+        <>
+          <div className="grid grid-cols-3 gap-2 text-center font-medium text-gray-700 pl-8 text-lg">
+            {colLabels.map((label, index) => (
+              <div key={index} className="p-2">
+                {label}
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-0 h-4/5 mr-4">
+            {rowLabels.map((label, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-center text-gray-700 font-medium p-2 pr-8 text-lg"
+                style={{
+                  width: '2rem',
+                  height: '8rem',
+                  marginRight: '-0.5rem',
+                  transform: 'rotate(-90deg)',
+                  transformOrigin: 'center',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {label}
+              </div>
+            ))}
+            {zones.map((row, rowIndex) =>
+              row.map((zone, colIndex) => {
+                const value = getValue(zone);
+                const backgroundStyle = getBackgroundColor(value);
+                return (
+                  <div
+                    key={`${rowIndex}-${colIndex}`}
+                    className={`border-2 p-8 flex justify-center items-center text-lg font-bold cursor-pointer text-gray-100 ${selectedZone === zone ? 'border-black' : 'border-white'}`}
+                    style={{ ...backgroundStyle, gridRow: rowIndex + 1, gridColumn: colIndex + 2 }}
+                    onClick={() => handleZoneClick(zone)}
+                  >
+                    {value !== null ? value.toFixed(1) : 'N/A'}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </>
       )}
       <div className="mt-2 text-sm sm:text-lg text-gray-800 text-center font-bold px-2 sm:px-4">
         <p>Selected Metric: {formatMetric(selectedMetric)}</p>

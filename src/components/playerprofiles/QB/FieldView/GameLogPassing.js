@@ -26,6 +26,7 @@ const GameLogPassing = ({
   const [positionData, setPositionData] = useState([]);
   const distances = ['behind_los', 'short', 'medium', 'deep'];
   const positions = ['left', 'center', 'right'];
+  const isMobile = window.innerWidth < 640;
 
   useEffect(() => {
     if (distanceChartRef.current?.chart) {
@@ -114,7 +115,7 @@ const GameLogPassing = ({
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-              legend: { position: 'top', labels: { font: { size: window.innerWidth < 640 ? 10 : 12 } } },
+              legend: { position: 'top', labels: { font: { size: isMobile ? 10 : 12 } } },
               tooltip: {
                 callbacks: {
                   label: (context) => `${context.label}: ${context.raw.toFixed(1)}%`,
@@ -124,20 +125,20 @@ const GameLogPassing = ({
                 display: true,
                 text: 'Rate (%) by Field Depth',
                 position: 'top',
-                font: { size: window.innerWidth < 640 ? 12 : 14, weight: 'bold' },
+                font: { size: isMobile ? 12 : 14, weight: 'bold' },
                 color: 'rgba(55, 65, 81, 1)',
               },
             },
-            cutout: window.innerWidth < 640 ? '60%' : '70%',
+            cutout: isMobile ? '60%' : '70%',
           },
-          plugins: [{
+          plugins: isMobile ? [] : [{
             id: 'centerText',
             beforeDraw(chart) {
               const { ctx, width, height } = chart;
               ctx.save();
               ctx.textAlign = 'center';
               ctx.textBaseline = 'middle';
-              ctx.font = window.innerWidth < 640 ? "14px system-ui" : "18px system-ui";
+              ctx.font = "18px system-ui";
               ctx.fillStyle = 'rgba(55, 65, 81, 1)';
               ctx.fillText(formattedMetric, width / 2, height / 1.72);
               ctx.restore();
@@ -165,7 +166,7 @@ const GameLogPassing = ({
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-              legend: { position: 'top', labels: { font: { size: window.innerWidth < 640 ? 10 : 12 } } },
+              legend: { position: 'top', labels: { font: { size: isMobile ? 10 : 12 } } },
               tooltip: {
                 callbacks: {
                   label: (context) => `${context.label}: ${context.raw.toFixed(1)}%`,
@@ -175,20 +176,20 @@ const GameLogPassing = ({
                 display: true,
                 text: 'Rate (%) by Field Orientation',
                 position: 'top',
-                font: { size: window.innerWidth < 640 ? 12 : 14, weight: 'bold' },
+                font: { size: isMobile ? 12 : 14, weight: 'bold' },
                 color: 'rgba(35, 83, 71, 1)',
               },
             },
-            cutout: window.innerWidth < 640 ? '60%' : '70%',
+            cutout: isMobile ? '60%' : '70%',
           },
-          plugins: [{
+          plugins: isMobile ? [] : [{
             id: 'centerText',
             beforeDraw(chart) {
               const { ctx, width, height } = chart;
               ctx.save();
               ctx.textAlign = 'center';
               ctx.textBaseline = 'middle';
-              ctx.font = window.innerWidth < 640 ? "14px system-ui" : "18px system-ui";
+              ctx.font = "18px system-ui";
               ctx.fillStyle = 'rgba(35, 83, 71, 1)';
               ctx.fillText(formattedMetric, width / 2, height / 1.72);
               ctx.restore();
