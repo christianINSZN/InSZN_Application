@@ -44,11 +44,11 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
   });
 
   const colors = [
-    'rgba(153, 102, 255, 1)', // Purple (default)
-    'rgba(54, 162, 235, 1)', // Blue
+    'rgba(54, 162, 235, 1)', // Blue (default)
     'rgba(255, 99, 132, 1)', // Red
     'rgba(75, 192, 192, 1)', // Teal
     'rgba(255, 159, 64, 1)', // Orange
+    'rgba(153, 102, 255, 1)', // Purple
   ];
 
   const capitalizeName = (name) => {
@@ -66,10 +66,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
         }).then(response => {
-          if (!response.ok) {
-            console.warn(`Fetch failed for player ${selectedPlayerId}, week ${week}: ${response.status}`);
-            return { week, seasonType: 'regular', data: null };
-          }
+          if (!response.ok) return { week, seasonType: 'regular', data: null };
           return response.json().then(data => ({ week, seasonType: 'regular', data: data[0] || null }));
         }).catch(error => {
           console.error(`Fetch error for player ${selectedPlayerId}, week ${week}: ${error.message}`);
@@ -83,8 +80,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
         [`${week}_${seasonType}`]: data,
       }), {});
       console.log(`Fetched data for player ${selectedPlayerId}:`, newWeeklyData);
-      const hasValidData = Object.values(newWeeklyData).some(data => data && Object.keys(data).length > 0);
-      return hasValidData ? newWeeklyData : null;
+      return newWeeklyData;
     } catch (err) {
       console.error(`Error fetching weekly data for player ${selectedPlayerId}: ${err.message}`);
       return null;
@@ -92,60 +88,53 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
   };
 
   const handleCheckboxChange = async (metricId, selectedPlayerId) => {
-    const isChecked = !checkedPlayers[metricId][selectedPlayerId];
     setCheckedPlayers(prev => ({
       ...prev,
       [metricId]: {
         ...prev[metricId],
-        [selectedPlayerId]: isChecked,
+        [selectedPlayerId]: !prev[metricId][selectedPlayerId],
       },
     }));
 
-    if (isChecked) {
-      const newWeeklyData = await fetchPlayerData(selectedPlayerId);
-      if (!newWeeklyData) {
-        console.warn(`No valid data for player ${selectedPlayerId}, metric ${metricId}, not adding to chart`);
-        setCheckedPlayers(prev => ({
-          ...prev,
-          [metricId]: {
-            ...prev[metricId],
-            [selectedPlayerId]: false,
-          },
-        }));
-        return;
-      }
+    if (!checkedPlayers[metricId][selectedPlayerId]) {
+      try {
+        const newWeeklyData = await fetchPlayerData(selectedPlayerId);
+        if (!newWeeklyData) {
+          console.warn(`No valid data for player ${selectedPlayerId}, metric ${metricId}`);
+          setCheckedPlayers(prev => ({
+            ...prev,
+            [metricId]: {
+              ...prev[metricId],
+              [selectedPlayerId]: false,
+            },
+          }));
+          return;
+        }
 
-      setPlayerWeeklyData(prev => {
-        const updated = {
+        setPlayerWeeklyData(prev => ({
           ...prev,
           [metricId]: {
             ...prev[metricId],
             [selectedPlayerId]: newWeeklyData,
           },
-        };
-        console.log(`Updated playerWeeklyData for ${metricId}, player ${selectedPlayerId}:`, updated);
-        return updated;
-      });
+        }));
+      } catch (err) {
+        console.error(`Error fetching weekly data for player ${selectedPlayerId}: ${err.message}`);
+      }
     }
   };
 
   const handleSearchChange = (metricId, value) => {
-    setSearchTerms(prev => ({
-      ...prev,
-      [metricId]: value,
-    }));
+    setSearchTerms(prev => ({ ...prev, [metricId]: value }));
   };
 
   const toggleSearch = (metricId) => {
-    setShowSearch(prev => ({
-      ...prev,
-      [metricId]: !prev[metricId],
-    }));
+    setShowSearch(prev => ({ ...prev, [metricId]: !prev[metricId] }));
   };
 
   const getTopPerformers = (metricField, searchTerm = '') => {
     if (!allPlayerPercentiles || typeof allPlayerPercentiles !== 'object') return [];
-    const performers = Object.entries(allPlayerPercentiles)
+    return Object.entries(allPlayerPercentiles)
       .filter(([pId, data]) => data && data[metricField] !== undefined && data[metricField] !== null)
       .map(([pId, data]) => ({
         playerId: pId,
@@ -159,8 +148,6 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
         name: player.name,
         value: player.value.toFixed(metricField === 'def_gen_pressures' || metricField === 'hit_as_threw' ? 2 : 1),
       }));
-    console.log(`Top performers for ${metricField}:`, performers);
-    return performers;
   };
 
   useEffect(() => {
@@ -215,9 +202,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
         key: `${week}_regular`,
       }));
       const labels = sortedWeeks.map(week => {
-        if (hasAdditionalPlayers) {
-          return `Week ${week.week}`;
-        }
+        if (hasAdditionalPlayers) return `Week ${week.week}`;
         return opponentLookup[week.key]?.opponent || 'BYE';
       });
 
@@ -239,34 +224,27 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
         },
         ...Object.keys(checkedPlayers[metric.id])
           .filter(pId => checkedPlayers[metric.id][pId])
-          .map((pId, idx) => {
-            const dataset = {
-              label: capitalizeName(allPlayerPercentiles[pId]?.name) || `Player ${pId}`,
-              data: sortedWeeks.map(week => {
-                const weekData = playerWeeklyData[metric.id][pId]?.[week.key] || {};
-                const value = weekData[metric.field] !== undefined && weekData[metric.field] !== null ? Number(weekData[metric.field]) : null;
-                console.log(`Data for ${metric.id}, player ${pId}, week ${week.key}: ${value}`);
-                return value;
-              }),
-              borderColor: colors[(idx + 1) % colors.length],
-              backgroundColor: colors[(idx + 1) % colors.length].replace('1)', '0.2)'),
-              fill: true,
-              tension: 0.2,
-              pointRadius: 5,
-              pointHoverRadius: 7,
-            };
-            console.log(`Dataset for ${metric.id}, player ${pId}:`, dataset);
-            return dataset;
-          }),
+          .map((pId, idx) => ({
+            label: capitalizeName(allPlayerPercentiles[pId]?.name) || `Player ${pId}`,
+            data: sortedWeeks.map(week => {
+              const weekData = playerWeeklyData[metric.id][pId]?.[week.key] || {};
+              const value = weekData[metric.field] !== undefined && weekData[metric.field] !== null ? Number(weekData[metric.field]) : null;
+              console.log(`Data for ${metric.id}, player ${pId}, week ${week.key}: ${value}`);
+              return value;
+            }),
+            borderColor: colors[(idx + 1) % colors.length],
+            backgroundColor: colors[(idx + 1) % colors.length].replace('1)', '0.2)'),
+            fill: true,
+            tension: 0.2,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+          })),
       ];
       console.log(`Datasets for ${metric.id}:`, datasets);
 
       chartRef.current = new Chart(ctx, {
         type: 'line',
-        data: {
-          labels,
-          datasets,
-        },
+        data: { labels, datasets },
         options: {
           scales: {
             x: { title: { display: false, text: 'Opponent' }, ticks: { autoSkip: false, maxRotation: 45, minRotation: 45, labelOffset: 10 } },
@@ -312,7 +290,6 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
         { id: 'avg_time_to_throw', title: 'Avgerage Time to Throw', field: 'avg_time_to_throw', max: 10 },
       ].map((metric) => (
         <div key={metric.id} className="sm:grid sm:grid-cols-[80%_18%] sm:gap-4 mb-4">
-          {/* Mobile: Search Button and Combobox Above Chart */}
           <div className="sm:hidden bg-gray-50 p-4 rounded shadow mb-2">
             <div className="flex items-center justify-center">
               <h4 className="text-md font-medium text-gray-700">{metric.title}</h4>
@@ -355,7 +332,6 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
               </div>
             )}
           </div>
-          {/* Chart */}
           <div className="sub-container bg-gray-0 p-0 rounded shadow">
             <div className="w-full h-80">
               <canvas
@@ -365,7 +341,6 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
               ></canvas>
             </div>
           </div>
-          {/* Non-Mobile: Top Performers Table */}
           <div className="hidden sm:block bg-gray-50 p-4 rounded shadow">
             <div className="flex items-center justify-center mb-4">
               <h4 className="text-md font-medium text-gray-700">Top Performers</h4>
