@@ -266,7 +266,7 @@ const MetricChart = ({
         </div>
       )}
       <div className="sub-container bg-gray-0 p-2 sm:p-0 rounded shadow">
-        <div className={isMobile ? "w-full h-240" : "w-full h-80"}>
+        <div className={isMobile ? "w-full h-240" : "w-full h-240"}>
           <canvas id="metricChart" className="w-full h-full" />
         </div>
       </div>
