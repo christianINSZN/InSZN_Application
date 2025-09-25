@@ -67,7 +67,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
   const fetchPlayerData = async (selectedPlayerId) => {
     try {
       const gradesPromises = Array.from({ length: 15 }, (_, i) => i + 1).map(week =>
-        fetch(`http://localhost:3001/api/player_passing_weekly_all/${selectedPlayerId}/${year}/${week}/regular`, {
+        fetch(`${process.env.REACT_APP_API_URL}/api/player_passing_weekly_all/${selectedPlayerId}/${year}/${week}/regular`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
         }).then(response => {
