@@ -67,35 +67,37 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
       .join(' ');
   };
 
+  const fetchPlayerData = async (metricId, selectedPlayerId) => {
+    try {
+      const gradesPromises = Array.from({ length: 15 }, (_, i) => i + 1).map(week =>
+        fetch(`http://localhost:3001/api/player_passing_weekly_all/${selectedPlayerId}/${year}/${week}/regular`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        }).then(response => {
+          if (!response.ok) return { week, seasonType: 'regular', data: null };
+          return response.json().then(data => ({ week, seasonType: 'regular', data: data[0] || null }));
+        }).catch(error => {
+          console.error(`Fetch error for player ${selectedPlayerId}, week ${week}: ${error.message}`);
+          return { week, seasonType: 'regular', data: null };
+        })
+      );
+
+      const gradesResults = await Promise.all(gradesPromises);
+      const newWeeklyData = gradesResults.reduce((acc, { week, seasonType, data }) => ({
+        ...acc,
+        [`${week}_${seasonType}`]: data,
+      }), {});
+      return newWeeklyData;
+    } catch (err) {
+      console.error(`Error fetching weekly data for player ${selectedPlayerId}: ${err.message}`);
+      return null;
+    }
+  };
+
   const handleCheckboxChange = async (metricId, selectedPlayerId) => {
-    setCheckedPlayers(prev => ({
-      ...prev,
-      [metricId]: {
-        ...prev[metricId],
-        [selectedPlayerId]: !prev[metricId][selectedPlayerId],
-      },
-    }));
-
     if (!checkedPlayers[metricId][selectedPlayerId]) {
-      try {
-        const gradesPromises = Array.from({ length: 15 }, (_, i) => i + 1).map(week =>
-          fetch(`http://localhost:3001/api/player_passing_weekly_all/${selectedPlayerId}/${year}/${week}/regular`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-          }).then(response => {
-            if (!response.ok) return { week, seasonType: 'regular', data: null };
-            return response.json().then(data => ({ week, seasonType: 'regular', data: data[0] || null }));
-          }).catch(error => {
-            console.error(`Fetch error for player ${selectedPlayerId}, week ${week}: ${error.message}`);
-            return { week, seasonType: 'regular', data: null };
-          })
-        );
-
-        const gradesResults = await Promise.all(gradesPromises);
-        const newWeeklyData = gradesResults.reduce((acc, { week, seasonType, data }) => ({
-          ...acc,
-          [`${week}_${seasonType}`]: data,
-        }), {});
+      const newWeeklyData = await fetchPlayerData(metricId, selectedPlayerId);
+      if (newWeeklyData) {
         setPlayerWeeklyData(prev => ({
           ...prev,
           [metricId]: {
@@ -103,10 +105,15 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
             [selectedPlayerId]: newWeeklyData,
           },
         }));
-      } catch (err) {
-        console.error(`Error fetching weekly data for player ${selectedPlayerId}: ${err.message}`);
       }
     }
+    setCheckedPlayers(prev => ({
+      ...prev,
+      [metricId]: {
+        ...prev[metricId],
+        [selectedPlayerId]: !prev[metricId][selectedPlayerId],
+      },
+    }));
   };
 
   const handleSearchChange = (metricId, value) => {
@@ -202,6 +209,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
           data: sortedWeeks.map(week => {
             const weekData = weeklyGrades[week.key] || {};
             const value = weekData[metric.field] !== undefined && weekData[metric.field] !== null ? weekData[metric.field] : null;
+            console.log(`Data for ${metric.id}, player ${playerId}, week ${week.key}: ${value}`);
             return value;
           }),
           borderColor: colors[0],
@@ -218,6 +226,7 @@ const PocketProduction = ({ playerId, year, weeklyGrades, teamGames, allPlayerPe
             data: sortedWeeks.map(week => {
               const weekData = playerWeeklyData[metric.id][pId]?.[week.key] || {};
               const value = weekData[metric.field] !== undefined && weekData[metric.field] !== null ? weekData[metric.field] : null;
+              console.log(`Data for ${metric.id}, player ${pId}, week ${week.key}: ${value}`);
               return value;
             }),
             borderColor: colors[(idx + 1) % colors.length],
