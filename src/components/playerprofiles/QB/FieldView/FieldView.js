@@ -16,6 +16,7 @@ const FieldView = ({
   const [selectedZone, setSelectedZone] = useState(null);
   const [depthData, setDepthData] = useState(null);
   const [selectedMetric, setSelectedMetric] = useState('');
+  const isMobile = window.innerWidth < 640;
 
   useEffect(() => {
     if (playerId && year) {
@@ -91,13 +92,13 @@ const FieldView = ({
 
   return (
     <div className="bg-white rounded-lg shadow h-full">
-      <h2 className="flex items-center justify-center text-base sm:text-lg bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 sm:h-10 rounded">FieldView</h2>
-      <div className="mb-2 mt-2 px-2 sm:px-4">
+      <h2 className="flex items-center justify-center text-base sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 sm:h-[40px] rounded">FieldView</h2>
+      <div className="mb-2 mt-2 px-2 sm:ml-36 sm:px-4">
         <select
           id="metric-select"
           value={selectedMetric}
           onChange={(e) => setSelectedMetric(e.target.value)}
-          className="w-full p-1 sm:p-2 border border-gray-300 rounded text-sm sm:text-base text-center"
+          className="w-full sm:w-auto p-1 sm:p-2 border border-gray-300 rounded text-sm sm:text-base text-center"
         >
           <option value="" disabled>Select Metric</option>
           {getAvailableMetrics().map(metric => (
@@ -105,42 +106,71 @@ const FieldView = ({
           ))}
         </select>
       </div>
-      <div className="grid grid-cols-3 gap-1 sm:gap-2 text-center font-medium text-gray-700 text-xs sm:text-sm px-2 sm:px-8">
-        <div className="sm:invisible"></div>
-        {colLabels.map((label, index) => (
-          <div key={index} className="p-1 sm:p-2">
-            {label}
-          </div>
-        ))}
-      </div>
-      {rowLabels.map((label, rowIndex) => (
-        <div key={rowIndex} className="grid grid-cols-[auto_1fr_1fr_1fr] gap-1 sm:gap-2 px-2 sm:pr-4">
-          <div className="flex items-center justify-center text-gray-700 font-medium text-xs sm:text-sm p-1 sm:p-2 sm:pr-8" style={{
-            width: '2rem',
-            height: window.innerWidth < 640 ? 'auto' : '6rem',
-            marginRight: window.innerWidth < 640 ? '0' : '-0.5rem',
-            transform: window.innerWidth < 640 ? 'none' : 'rotate(-90deg)',
-            transformOrigin: window.innerWidth < 640 ? 'none' : 'center',
-            whiteSpace: 'nowrap',
-          }}>
-            {label}
-          </div>
-          {zones[rowIndex].map((zone, colIndex) => {
-            const value = getValue(zone);
-            const backgroundStyle = getBackgroundColor(value);
-            return (
-              <div
-                key={`${rowIndex}-${colIndex}`}
-                className={`border-2 p-2 sm:p-4 flex justify-center items-center text-xs sm:text-sm font-bold cursor-pointer text-gray-100 ${selectedZone === zone ? 'border-black' : 'border-white'}`}
-                style={{ ...backgroundStyle }}
-                onClick={() => handleZoneClick(zone)}
-              >
-                {value !== null ? value.toFixed(1) : 'N/A'}
+      {isMobile ? (
+        <div className="space-y-2 px-2">
+          {rowLabels.map((rowLabel, rowIndex) => (
+            <div key={rowIndex} className="space-y-1">
+              <div className="text-center font-medium text-gray-700 text-xs">{rowLabel}</div>
+              <div className="grid grid-cols-3 gap-0">
+                {colLabels.map((colLabel, colIndex) => (
+                  <div key={colIndex} className="text-center font-medium text-gray-700 text-xs p-1">
+                    {colLabel}
+                  </div>
+                ))}
+                {zones[rowIndex].map((zone, colIndex) => {
+                  const value = getValue(zone);
+                  const backgroundStyle = getBackgroundColor(value);
+                  return (
+                    <div
+                      key={`${rowIndex}-${colIndex}`}
+                      className={`border-2 p-0.5 flex justify-center items-center text-xs font-bold cursor-pointer text-gray-100 h-16 ${selectedZone === zone ? 'border-black' : 'border-white'}`}
+                      style={{ ...backgroundStyle }}
+                      onClick={() => handleZoneClick(zone)}
+                    >
+                      {value !== null ? value.toFixed(1) : 'N/A'}
+                    </div>
+                  );
+                })}
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
-      ))}
+      ) : (
+        <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-0 h-4/5 mr-4">
+          {rowLabels.map((label, index) => (
+            <div
+              key={index}
+              className="flex items-center justify-center text-gray-700 font-medium p-2 pr-8 text-lg"
+              style={{
+                width: '2rem',
+                height: '8rem',
+                marginRight: '-0.5rem',
+                transform: 'rotate(-90deg)',
+                transformOrigin: 'center',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {label}
+            </div>
+          ))}
+          {zones.map((row, rowIndex) =>
+            row.map((zone, colIndex) => {
+              const value = getValue(zone);
+              const backgroundStyle = getBackgroundColor(value);
+              return (
+                <div
+                  key={`${rowIndex}-${colIndex}`}
+                  className={`border-2 p-8 flex justify-center items-center text-lg font-bold cursor-pointer text-gray-100 ${selectedZone === zone ? 'border-black' : 'border-white'}`}
+                  style={{ ...backgroundStyle, gridRow: rowIndex + 1, gridColumn: colIndex + 2 }}
+                  onClick={() => handleZoneClick(zone)}
+                >
+                  {value !== null ? value.toFixed(1) : 'N/A'}
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
       <div className="mt-2 text-sm sm:text-lg text-gray-800 text-center font-bold px-2 sm:px-4">
         <p>Selected Metric: {formatMetric(selectedMetric)}</p>
       </div>

@@ -27,6 +27,7 @@ function FieldViewInterface() {
   const year = location.state?.year || 2024;
   const subscriptionPlan = user?.publicMetadata?.subscriptionPlan;
   const isSubscribed = subscriptionPlan === 'pro' || subscriptionPlan === 'premium';
+  const isMobile = window.innerWidth < 640;
 
   useEffect(() => {
     console.log('Component mounted with selectedMetric:', selectedMetric, 'selectedDistance:', selectedDistance);
@@ -202,8 +203,9 @@ function FieldViewInterface() {
           </div>
           <div className="relative">
             {isSubscribed ? (
-              <div className="flex flex-col sm:grid sm:grid-cols-[71%_28%] gap-4 w-full">
-                <div className="order-1 sm:order-2 space-y-6">
+              isMobile ? (
+                <div className="flex flex-col gap-4 w-full">
+                  <FieldView playerId={playerId} year={year} onZoneSelect={handleZoneSelect} colLabels={colLabels} />
                   <GameLogPassing
                     playerId={playerId}
                     year={year}
@@ -221,14 +223,9 @@ function FieldViewInterface() {
                     teamGames={teamGames}
                   />
                 </div>
-                <div className="order-0 sm:order-1 grid grid-rows-[1fr] gap-4">
-                  <FieldView playerId={playerId} year={year} onZoneSelect={handleZoneSelect} colLabels={colLabels} />
-                </div>
-              </div>
-            ) : (
-              <div className="relative">
-                <div className="flex flex-col sm:grid sm:grid-cols-[71%_28%] gap-4 w-full filter blur-xs opacity-80">
-                  <div className="order-1 sm:order-2 space-y-6">
+              ) : (
+                <div className="grid grid-cols-[71%_28%] gap-4 w-full">
+                  <div className="space-y-6">
                     <GameLogPassing
                       playerId={playerId}
                       year={year}
@@ -246,10 +243,58 @@ function FieldViewInterface() {
                       teamGames={teamGames}
                     />
                   </div>
-                  <div className="order-0 sm:order-1 grid grid-rows-[1fr] gap-4">
+                  <div className="grid grid-rows-[1fr] gap-4 h-full">
                     <FieldView playerId={playerId} year={year} onZoneSelect={handleZoneSelect} colLabels={colLabels} />
                   </div>
                 </div>
+              )
+            ) : (
+              <div className="relative">
+                {isMobile ? (
+                  <div className="flex flex-col gap-4 w-full filter blur-xs opacity-80">
+                    <FieldView playerId={playerId} year={year} onZoneSelect={handleZoneSelect} colLabels={colLabels} />
+                    <GameLogPassing
+                      playerId={playerId}
+                      year={year}
+                      selectedZone={selectedZone}
+                      selectedMetric={selectedMetric}
+                      selectedDistance={selectedDistance}
+                      teamGames={teamGames}
+                    />
+                    <MetricChart
+                      playerId={playerId}
+                      year={year}
+                      selectedZone={selectedZone}
+                      selectedMetric={selectedMetric}
+                      selectedDistance={selectedDistance}
+                      teamGames={teamGames}
+                    />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-[71%_28%] gap-4 w-full filter blur-xs opacity-80">
+                    <div className="space-y-6">
+                      <GameLogPassing
+                        playerId={playerId}
+                        year={year}
+                        selectedZone={selectedZone}
+                        selectedMetric={selectedMetric}
+                        selectedDistance={selectedDistance}
+                        teamGames={teamGames}
+                      />
+                      <MetricChart
+                        playerId={playerId}
+                        year={year}
+                        selectedZone={selectedZone}
+                        selectedMetric={selectedMetric}
+                        selectedDistance={selectedDistance}
+                        teamGames={teamGames}
+                      />
+                    </div>
+                    <div className="grid grid-rows-[1fr] gap-4 h-full">
+                      <FieldView playerId={playerId} year={year} onZoneSelect={handleZoneSelect} colLabels={colLabels} />
+                    </div>
+                  </div>
+                )}
                 <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 backdrop-filter backdrop-blur-md rounded-lg">
                   <div className="p-4 sm:p-6 bg-white rounded-lg shadow-lg text-center">
                     <p className="text-gray-700 text-base sm:text-lg font-semibold mb-2">Exclusive Content</p>
