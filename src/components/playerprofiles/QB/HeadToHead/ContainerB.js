@@ -168,10 +168,61 @@ const ContainerB = ({
       },
       options: {
         scales: {
-          x: { title: { display: false, text: 'Week' }, ticks: { autoSkip: false, maxRotation: 45, minRotation: 45, labelOffset: 10 } },
-          y: { title: { display: true, text: selectedMetric?.label || 'Metric Value' }, beginAtZero: true, min: yMin, max: yMax, ticks: { stepSize: (yMax - yMin) / 5 } },
+          x: { 
+            title: { display: false, text: 'Week' }, 
+            ticks: { 
+              autoSkip: false, 
+              maxRotation: 45, 
+              minRotation: 45, 
+              labelOffset: 10,
+              font: {
+                size: isMobile ? 12 : 12,
+                family: isMobile ? 'Arial' : undefined,
+                weight: isMobile ? 'bold' : undefined,
+              },
+              color: isMobile ? '#235347' : undefined,
+            },
+          },
+          y: { 
+            title: { 
+              display: true, 
+              text: selectedMetric?.label || 'Metric Value',
+              font: {
+                size: isMobile ? 12 : 12,
+                family: isMobile ? 'Arial' : undefined,
+                weight: isMobile ? 'bold' : undefined,
+              },
+              color: isMobile ? '#235347' : undefined,
+            }, 
+            beginAtZero: true, 
+            min: yMin, 
+            max: yMax, 
+            ticks: { 
+              stepSize: (yMax - yMin) / 5,
+              font: {
+                size: isMobile ? 12 : 12,
+                family: isMobile ? 'Arial' : undefined,
+                weight: isMobile ? 'bold' : undefined,
+              },
+              color: isMobile ? '#235347' : undefined,
+            },
+          },
         },
-        plugins: { legend: { display: true, position: 'top' }, tooltip: { mode: 'index', intersect: false } },
+        plugins: { 
+          legend: { 
+            display: true, 
+            position: 'top',
+            labels: {
+              font: {
+                size: isMobile ? 12 : 12,
+                family: isMobile ? 'Arial' : undefined,
+                weight: isMobile ? 'bold' : undefined,
+              },
+              color: isMobile ? '#235347' : undefined,
+            },
+          }, 
+          tooltip: { mode: 'index', intersect: false },
+        },
         responsive: true,
         maintainAspectRatio: false,
       },
