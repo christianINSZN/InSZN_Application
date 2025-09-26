@@ -300,7 +300,7 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
   return (
     <div className={`bg-white rounded-lg shadow-xl ${className}`}>
       <div className="flex flex-col items-center">
-        <h2 className="flex items-center justify-center text-base sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 sm:h-[40px] rounded w-full">Head-to-Head</h2>
+        <h2 className="flex items-center justify-center text-base sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 sm:h-[40px] rounded w-full">Quarterback Comparison</h2>
         {isMobile ? (
           <div className="w-full max-w-md mx-auto">
             <div className="grid grid-cols-2 gap-2 text-center">
