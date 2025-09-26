@@ -111,7 +111,7 @@ const TeamGameLog = ({ teamData, year, className = "text-sm sm:text-base" }) => 
     { key: 'Date', label: 'Date', align: 'left', mobileHidden: false, minWidth: '60px' },
     { key: 'Score', label: 'Score', align: 'left', mobileHidden: false, minWidth: '60px' },
     { key: 'Opponent', label: 'Opponent', align: 'left', mobileHidden: false, minWidth: '60px' },
-    { key: 'TotalYards', label: 'Total Yards', align: 'left', mobileHidden: false, minWidth: '60px' },
+    { key: 'TotalYards', label: 'Total Yards', align: 'left', mobileHidden: true, minWidth: '60px' },
     { key: 'CompAtt', label: 'Comp-Att', align: 'left', mobileHidden: true, minWidth: '60px' },
     { key: 'PassYards', label: 'Pass Yards', align: 'left', mobileHidden: true, minWidth: '60px' },
     { key: 'RushAtt', label: 'Rush Att', align: 'left', mobileHidden: true, minWidth: '60px' },
@@ -119,7 +119,7 @@ const TeamGameLog = ({ teamData, year, className = "text-sm sm:text-base" }) => 
     { key: 'FUM', label: 'FUM', align: 'left', mobileHidden: true, minWidth: '60px' },
     { key: 'INT', label: 'INT', align: 'left', mobileHidden: true, minWidth: '60px' },
     { key: 'TOP', label: 'TOP', align: 'left', mobileHidden: true, minWidth: '60px' },
-    { key: 'TD', label: 'TD', align: 'left', mobileHidden: false, minWidth: '60px' },
+    { key: 'TD', label: 'TD', align: 'left', mobileHidden: true, minWidth: '60px' },
   ];
 
   const renderTable = (isFullView) => {
