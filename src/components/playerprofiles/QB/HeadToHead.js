@@ -225,7 +225,7 @@ function HeadToHeadQB() {
             className="text-sm sm:text-base"
           />
           <div className="border-b border-gray-300 mb-4 sm:mb-4">
-            <ul className="flex gap-1 sm:gap-4 overflow-x-auto whitespace-nowrap">
+            <ul className="flex gap-1 sm:gap-4">
               <li>
                 <Link
                   to={`/players/qb/${playerId || ''}`}

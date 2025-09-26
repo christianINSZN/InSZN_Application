@@ -63,7 +63,7 @@ const MetricChart = ({
     const opponentLookup = teamGames.reduce((acc, game) => {
       const key = `${game.week}_${game.seasonType}`;
       const playerTeam = game.team;
-      const opponent = playerTeam === game.homeTeam ? `vs. ${game.awayTeamAbrev}` : `at ${game.awayTeamAbrev}`;
+      const opponent = playerTeam === game.homeTeam ? `vs. ${game.awayTeamAbrev}` : `at ${game.homeTeamAbrev}`;
       acc[key] = { opponent, startDate: game.startDate };
       return acc;
     }, {});

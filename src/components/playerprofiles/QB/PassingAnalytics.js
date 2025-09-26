@@ -139,8 +139,8 @@ function PassingAnalytics() {
 
   return (
     <WeeklyGradesContext.Provider value={weeklyGrades}>
-      <div className="w-full min-h-screen bg-gray-0">
-        <div className="px-2 sm:px-0 py-4 sm:py-0">
+    <div className="w-full min-h-screen bg-gray-50">
+      <div className="px-2 sm:px-0 py-4 sm:py-8">
           <Header
             firstName={firstName}
             lastName={lastName}
