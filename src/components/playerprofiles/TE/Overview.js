@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import Header from './Overview/Header';
 import GameLog from './Overview/GameLog';
@@ -20,8 +20,6 @@ function OverviewTE() {
   const [percentileGrades, setPercentileGrades] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Get year from navigation state, default to 2025 to align with WR
   const year = location.state?.year || 2025;
 
   useEffect(() => {
@@ -47,8 +45,8 @@ function OverviewTE() {
           }),
         ]);
 
-        if (!gradesResponse.ok) throw new Error(`Failed to fetch grades data: ${gradesResponse.status}`);
-        if (!basicResponse.ok) throw new Error(`Failed to fetch basic data: ${basicResponse.status}`);
+        if (!gradesResponse.ok) throw new Error(`Failed to fetch grades data: ${await gradesResponse.text()}`);
+        if (!basicResponse.ok) throw new Error(`Failed to fetch basic data: ${await basicResponse.text()}`);
         if (!gamesResponse.ok) throw new Error(`Failed to fetch team games data: ${await gamesResponse.text()}`);
         if (!percentilesResponse.ok) throw new Error(`Failed to fetch percentile data: ${await percentilesResponse.text()}`);
 
@@ -57,19 +55,13 @@ function OverviewTE() {
         const gamesData = await gamesResponse.json();
         const percentileGradesData = await percentilesResponse.json();
 
-        console.log('API Responses:', {
-          gradesData,
-          basicData,
-          gamesData,
-          percentileGradesData
-        });
+        console.log('API Responses:', { gradesData, basicData, gamesData, percentileGradesData });
 
         setPlayerData(gradesData[0] || null);
         setBasicData(Array.isArray(basicData) ? basicData[0] : basicData);
         setTeamGames(Array.isArray(gamesData) ? gamesData : []);
         setPercentileGrades(percentileGradesData);
 
-        // Derive teamID from teamGames if basicData.teamID is unavailable
         let derivedTeamID = null;
         if (basicData && 'teamID' in basicData) {
           derivedTeamID = basicData.teamID;
@@ -85,30 +77,26 @@ function OverviewTE() {
             headers: { 'Content-Type': 'application/json' },
           }).catch(error => {
             console.error(`Fetch error for ${url}: ${error.message}`);
-            return { ok: false, status: 404, json: () => Promise.resolve(null) };
+            return { ok: false, status: 404 };
           }).then(response => {
             if (!response.ok) {
               console.warn(`Non-ok response for ${url}: ${response.status}`);
               const allGrades = Object.values(weeklyGrades).filter(g => g && g.startDate === game.startDate);
               return { week: game.week, seasonType: game.seasonType, data: allGrades[0] || null };
             }
-            return response.json().then(data => {
-              console.log(`Receiving grades for ${url}:`, data);
-              return { week: game.week, seasonType: game.seasonType, data: Array.isArray(data) && data.length > 0 ? data[0] : null };
-            }).catch(jsonError => {
-              console.error(`JSON parse error for ${url}: ${jsonError.message}`);
-              return { week: game.week, seasonType: game.seasonType, data: null };
-            });
+            return response.json().then(data => ({
+              week: game.week,
+              seasonType: game.seasonType,
+              data: Array.isArray(data) && data.length > 0 ? data[0] : null
+            }));
           });
         }) : [];
 
         const gradesResults = await Promise.all(gradesPromises);
-        const newWeeklyGrades = gradesResults.reduce((acc, { week, seasonType, data }) => ({
+        setWeeklyGrades(gradesResults.reduce((acc, { week, seasonType, data }) => ({
           ...acc,
           [`${week}_${seasonType}`]: data
-        }), {});
-        console.log('Processed weeklyGrades:', newWeeklyGrades);
-        setWeeklyGrades(newWeeklyGrades);
+        }), {}));
 
         // Fetch blocking grades
         const gradesBlockingPromises = Array.isArray(gamesData) ? gamesData.map(game => {
@@ -118,30 +106,26 @@ function OverviewTE() {
             headers: { 'Content-Type': 'application/json' },
           }).catch(error => {
             console.error(`Fetch error for ${url}: ${error.message}`);
-            return { ok: false, status: 404, json: () => Promise.resolve(null) };
+            return { ok: false, status: 404 };
           }).then(response => {
             if (!response.ok) {
               console.warn(`Non-ok response for ${url}: ${response.status}`);
               const allGrades = Object.values(weeklyBlockingGrades).filter(g => g && g.startDate === game.startDate);
               return { week: game.week, seasonType: game.seasonType, data: allGrades[0] || null };
             }
-            return response.json().then(data => {
-              console.log(`Blocking grades for ${url}:`, data);
-              return { week: game.week, seasonType: game.seasonType, data: Array.isArray(data) && data.length > 0 ? data[0] : null };
-            }).catch(jsonError => {
-              console.error(`JSON parse error for ${url}: ${jsonError.message}`);
-              return { week: game.week, seasonType: game.seasonType, data: null };
-            });
+            return response.json().then(data => ({
+              week: game.week,
+              seasonType: game.seasonType,
+              data: Array.isArray(data) && data.length > 0 ? data[0] : null
+            }));
           });
         }) : [];
 
         const gradesBlockingResults = await Promise.all(gradesBlockingPromises);
-        const newWeeklyBlockingGrades = gradesBlockingResults.reduce((acc, { week, seasonType, data }) => ({
+        setWeeklyBlockingGrades(gradesBlockingResults.reduce((acc, { week, seasonType, data }) => ({
           ...acc,
           [`${week}_${seasonType}`]: data
-        }), {});
-        console.log('Processed weeklyBlockingGrades:', newWeeklyBlockingGrades);
-        setWeeklyBlockingGrades(newWeeklyBlockingGrades);
+        }), {}));
 
       } catch (err) {
         console.error('Fetch error:', err);
@@ -154,21 +138,23 @@ function OverviewTE() {
     if (playerId) fetchPlayerData();
   }, [playerId, year]);
 
-  if (loading) return <div className="p-4 text-gray-500">Loading...</div>;
-  if (error) return <div className="p-4 text-red-500">Error: {error}</div>;
-  if (!playerData || !basicData) return <div className="p-4 text-gray-500">No player data available.</div>;
+  // Memoize weeklyGrades and weeklyBlockingGrades to prevent render loops
+  const stableWeeklyGrades = useMemo(() => weeklyGrades, [weeklyGrades]);
+  const stableWeeklyBlockingGrades = useMemo(() => weeklyBlockingGrades, [weeklyBlockingGrades]);
+
+  if (loading) return <div className="p-2 sm:p-4 text-gray-500 text-sm sm:text-base">Loading...</div>;
+  if (error) return <div className="p-2 sm:p-4 text-red-500 text-sm sm:text-base">Error: {error}</div>;
+  if (!playerData || !basicData) return <div className="p-2 sm:p-4 text-gray-500 text-sm sm:text-base">No player data available.</div>;
 
   const { name, school, position, yards, touchdowns, receptions, grades_pass_route } = playerData;
   const [firstName, lastName] = name ? name.split(' ') : ['', ''];
   const { height, weight, jersey } = basicData;
   const teamID = basicData && 'teamID' in basicData ? basicData.teamID : (teamGames.length > 0 ? teamGames[0].homeId || teamGames[0].awayId : null);
-
   const isOverviewActive = location.pathname === `/players/te/${playerId}`;
   const isReceivingActive = location.pathname === `/players/te/${playerId}/receiving`;
   const isFieldViewActive = location.pathname === `/players/te/${playerId}/fieldview`;
-  const isH2HActive = location.pathname === `/players/te/${playerId}/h2h`;
+  const isH2hActive = location.pathname === `/players/te/${playerId}/h2h`;
 
-  // Create gradesData object from playerData
   const gradesData = {
     yards,
     touchdowns,
@@ -178,7 +164,7 @@ function OverviewTE() {
 
   return (
     <div className="w-full min-h-screen bg-gray-50">
-      <div className="px-0 py-0">
+      <div className="px-2 sm:px-0 py-4 sm:py-8">
         <Header
           firstName={firstName}
           lastName={lastName}
@@ -190,14 +176,15 @@ function OverviewTE() {
           year={year}
           playerId={playerId}
           gradesData={gradesData}
+          className="text-sm sm:text-base"
         />
-        <div className="border-b border-gray-300 mb-4">
-          <ul className="flex gap-4">
+        <div className="border-b border-gray-300 mb-4 sm:mb-4">
+          <ul className="flex gap-1 sm:gap-4">
             <li>
               <Link
                 to={`/players/te/${playerId || ''}`}
                 state={{ year }}
-                className={`text-[#235347] hover:text-[#235347] pb-2 border-b-2 ${isOverviewActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+                className={`text-[#235347] hover:text-[#235347] pb-0.5 sm:pb-2 border-b-2 text-xs sm:text-base px-1 sm:px-0 ${isOverviewActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
               >
                 Overview
               </Link>
@@ -206,7 +193,7 @@ function OverviewTE() {
               <Link
                 to={`/players/te/${playerId || ''}/receiving`}
                 state={{ year }}
-                className={`text-gray-500 hover:text-gray-700 pb-2 border-b-2 ${isReceivingActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
+                className={`text-gray-500 hover:text-gray-700 pb-0.5 sm:pb-2 border-b-2 text-xs sm:text-base px-1 sm:px-0 ${isReceivingActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
               >
                 Receiving Analytics
               </Link>
@@ -215,7 +202,7 @@ function OverviewTE() {
               <Link
                 to={`/players/te/${playerId || ''}/fieldview`}
                 state={{ year }}
-                className={`text-gray-500 hover:text-gray-700 pb-2 border-b-2 ${isFieldViewActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
+                className={`text-gray-500 hover:text-gray-700 pb-0.5 sm:pb-2 border-b-2 text-xs sm:text-base px-1 sm:px-0 ${isFieldViewActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
               >
                 FieldView
               </Link>
@@ -224,21 +211,22 @@ function OverviewTE() {
               <Link
                 to={`/players/te/${playerId || ''}/h2h`}
                 state={{ year }}
-                className={`text-gray-500 hover:text-gray-700 pb-2 border-b-2 ${isH2HActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
+                className={`text-gray-500 hover:text-gray-700 pb-0.5 sm:pb-2 border-b-2 text-xs sm:text-base px-1 sm:px-0 ${isH2hActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
               >
                 Head-to-Head
               </Link>
             </li>
           </ul>
         </div>
-        <div className="grid grid-cols-[67%_32%] gap-4 w-[100%]">
-          <div className="space-y-4">
-            <MatchupProjection teamId={teamID} year={year} />
+        <div className="grid grid-cols-1 sm:grid-cols-[67%_32%] gap-2 sm:gap-4 w-full">
+          <div className="space-y-2 sm:space-y-4">
+            <MatchupProjection teamId={teamID} year={year} className="text-sm sm:text-base" />
             <GameLog
               teamGames={teamGames}
-              weeklyGrades={weeklyGrades}
-              weeklyBlockingGrades={weeklyBlockingGrades}
+              weeklyGrades={stableWeeklyGrades}
+              weeklyBlockingGrades={stableWeeklyBlockingGrades}
               year={year}
+              className="text-sm sm:text-base overflow-x-auto"
             />
             <HeadlineGrades
               isPopupOpen={isPopupOpen}
@@ -246,17 +234,18 @@ function OverviewTE() {
               setSelectedGrade={setSelectedGrade}
               selectedGrade={selectedGrade}
               percentileGrades={percentileGrades}
-              weeklyGrades={weeklyGrades}
-              weeklyBlockingGrades={weeklyBlockingGrades}
+              weeklyGrades={stableWeeklyGrades}
+              weeklyBlockingGrades={stableWeeklyBlockingGrades}
               teamGames={teamGames}
+              className="text-sm sm:text-base"
             />
           </div>
-          <div className="grid grid-rows-[1fr_1fr] gap-4 h-full">
+          <div className="grid grid-rows-1 sm:grid-rows-[1fr_1fr] gap-2 sm:gap-4 h-full">
             <AttributionRadial
               playerId={playerId}
               year={year}
               percentileGrades={percentileGrades}
-              className="row-span-2"
+              className="text-sm sm:text-base row-span-2"
             />
             <Trends
               isPopupOpen={isPopupOpen}
@@ -265,8 +254,9 @@ function OverviewTE() {
               selectedGrade={selectedGrade}
               year={year}
               teamGames={teamGames}
-              weeklyGrades={weeklyGrades}
-              weeklyBlockingGrades={weeklyBlockingGrades}
+              weeklyGrades={stableWeeklyGrades}
+              weeklyBlockingGrades={stableWeeklyBlockingGrades}
+              className="text-sm sm:text-base"
             />
           </div>
         </div>

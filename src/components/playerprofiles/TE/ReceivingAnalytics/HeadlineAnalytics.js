@@ -1,10 +1,22 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Chart from 'chart.js/auto';
 
-const HeadlineAnalytics = ({ playerId, year, weeklyGrades, teamGames, isPopupOpen, setIsPopupOpen, setSelectedContainer, selectedContainer, percentileGrades }) => {
+const HeadlineAnalytics = ({
+  playerId,
+  year,
+  weeklyGrades,
+  teamGames,
+  isPopupOpen,
+  setIsPopupOpen,
+  setSelectedContainer,
+  selectedContainer,
+  percentileGrades,
+  className = "text-sm sm:text-base"
+}) => {
   const containerTitles = ['Yards', 'Receptions', 'Yards Per Reception', 'Caught (%)', 'Touchdowns'];
   const chartRef = useRef(null);
   const [selectedGrade, setSelectedGrade] = useState(null);
+  const isMobile = window.innerWidth < 640;
 
   const handleContainerClick = (index) => {
     setSelectedContainer(containerTitles[index]);
@@ -76,10 +88,10 @@ const HeadlineAnalytics = ({ playerId, year, weeklyGrades, teamGames, isPopupOpe
       };
 
       const metricRanges = {
-        'Yards': { min: 0, max: 200, unit: 'Yards' },
-        'Receptions': { min: 0, max: 100, unit: 'Receptions' },
+        'Yards': { min: 0, max: 600, unit: 'Yards' },
+        'Receptions': { min: 0, max: 20, unit: 'Receptions' },
         'Yards Per Reception': { min: 0, max: 25, unit: 'Yards' },
-        'Caught (%)': { min: 0, max: 80, unit: 'Yards' },
+        'Caught (%)': { min: 0, max: 100, unit: 'Percent' },
         'Touchdowns': { min: 0, max: 5, unit: 'TD' },
       };
 
@@ -122,44 +134,62 @@ const HeadlineAnalytics = ({ playerId, year, weeklyGrades, teamGames, isPopupOpe
         },
         options: {
           scales: {
-            x: { title: { display: false, text: 'Opponent' }, ticks: { autoSkip: false, maxRotation: 45, minRotation: 45, labelOffset: 10 } },
-            y: { title: { display: true, text: range.unit }, beginAtZero: true, min: yMin, max: yMax, ticks: { stepSize: (yMax - yMin) / 5 } },
+            x: {
+              title: { display: false, text: 'Opponent' },
+              ticks: { autoSkip: false, maxRotation: 45, minRotation: 45, labelOffset: 10, font: { size: isMobile ? 10 : 12 } },
+            },
+            y: {
+              title: { display: true, text: range.unit, font: { size: isMobile ? 12 : 14 } },
+              beginAtZero: true,
+              min: yMin,
+              max: yMax,
+              ticks: { stepSize: (yMax - yMin) / 5, font: { size: isMobile ? 10 : 12 } },
+            },
           },
-          plugins: { legend: { display: true, position: 'top' }, tooltip: { mode: 'index', intersect: false } },
+          plugins: { legend: { display: true, position: 'top', labels: { font: { size: isMobile ? 10 : 12 } } }, tooltip: { mode: 'index', intersect: false } },
           responsive: true,
           maintainAspectRatio: false,
         },
       });
       console.log('Line chart created successfully for', selectedGrade);
     }
-  }, [isPopupOpen, selectedGrade, weeklyGrades, teamGames]);
+
+    return () => {
+      if (chartRef.current) {
+        chartRef.current.destroy();
+        console.log('Chart destroyed on cleanup');
+      }
+    };
+  }, [isPopupOpen, selectedGrade, weeklyGrades, teamGames, isMobile]);
 
   return (
-    <div className="top-container grid grid-cols-5 gap-4">
+    <div className={`top-container grid grid-cols-1 sm:grid-cols-5 gap-2 sm:gap-4 ${className}`}>
       {containerTitles.map((title, index) => (
         <div
           key={title}
-          className="bg-gray-50 p-4 rounded shadow cursor-pointer hover:bg-[#235347]/20"
+          className="bg-gray-50 p-2 sm:p-4 rounded shadow cursor-pointer hover:bg-[#235347]/20 min-h-[80px]"
           onClick={() => handleContainerClick(index)}
         >
-          <h3 className="text-md font-medium text-gray-700 text-center">{title}</h3>
-          <p className="text-4xl font-bold text-gray-900 text-center">{getGradeValue(title).value}</p>
-          <p className="text-xs text-gray-500 text-center">Percentile: {formatPercentile(getGradeValue(title).percentile)}</p>
+          <h3 className="text-sm sm:text-md font-medium text-gray-700 text-center">{title}</h3>
+          <p className="text-2xl sm:text-4xl font-bold text-gray-900 text-center">{getGradeValue(title).value}</p>
+          <p className="text-[10px] sm:text-xs text-gray-500 text-center">Percentile: {formatPercentile(getGradeValue(title).percentile)}</p>
         </div>
       ))}
       {isPopupOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-4 rounded-lg shadow-lg w-3/4 h-3/4">
-            <h3 className="text-lg font-semibold mb-2">{selectedContainer || 'Selected Container'}</h3>
-            <div className="w-full h-5/6">
+          <div className="bg-white p-2 sm:p-4 rounded-lg shadow-lg w-[95%] sm:w-3/4 h-[70%] sm:h-3/4 flex flex-col">
+            <h3 className="text-sm sm:text-lg font-semibold mb-1 sm:mb-2">{selectedContainer || 'Selected Container'}</h3>
+            <div className="flex-1 overflow-auto" style={{ maxHeight: isMobile ? '250px' : undefined }}>
               <canvas id="trendChart" className="w-full h-full"></canvas>
             </div>
-            <button
-              className="mt-4 bg-red-500 text-white p-2 rounded hover:bg-red-700"
-              onClick={() => setIsPopupOpen(false)}
-            >
-              Close
-            </button>
+            <div className="mt-2 sm:mt-4 flex justify-end">
+              <button
+                className="bg-red-500 text-white p-1 sm:p-2 rounded hover:bg-red-700"
+                onClick={() => setIsPopupOpen(false)}
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

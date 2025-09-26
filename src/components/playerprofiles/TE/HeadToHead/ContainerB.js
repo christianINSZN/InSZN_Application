@@ -40,7 +40,7 @@ const ContainerB = ({ player1, player2 }) => {
             if (!statsResponse.ok) throw new Error('Failed to fetch weekly stats data');
             const statsData = await statsResponse.json();
             console.log('Player 1 weekly stats:', statsData);
-            const excludedMetrics = ['name', 'team', 'playerId', 'year', 'week', 'seasonType', 'opponentID', 'teamID', 'player_id_PFF', 'position', 'player_game_count', 'franchise_id'];
+            const excludedMetrics = ['name', 'team', 'playerId', 'year', 'week', 'seasonType', 'opponentID', 'teamID', 'player_id_PFF', 'position', 'player_game_count', 'franchise_id', 'player'];
             const metrics = statsData[0]
               ? Object.keys(statsData[0])
                   .filter(key => !excludedMetrics.includes(key))
