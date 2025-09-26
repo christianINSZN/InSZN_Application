@@ -1,9 +1,24 @@
 import React, { useState, useEffect } from 'react';
 
-const FieldView = ({ playerId, year, onZoneSelect, colLabels = ['Left', 'Center', 'Right'] }) => {
+const FieldView = ({
+  playerId,
+  year,
+  onZoneSelect,
+  colLabels = ['Left', 'Center', 'Right'],
+  excludedMetrics = ['first_downs', 'fumbles_lost', 'longest', 'total_touches'],
+  metricRenames = {
+    'ypa': 'YPA',
+    'yards_per_reception': 'YPC',
+    'caught_percent': 'Catch %',
+    'contested_catch_rate': 'Contested Catch %',
+    'drop_rate': 'Drop Rate'
+  }
+}) => {
   const [selectedZone, setSelectedZone] = useState(null);
   const [depthData, setDepthData] = useState(null);
-  const [selectedMetric, setSelectedMetric] = useState(''); // Default to empty string for placeholder
+  const [selectedMetric, setSelectedMetric] = useState('');
+  const isMobile = window.innerWidth < 640;
+
   useEffect(() => {
     if (playerId && year) {
       fetch(`${process.env.REACT_APP_API_URL}/api/player_receiving_season_depth/${playerId}/${year}`)
@@ -29,39 +44,33 @@ const FieldView = ({ playerId, year, onZoneSelect, colLabels = ['Left', 'Center'
 
   const handleZoneClick = (zone) => {
     setSelectedZone(zone);
-    if (onZoneSelect && selectedMetric) { // Only call if a valid metric is selected
+    if (onZoneSelect && selectedMetric) {
       onZoneSelect({ zone, metric: selectedMetric });
     }
   };
 
   const getAvailableMetrics = () => {
-    if (!depthData) return [];
+    if (!depthData || typeof depthData !== 'object') return [];
     const metricSet = new Set();
     Object.keys(depthData).forEach(key => {
       const match = key.match(/^(left|center|right)_(deep|medium|short|behind_los)_([a-z_]+)$/);
-      if (match) metricSet.add(match[3]);
+      if (match && !excludedMetrics.includes(match[3])) {
+        metricSet.add(match[3]);
+      }
     });
-    return Array.from(metricSet);
+    return Array.from(metricSet).sort();
   };
 
   const formatMetric = (metric) => {
-    if (!metric) return 'Select Metric'; // Handle placeholder
-    return metric
+    if (!metric) return 'Select Metric';
+    return metricRenames[metric] || metric
       .split('_')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
   };
 
-  const formatZone = (zone) => {
-    if (!zone) return 'None';
-    const [position, distance] = zone.split('_');
-    const formattedPosition = position.charAt(0).toUpperCase() + position.slice(1);
-    const formattedDistance = distance === 'behind_los' ? 'Behind LOS' : distance.charAt(0).toUpperCase() + distance.slice(1);
-    return `${formattedPosition} ${formattedDistance}`;
-  };
-
   const getValue = (zone) => {
-    if (!depthData || !selectedMetric) return null; // Handle no metric selected
+    if (!depthData || !selectedMetric) return null;
     const valueKey = `${zone}_${selectedMetric}`;
     const value = depthData[valueKey];
     console.log(`Value for ${zone} with ${selectedMetric}: ${value}`);
@@ -84,15 +93,13 @@ const FieldView = ({ playerId, year, onZoneSelect, colLabels = ['Left', 'Center'
 
   return (
     <div className="bg-white rounded-lg shadow h-full">
-      <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">FieldView</h2>
-      {/* Metric Dropdown */}
-      <div className="mb-2 mt-2">
-        <label htmlFor="metric-select" className="text-gray-700 ml-36"></label>
+      <h2 className="flex items-center justify-center text-base sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 sm:h-[40px] rounded">FieldView</h2>
+      <div className="mb-2 mt-2 px-2 sm:ml-36 sm:px-4">
         <select
           id="metric-select"
           value={selectedMetric}
           onChange={(e) => setSelectedMetric(e.target.value)}
-          className="p-2 border border-gray-300 rounded text-center"
+          className="w-full sm:w-auto p-1 sm:p-2 border border-gray-300 rounded text-sm sm:text-base text-center"
         >
           <option value="" disabled>Select Metric</option>
           {getAvailableMetrics().map(metric => (
@@ -100,53 +107,81 @@ const FieldView = ({ playerId, year, onZoneSelect, colLabels = ['Left', 'Center'
           ))}
         </select>
       </div>
-      {/* Column Headers */}
-      <div className="grid grid-cols-3 gap-2 text-center font-medium text-gray-700 pl-8 text-lg">
-        {colLabels.map((label, index) => (
-          <div key={index} className="p-2">
-            {label}
-          </div>
-        ))}
-      </div>
-      {/* Grid with Row Labels and Cells */}
-      <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-0 h-4/5 mr-4">
-        {rowLabels.map((label, index) => (
-          <div
-            key={index}
-            className="flex items-center justify-center text-gray-700 font-medium p-2 pr-8 text-lg"
-            style={{
-              width: '2rem',
-              height: '8rem',
-              marginRight: '-0.5rem',
-              transform: 'rotate(-90deg)',
-              transformOrigin: 'center',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {label}
-          </div>
-        ))}
-        {zones.map((row, rowIndex) =>
-          row.map((zone, colIndex) => {
-            const value = getValue(zone);
-            const backgroundStyle = getBackgroundColor(value);
-            return (
-              <div
-                key={`${rowIndex}-${colIndex}`}
-                className={`border-0 border-gray-0 p-8 flex justify-center items-center text-lg font-bold cursor-pointer text-gray-100 ${
-                  selectedZone === zone ? 'bg-blue-200' : ''
-                }`}
-                style={{ ...backgroundStyle, gridRow: rowIndex + 1, gridColumn: colIndex + 2 }}
-                onClick={() => handleZoneClick(zone)}
-              >
-                {value !== null ? value.toFixed(1) : 'N/A'}
+      {isMobile ? (
+        <div className="space-y-2 px-2">
+          {rowLabels.map((rowLabel, rowIndex) => (
+            <div key={rowIndex} className="space-y-1">
+              <div className="text-center font-medium text-gray-700 text-xs">{rowLabel}</div>
+              <div className="grid grid-cols-3 gap-0">
+                {colLabels.map((colLabel, colIndex) => (
+                  <div key={colIndex} className="text-center font-medium text-gray-700 text-xs p-1">
+                    {colLabel}
+                  </div>
+                ))}
+                {zones[rowIndex].map((zone, colIndex) => {
+                  const value = getValue(zone);
+                  const backgroundStyle = getBackgroundColor(value);
+                  return (
+                    <div
+                      key={`${rowIndex}-${colIndex}`}
+                      className={`border-2 p-0.5 flex justify-center items-center text-xs font-bold cursor-pointer text-gray-100 h-16 ${selectedZone === zone ? 'border-black' : 'border-white'}`}
+                      style={{ ...backgroundStyle }}
+                      onClick={() => handleZoneClick(zone)}
+                    >
+                      {value !== null ? value.toFixed(1) : 'N/A'}
+                    </div>
+                  );
+                })}
               </div>
-            );
-          })
-        )}
-      </div>
-      <div className="mt-2 text-lg text-gray-800 text-center text-bold">
-        <p>Selected Zone: {formatZone(selectedZone)}</p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-3 gap-2 text-center font-medium text-gray-700 pl-8 text-lg">
+            {colLabels.map((label, index) => (
+              <div key={index} className="p-2">
+                {label}
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-0 h-4/5 mr-4">
+            {rowLabels.map((label, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-center text-gray-700 font-medium p-2 pr-8 text-lg"
+                style={{
+                  width: '2rem',
+                  height: '8rem',
+                  marginRight: '-0.5rem',
+                  transform: 'rotate(-90deg)',
+                  transformOrigin: 'center',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {label}
+              </div>
+            ))}
+            {zones.map((row, rowIndex) =>
+              row.map((zone, colIndex) => {
+                const value = getValue(zone);
+                const backgroundStyle = getBackgroundColor(value);
+                return (
+                  <div
+                    key={`${rowIndex}-${colIndex}`}
+                    className={`border-2 p-8 flex justify-center items-center text-lg font-bold cursor-pointer text-gray-100 ${selectedZone === zone ? 'border-black' : 'border-white'}`}
+                    style={{ ...backgroundStyle, gridRow: rowIndex + 1, gridColumn: colIndex + 2 }}
+                    onClick={() => handleZoneClick(zone)}
+                  >
+                    {value !== null ? value.toFixed(1) : 'N/A'}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </>
+      )}
+      <div className="mt-2 text-sm sm:text-lg text-gray-800 text-center font-bold px-2 sm:px-4">
         <p>Selected Metric: {formatMetric(selectedMetric)}</p>
       </div>
     </div>
