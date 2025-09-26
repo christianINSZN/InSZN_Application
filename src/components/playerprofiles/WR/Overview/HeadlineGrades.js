@@ -9,8 +9,9 @@ const HeadlineGrades = ({
   percentileGrades,
   weeklyGrades,
   teamGames,
-  width = '50%',
+  width = '95%',
   height = '50%',
+  className = "text-sm sm:text-base"
 }) => {
   const convertToLetterGrade = (value) => {
     if (value === 'N/A' || value === null || value === undefined) return 'N/A';
@@ -18,17 +19,17 @@ const HeadlineGrades = ({
     if (isNaN(numValue)) return 'N/A';
     if (numValue >= 100) return '#1';
     if (numValue >= 95) return 'A+';
-    if (numValue >= 90) return 'A';
-    if (numValue >= 85) return 'A-';
-    if (numValue >= 80) return 'B+';
-    if (numValue >= 75) return 'B';
-    if (numValue >= 70) return 'B-';
-    if (numValue >= 65) return 'C+';
-    if (numValue >= 60) return 'C';
-    if (numValue >= 55) return 'C-';
-    if (numValue >= 50) return 'D+';
-    if (numValue >= 45) return 'D';
-    if (numValue >= 40) return 'D-';
+    if (numValue >= 87.91666667) return 'A';
+    if (numValue >= 80.83333333) return 'A-';
+    if (numValue >= 73.75) return 'B+';
+    if (numValue >= 66.66666667) return 'B';
+    if (numValue >= 59.58333333) return 'B-';
+    if (numValue >= 52.5) return 'C+';
+    if (numValue >= 45.41666667) return 'C';
+    if (numValue >= 38.33333333) return 'C-';
+    if (numValue >= 31.25) return 'D+';
+    if (numValue >= 24.16666667) return 'D';
+    if (numValue >= 17.08333333) return 'D-';
     return 'F';
   };
 
@@ -55,16 +56,20 @@ const HeadlineGrades = ({
   };
 
   const chartRef = useRef(null);
+  const mobileChartRef = useRef(null);
+  const isMobile = window.innerWidth < 640;
 
   useEffect(() => {
-    if (chartRef.current) {
-      chartRef.current.destroy();
+    const chartInstance = isMobile ? mobileChartRef.current : chartRef.current;
+    if (chartInstance) {
+      chartInstance.destroy();
       console.log('Previous chart destroyed');
     }
     if (isPopupOpen && selectedGrade) {
-      const canvas = document.getElementById('trendChart');
+      const canvasId = isMobile ? 'mobileTrendChart' : 'trendChart';
+      const canvas = document.getElementById(canvasId);
       if (!canvas || !canvas.getContext) {
-        console.warn('Canvas not available for trendChart');
+        console.warn(`Canvas not available for ${canvasId}`);
         return;
       }
       const ctx = canvas.getContext('2d');
@@ -117,7 +122,35 @@ const HeadlineGrades = ({
       const buffer = (maxValue - minValue) * 0.1;
       const yMin = Math.max(0, minValue - buffer);
       const yMax = maxValue;
-      chartRef.current = new Chart(ctx, {
+      const chartOptions = isMobile
+        ? {
+            scales: {
+              x: {
+                title: { display: false, text: 'Opponent' },
+                ticks: { autoSkip: false, maxRotation: 45, minRotation: 45, labelOffset: 10, font: { size: 10 } },
+              },
+              y: {
+                title: { display: true, text: 'Grade', font: { size: 12 } },
+                beginAtZero: true,
+                min: yMin,
+                max: yMax,
+                ticks: { stepSize: (yMax - yMin) / 5, font: { size: 10 } },
+              },
+            },
+            plugins: { legend: { display: true, position: 'top' }, tooltip: { mode: 'index', intersect: false } },
+            responsive: true,
+            maintainAspectRatio: false,
+          }
+        : {
+            scales: {
+              x: { title: { display: false, text: 'Opponent' }, ticks: { autoSkip: false, maxRotation: 45, minRotation: 45, labelOffset: 10 } },
+              y: { title: { display: true, text: 'Grade' }, beginAtZero: true, min: yMin, max: yMax, ticks: { stepSize: (yMax - yMin) / 5 } },
+            },
+            plugins: { legend: { display: true, position: 'top' }, tooltip: { mode: 'index', intersect: false } },
+            responsive: true,
+            maintainAspectRatio: false,
+          };
+      const newChart = new Chart(ctx, {
         type: 'line',
         data: {
           labels,
@@ -132,19 +165,89 @@ const HeadlineGrades = ({
             pointHoverRadius: 7,
           }],
         },
-        options: {
-          scales: {
-            x: { title: { display: false, text: 'Opponent' }, ticks: { autoSkip: false, maxRotation: 45, minRotation: 45, labelOffset: 10 } },
-            y: { title: { display: true, text: 'Grade' }, beginAtZero: true, min: yMin, max: yMax, ticks: { stepSize: (yMax - yMin) / 5 } },
-          },
-          plugins: { legend: { display: true, position: 'top' }, tooltip: { mode: 'index', intersect: false } },
-          responsive: true,
-          maintainAspectRatio: false,
-        },
+        options: chartOptions,
       });
+      if (isMobile) {
+        mobileChartRef.current = newChart;
+      } else {
+        chartRef.current = newChart;
+      }
       console.log('Line chart created successfully for', selectedGrade);
     }
-  }, [isPopupOpen, selectedGrade, weeklyGrades, teamGames]);
+  }, [isPopupOpen, selectedGrade, weeklyGrades, teamGames, isMobile]);
+
+  if (isMobile) {
+    return (
+      <div className="h-auto bg-white rounded-lg shadow-lg">
+        <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Headline Grades</h2>
+        <div className="grid grid-cols-1 gap-4 mb-4 h-auto">
+          <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[120px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Overall Offense Grade'); }}>
+            <h3 className="text-sm font-medium">Overall Offense</h3>
+            <p className="text-2xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Overall Offense Grade'))}</p>
+            <p className="text-[10px] text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Overall Offense Grade'))}</p>
+          </div>
+          <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[120px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Receiving Grade'); }}>
+            <h3 className="text-sm font-medium">Overall Receiving</h3>
+            <p className="text-2xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Receiving Grade'))}</p>
+            <p className="text-[10px] text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Receiving Grade'))}</p>
+          </div>
+          <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[120px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Rushing Grade'); }}>
+            <h3 className="text-sm font-medium">Overall Rushing</h3>
+            <p className="text-2xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Rushing Grade'))}</p>
+            <p className="text-[10px] text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Rushing Grade'))}</p>
+          </div>
+          <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[120px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('BLOS Route Grade'); }}>
+            <h3 className="text-xs font-medium">BLOS Route</h3>
+            <p className="text-2xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('BLOS Route Grade'))}</p>
+            <p className="text-[10px] text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('BLOS Route Grade'))}</p>
+          </div>
+          <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[120px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Short Route Grade'); }}>
+            <h3 className="text-xs font-medium">Short Route</h3>
+            <p className="text-2xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Short Route Grade'))}</p>
+            <p className="text-[10px] text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Short Route Grade'))}</p>
+          </div>
+          <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[120px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Medium Route Grade'); }}>
+            <h3 className="text-xs font-medium">Medium Route</h3>
+            <p className="text-2xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Medium Route Grade'))}</p>
+            <p className="text-[10px] text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Medium Route Grade'))}</p>
+          </div>
+          <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[120px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Deep Route Grade'); }}>
+            <h3 className="text-xs font-medium">Deep Route</h3>
+            <p className="text-2xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Deep Route Grade'))}</p>
+            <p className="text-[10px] text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Deep Route Grade'))}</p>
+          </div>
+          <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[120px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Zone Coverage Route Grade'); }}>
+            <h3 className="text-xs font-medium">Against Zone</h3>
+            <p className="text-2xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Zone Coverage Route Grade'))}</p>
+            <p className="text-[10px] text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Zone Coverage Route Grade'))}</p>
+          </div>
+          <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[120px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Man Coverage Route Grade'); }}>
+            <h3 className="text-xs font-medium">Against Man</h3>
+            <p className="text-2xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Man Coverage Route Grade'))}</p>
+            <p className="text-[10px] text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Man Coverage Route Grade'))}</p>
+          </div>
+        </div>
+        {isPopupOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-2 rounded-lg shadow-lg w-[95%] h-[50%] flex flex-col">
+              <h3 className="text-sm font-semibold mb-1">{selectedGrade}</h3>
+              <div className="flex-1 overflow-auto" style={{ maxHeight: '275px' }}>
+                <canvas id="mobileTrendChart" className="w-full h-full" />
+              </div>
+              <div className="mt-1 flex justify-end">
+                <button
+                  className="bg-red-500 text-white p-1 rounded hover:bg-red-700"
+                  onClick={() => setIsPopupOpen(false)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="h-80 bg-white rounded-lg shadow-lg">
@@ -168,34 +271,34 @@ const HeadlineGrades = ({
       </div>
       <div className="grid grid-cols-6 gap-2 h-[40%]">
         <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('BLOS Route Grade'); }}>
-          <h3 className="text-sm font-medium">BLOS Grade</h3>
+          <h3 className="text-sm font-medium">BLOS Route</h3>
           <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('BLOS Route Grade'))}</p>
-          <p className="text-xs text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('BLOS Route Grade'))}</p>
+          <p className="text-[11px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('BLOS Route Grade'))}</p>
         </div>
         <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Short Route Grade'); }}>
-          <h3 className="text-sm font-medium">Short Grade</h3>
+          <h3 className="text-sm font-medium">Short Route</h3>
           <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Short Route Grade'))}</p>
-          <p className="text-xs text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Short Route Grade'))}</p>
+          <p className="text-[11px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('Short Route Grade'))}</p>
         </div>
         <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Medium Route Grade'); }}>
-          <h3 className="text-sm font-medium">Medium Grade</h3>
+          <h3 className="text-sm font-medium">Medium Route</h3>
           <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Medium Route Grade'))}</p>
-          <p className="text-xs text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Medium Route Grade'))}</p>
+          <p className="text-[11px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('Medium Route Grade'))}</p>
         </div>
         <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Deep Route Grade'); }}>
-          <h3 className="text-sm font-medium">Deep Grade</h3>
+          <h3 className="text-sm font-medium">Deep Route</h3>
           <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Deep Route Grade'))}</p>
-          <p className="text-xs text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Deep Route Grade'))}</p>
+          <p className="text-[11px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('Deep Route Grade'))}</p>
         </div>
         <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Zone Coverage Route Grade'); }}>
           <h3 className="text-sm font-medium">Against Zone</h3>
           <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Zone Coverage Route Grade'))}</p>
-          <p className="text-xs text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Zone Coverage Route Grade'))}</p>
+          <p className="text-[11px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('Zone Coverage Route Grade'))}</p>
         </div>
         <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Man Coverage Route Grade'); }}>
           <h3 className="text-sm font-medium">Against Man</h3>
           <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Man Coverage Route Grade'))}</p>
-          <p className="text-xs text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Man Coverage Route Grade'))}</p>
+          <p className="text-[11px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('Man Coverage Route Grade'))}</p>
         </div>
       </div>
       {isPopupOpen && (

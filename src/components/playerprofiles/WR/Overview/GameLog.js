@@ -140,7 +140,7 @@ const GameLog = ({ teamGames, weeklyGrades, year, className = "text-sm sm:text-b
                   {columns.map(col => (
                     <td
                       key={col.key}
-                      className={`p-0.5 text-[10px] text-middle ${className}`}
+                      className="p-0.5 text-[10px] text-middle"
                       style={{ verticalAlign: 'middle', lineHeight: '1.1', textAlign: col.align === 'middle' ? 'center' : 'left' }}
                     >
                       {data[col.key]}
@@ -151,7 +151,7 @@ const GameLog = ({ teamGames, weeklyGrades, year, className = "text-sm sm:text-b
             })
           ) : (
             <tr>
-              <td colSpan={columns.length} className={`p-2 sm:p-4 text-center text-gray-500 ${className}`}>
+              <td colSpan={columns.length} className="p-2 sm:p-4 text-center text-gray-500">
                 No game data available
               </td>
             </tr>
@@ -165,7 +165,7 @@ const GameLog = ({ teamGames, weeklyGrades, year, className = "text-sm sm:text-b
     <div className="bg-gray-100 p-2 sm:p-4 rounded-lg shadow-lg">
       <div className="sm:hidden mb-2">
         <button
-          className="bg-[#235347] text-white px-3 py-1 rounded hover:bg-[#1b3e32] text-[12px] sm:text-sm"
+          className="bg-[#235347] text-white px-3 py-1 rounded hover:bg-[#1b3e32] text-sm"
           onClick={() => setShowFullColumns(!showFullColumns)}
         >
           {showFullColumns ? 'Display Basic Log' : 'Display Full Log'}
@@ -184,9 +184,9 @@ const GameLog = ({ teamGames, weeklyGrades, year, className = "text-sm sm:text-b
       {showComingSoon && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-4 sm:p-6 rounded-lg shadow-xl w-[90%] sm:w-auto h-[50%] sm:h-auto">
-            <p className={`text-[12px] sm:text-lg font-semibold text-black ${className}`}>Game Recaps Coming Soon</p>
+            <p className="text-sm sm:text-lg font-semibold text-black">Game Recaps Coming Soon</p>
             <button
-              className="mt-2 sm:mt-4 px-3 sm:px-4 py-1 sm:py-2 bg-[#235347] text-white rounded hover:bg-[#1b3e32] text-[12px] sm:text-sm"
+              className="mt-2 sm:mt-4 px-3 sm:px-4 py-1 sm:py-2 bg-[#235347] text-white rounded hover:bg-[#1b3e32] text-sm"
               onClick={() => setShowFullColumns(false)}
             >
               Close
