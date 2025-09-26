@@ -277,34 +277,32 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
     <div className={`bg-white rounded-lg shadow-xl ${className}`}>
       <h2 className="flex items-center justify-center text-base sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 sm:h-[40px] rounded">Head-to-Head</h2>
       {isMobile ? (
-        <div className="flex flex-col gap-2 p-2">
-          <div className="flex flex-col items-center gap-2 mb-2">
-            <div className="flex justify-center items-center gap-2">
-              <div className="w-40">
-                <Select
-                  value={player1}
-                  onChange={setPlayer1}
-                  options={playerOptions}
-                  className="mt-1"
-                  classNamePrefix="react-select"
-                  placeholder="Select Player..."
-                  isSearchable={true}
-                  isDisabled={true}
-                />
-              </div>
-              <div className="w-20">
-                <Select
-                  value={year1 ? { value: year1, label: year1.toString() } : null}
-                  onChange={(selected) => setYear1(selected ? selected.value : null)}
-                  options={yearOptions1}
-                  className="mt-1"
-                  classNamePrefix="react-select"
-                  placeholder="Year"
-                  isDisabled={true}
-                />
-              </div>
+        <div className="flex flex-col gap-4 p-2">
+          <div className="flex flex-row items-center justify-center gap-2">
+            <div className="w-40">
+              <Select
+                value={player1}
+                onChange={setPlayer1}
+                options={playerOptions}
+                className="mt-1"
+                classNamePrefix="react-select"
+                placeholder="Select Player..."
+                isSearchable={true}
+                isDisabled={true}
+              />
             </div>
-            <div className="w-[150px] h-[111px] bg-white mx-auto shadow-xl border-2 border-[#235347]">
+            <div className="w-20">
+              <Select
+                value={year1 ? { value: year1, label: year1.toString() } : null}
+                onChange={(selected) => setYear1(selected ? selected.value : null)}
+                options={yearOptions1}
+                className="mt-1"
+                classNamePrefix="react-select"
+                placeholder="Year"
+                isDisabled={true}
+              />
+            </div>
+            <div className="w-[100px] h-[74px] bg-white shadow-xl border-2 border-[#235347]">
               {headshotUrl1 ? (
                 <img src={headshotUrl1} alt={`${player1?.label} headshot`} className="w-full h-full object-cover rounded" />
               ) : (
@@ -312,32 +310,30 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
               )}
             </div>
           </div>
-          <div className="flex flex-col items-center gap-2 mb-2">
-            <div className="flex justify-center items-center gap-2">
-              <div className="w-20">
-                <Select
-                  value={year2 ? { value: year2, label: year2.toString() } : null}
-                  onChange={(selected) => setYear2(selected ? selected.value : null)}
-                  options={yearOptions2}
-                  className="mt-1"
-                  classNamePrefix="react-select"
-                  placeholder="Year"
-                  isDisabled={!player2}
-                />
-              </div>
-              <div className="w-40">
-                <Select
-                  value={player2}
-                  onChange={setPlayer2}
-                  options={playerOptions}
-                  className="mt-1"
-                  classNamePrefix="react-select"
-                  placeholder="Select Player..."
-                  isSearchable={true}
-                />
-              </div>
+          <div className="flex flex-row items-center justify-center gap-2">
+            <div className="w-20">
+              <Select
+                value={year2 ? { value: year2, label: year2.toString() } : null}
+                onChange={(selected) => setYear2(selected ? selected.value : null)}
+                options={yearOptions2}
+                className="mt-1"
+                classNamePrefix="react-select"
+                placeholder="Year"
+                isDisabled={!player2}
+              />
             </div>
-            <div className="w-[150px] h-[111px] bg-white mx-auto shadow-xl border-2 border-[#235347]">
+            <div className="w-40">
+              <Select
+                value={player2}
+                onChange={setPlayer2}
+                options={playerOptions}
+                className="mt-1"
+                classNamePrefix="react-select"
+                placeholder="Select Player..."
+                isSearchable={true}
+              />
+            </div>
+            <div className="w-[100px] h-[74px] bg-white shadow-xl border-2 border-[#235347]">
               {headshotUrl2 ? (
                 <img src={headshotUrl2} alt={`${player2?.label} headshot`} className="w-full h-full object-cover rounded" />
               ) : (
@@ -398,16 +394,16 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
                             ✕
                           </button>
                         </div>
-                        <div className="w-[100%] flex justify-center relative" style={{ height: '16px' }}>
+                        <div className="w-[100%] flex justify-center relative" style={{ height: isMobile ? '16px' : '24px' }}>
                           <span className="absolute left-0 text-left pr-2 text-xs sm:text-base">{metric.p1Value}</span>
                           <div className="w-5/6 flex">
-                            <div className="bg-blue-800 h-4 rounded-l" style={{ width: `${p1Width}%` }}></div>
-                            <div className="bg-rose-800 h-4 rounded-r" style={{ width: `${p2Width}%` }}></div>
+                            <div className="bg-blue-800 h-4 sm:h-6 rounded-l" style={{ width: `${p1Width}%` }}></div>
+                            <div className="bg-rose-800 h-4 sm:h-6 rounded-r" style={{ width: `${p2Width}%` }}></div>
                           </div>
                           <span className="absolute right-0 text-right pl-2 text-xs sm:text-base">{metric.p2Value}</span>
                           <div
                             className="absolute w-[1px] bg-black"
-                            style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)', height: '16px' }}
+                            style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)', height: isMobile ? '16px' : '24px' }}
                           ></div>
                         </div>
                       </div>
@@ -433,16 +429,16 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
                             ✕
                           </button>
                         </div>
-                        <div className="w-[100%] flex justify-center relative" style={{ height: '16px' }}>
+                        <div className="w-[100%] flex justify-center relative" style={{ height: isMobile ? '16px' : '24px' }}>
                           <span className="absolute left-0 text-left pr-2 text-xs sm:text-base">{metric.p1Value}</span>
                           <div className="w-5/6 flex">
-                            <div className="bg-blue-800 h-4 rounded-l" style={{ width: `${p1Width}%` }}></div>
-                            <div className="bg-rose-800 h-4 rounded-r" style={{ width: `${p2Width}%` }}></div>
+                            <div className="bg-blue-800 h-4 sm:h-6 rounded-l" style={{ width: `${p1Width}%` }}></div>
+                            <div className="bg-rose-800 h-4 sm:h-6 rounded-r" style={{ width: `${p2Width}%` }}></div>
                           </div>
                           <span className="absolute right-0 text-right pl-2 text-xs sm:text-base">{metric.p2Value}</span>
                           <div
                             className="absolute w-[1px] bg-black"
-                            style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)', height: '16px' }}
+                            style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)', height: isMobile ? '16px' : '24px' }}
                           ></div>
                         </div>
                       </div>
@@ -487,16 +483,16 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
                               ✕
                             </button>
                           </div>
-                          <div className="w-[100%] flex justify-center relative" style={{ height: '16px' }}>
+                          <div className="w-[100%] flex justify-center relative" style={{ height: isMobile ? '16px' : '24px' }}>
                             <span className="absolute left-0 text-left pr-2 text-xs sm:text-base">{metric.p1Value}</span>
                             <div className="w-5/6 flex">
-                              <div className="bg-blue-800 h-4 rounded-l" style={{ width: `${p1Width}%` }}></div>
-                              <div className="bg-rose-800 h-4 rounded-r" style={{ width: `${p2Width}%` }}></div>
+                              <div className="bg-blue-800 h-4 sm:h-6 rounded-l" style={{ width: `${p1Width}%` }}></div>
+                              <div className="bg-rose-800 h-4 sm:h-6 rounded-r" style={{ width: `${p2Width}%` }}></div>
                             </div>
                             <span className="absolute right-0 text-right pl-2 text-xs sm:text-base">{metric.p2Value}</span>
                             <div
                               className="absolute w-[1px] bg-black"
-                              style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)', height: '16px' }}
+                              style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)', height: isMobile ? '16px' : '24px' }}
                             ></div>
                           </div>
                         </div>
