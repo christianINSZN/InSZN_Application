@@ -92,7 +92,7 @@ function TeamsComponent({ year = '2025' }) {
   const sortedConferences = Object.keys(teamsByConference).sort();
 
   return (
-    <div className="p-0 shadow-xl rounded-lg">
+    <div className="p-0 shadow-xl rounded-lg mt-0 sm:mt-12">
       <div className="mb-6 mt-3 gap-4 items-end bg-gray-200 p-2 rounded-lg shadow-xl">
         <div className="flex flex-wrap gap-4 items-end">
           <div className="w-full md:w-auto flex-1">

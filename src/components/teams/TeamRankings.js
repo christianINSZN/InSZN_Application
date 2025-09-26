@@ -265,7 +265,7 @@ function TeamsRankings({ year = '2025', week = '4' }) {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full mt-0 sm:mt-12">
       <NavBar />
       <div className=" px-4 mx-auto">
         <div className="mb-6 mt-3 gap-4 items-end bg-gray-0 p-2 rounded-lg shadow-xl">

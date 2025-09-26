@@ -14,14 +14,24 @@ function NavBar() {
   const teamsDropdownRef = useRef(null);
   const profileDropdownRef = useRef(null);
   const hamburgerRef = useRef(null);
+  const teamsButtonRef = useRef(null);
+  const profileButtonRef = useRef(null);
   const { isSignedIn, user } = useUser();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (teamsDropdownRef.current && !teamsDropdownRef.current.contains(event.target)) {
+      if (
+        teamsDropdownRef.current && 
+        !teamsDropdownRef.current.contains(event.target) && 
+        (!teamsButtonRef.current || !teamsButtonRef.current.contains(event.target))
+      ) {
         setIsTeamsDropdownOpen(false);
       }
-      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target)) {
+      if (
+        profileDropdownRef.current && 
+        !profileDropdownRef.current.contains(event.target) && 
+        (!profileButtonRef.current || !profileButtonRef.current.contains(event.target))
+      ) {
         setIsProfileDropdownOpen(false);
       }
       if (hamburgerRef.current && !hamburgerRef.current.contains(event.target)) {
@@ -33,6 +43,13 @@ function NavBar() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  // Handle click for mobile dropdown links to ensure navigation and close dropdowns
+  const handleMobileLinkClick = () => {
+    console.log('Mobile link clicked');
+    setIsTeamsDropdownOpen(false);
+    setIsHamburgerOpen(false);
+  };
 
   return (
     <div className="w-full fixed top-0 left-0 z-10">
@@ -58,7 +75,6 @@ function NavBar() {
               {isHamburgerOpen ? <HiX className="h-8 w-8" /> : <HiMenu className="h-8 w-8" />}
             </button>
           </div>
-
           {/* Desktop: Main navigation (centered) */}
           <div className="hidden sm:flex absolute left-1/2 transform -translate-x-1/2 items-center justify-center gap-4 sm:gap-6">
             <div className="flex items-center">
@@ -112,12 +128,12 @@ function NavBar() {
               </Link>
             </div>
           </div>
-
           {/* Desktop: Profile or Sign In/Sign Up (right-aligned) */}
           <div className="hidden sm:flex items-center ml-auto">
             {isSignedIn ? (
               <div className="relative" ref={profileDropdownRef}>
                 <button
+                  ref={profileButtonRef}
                   onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
                   className="flex items-center space-x-2 text-white px-3 py-2 rounded text-base sm:text-lg focus:outline-none"
                 >
@@ -155,36 +171,41 @@ function NavBar() {
               </div>
             )}
           </div>
-
           {/* Mobile: Hamburger Dropdown */}
           {isHamburgerOpen && (
-            <div ref={hamburgerRef} className="sm:hidden absolute top-[64px] left-0 w-full bg-white border-b-2 border-[#235347] shadow-lg z-20">
+            <div ref={hamburgerRef} className="sm:hidden absolute top-[64px] left-0 w-full bg-white border-b-2 border-[#235347] shadow-lg z-30">
               <ul className="flex flex-col items-start p-4 space-y-2">
                 <li>
                   <Link
                     to="/players"
                     className="flex items-center space-x-2 text-black hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base"
-                    onClick={() => setIsHamburgerOpen(false)}
+                    onClick={() => handleMobileLinkClick()}
                   >
                     <BsFillPersonFill /> <span>Players</span>
                   </Link>
                 </li>
-                <li className="relative w-full">
+                <li className="relative w-full" ref={teamsDropdownRef}>
                   <button
-                    onClick={() => setIsTeamsDropdownOpen(!isTeamsDropdownOpen)}
+                    ref={teamsButtonRef}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      console.log('Teams button clicked, isTeamsDropdownOpen:', !isTeamsDropdownOpen);
+                      setIsTeamsDropdownOpen(!isTeamsDropdownOpen);
+                    }}
                     className="flex items-center space-x-2 text-black hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base w-full text-left"
                   >
                     <RiTeamFill /> <span>Teams</span>
                   </button>
                   {isTeamsDropdownOpen && (
-                    <ul className="pl-6 space-y-2">
+                    <ul className="pl-6 space-y-2 z-40">
                       <li>
                         <Link
                           to="/teams"
                           className="block px-4 py-2 text-black hover:bg-[#235347]/70 hover:text-white text-base"
-                          onClick={() => {
-                            setIsTeamsDropdownOpen(false);
-                            setIsHamburgerOpen(false);
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            console.log('Navigating to /teams');
+                            handleMobileLinkClick();
                           }}
                         >
                           By Conference
@@ -194,9 +215,10 @@ function NavBar() {
                         <Link
                           to="/team_rankings"
                           className="block px-4 py-2 text-black hover:bg-[#235347]/70 hover:text-white text-base"
-                          onClick={() => {
-                            setIsTeamsDropdownOpen(false);
-                            setIsHamburgerOpen(false);
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            console.log('Navigating to /team_rankings');
+                            handleMobileLinkClick();
                           }}
                         >
                           Rankings
@@ -209,7 +231,7 @@ function NavBar() {
                   <Link
                     to="/h2h"
                     className="flex items-center space-x-2 text-black hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base"
-                    onClick={() => setIsHamburgerOpen(false)}
+                    onClick={() => handleMobileLinkClick()}
                   >
                     <MdPeople /> <span>H2H</span>
                   </Link>
@@ -218,21 +240,26 @@ function NavBar() {
                   <Link
                     to="/subscribe"
                     className="flex items-center space-x-2 text-black hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base"
-                    onClick={() => setIsHamburgerOpen(false)}
+                    onClick={() => handleMobileLinkClick()}
                   >
                     <MdOutlineJoinFull /> <span>Subscribe</span>
                   </Link>
                 </li>
                 {isSignedIn ? (
-                  <li className="relative w-full">
+                  <li className="relative w-full" ref={profileDropdownRef}>
                     <button
-                      onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                      ref={profileButtonRef}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        console.log('Profile button clicked, isProfileDropdownOpen:', !isProfileDropdownOpen);
+                        setIsProfileDropdownOpen(!isProfileDropdownOpen);
+                      }}
                       className="flex items-center space-x-2 text-black hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base w-full text-left"
                     >
                       <CgProfile className="text-2xl" /> <span>Profile</span>
                     </button>
                     {isProfileDropdownOpen && (
-                      <ul className="pl-6 space-y-2">
+                      <ul className="pl-6 space-y-2 z-40">
                         <li className="px-4 py-2 text-black text-base">
                           {user.primaryEmailAddress?.emailAddress || 'No email'}
                         </li>
@@ -240,7 +267,7 @@ function NavBar() {
                           <SignOutButton>
                             <button
                               className="block w-full text-left px-4 py-2 text-black hover:bg-[#235347]/70 hover:text-white text-base"
-                              onClick={() => setIsHamburgerOpen(false)}
+                              onClick={() => handleMobileLinkClick()}
                             >
                               Logout
                             </button>
@@ -255,7 +282,7 @@ function NavBar() {
                       <Link
                         to="/sign-up"
                         className="flex items-center space-x-2 text-black hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base"
-                        onClick={() => setIsHamburgerOpen(false)}
+                        onClick={() => handleMobileLinkClick()}
                       >
                         <span>Sign Up</span>
                       </Link>
@@ -264,7 +291,7 @@ function NavBar() {
                       <Link
                         to="/sign-in"
                         className="flex items-center space-x-2 text-black hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base"
-                        onClick={() => setIsHamburgerOpen(false)}
+                        onClick={() => handleMobileLinkClick()}
                       >
                         <span>Sign In</span>
                       </Link>
