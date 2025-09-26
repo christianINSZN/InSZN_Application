@@ -10,8 +10,9 @@ function TopTeams() {
   const year = 2025;
   const week = 5;
   const navigate = useNavigate();
-  const columnHelper = createColumnHelper();
+  const isMobile = window.innerWidth < 640;
 
+  const columnHelper = createColumnHelper();
   const columns = useMemo(() => [
     columnHelper.accessor('school', {
       id: 'School',
@@ -126,7 +127,6 @@ function TopTeams() {
       enableSorting: true,
       cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue() : 'NR'),
       meta: { mobileHidden: true },
-
       sortType: (rowA, rowB, columnId) => {
         const a = rowA.values[columnId];
         const b = rowB.values[columnId];
@@ -209,43 +209,43 @@ function TopTeams() {
 
   if (isLoading) {
     return (
-      <div className="p-2 sm:p-0 shadow-xl rounded-lg min-h-0 h-auto sm:h-full">
+      <div className="p-0 shadow-xl rounded-lg">
         <h2 className="flex items-center justify-center text-lg sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-auto sm:h-[40px] rounded">Top-25 Team Rankings</h2>
-        <p className="text-gray-500 text-center p-4">Loading...</p>
+        <p className="text-gray-500 text-center p-4 text-[10px] sm:text-xs">Loading...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-2 sm:p-0 shadow-xl rounded-lg min-h-0 h-auto sm:h-full">
+      <div className="p-0 shadow-xl rounded-lg">
         <h2 className="flex items-center justify-center text-lg sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-auto sm:h-[40px] rounded">Top-25 Team Rankings</h2>
-        <p className="text-red-500 text-center p-4">Error: {error}</p>
+        <p className="text-red-500 text-center p-4 text-[10px] sm:text-xs">Error: {error}</p>
       </div>
     );
   }
 
   if (!data.length) {
     return (
-      <div className="p-2 sm:p-0 shadow-xl rounded-lg min-h-0 h-auto sm:h-full">
+      <div className="p-0 shadow-xl rounded-lg">
         <h2 className="flex items-center justify-center text-lg sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-auto sm:h-[40px] rounded">Top-25 Team Rankings</h2>
-        <p className="text-gray-500 text-center p-4">No data available for {year}, week {week}.</p>
+        <p className="text-gray-500 text-center p-4 text-[10px] sm:text-xs">No data available for {year}, week {week}.</p>
       </div>
     );
   }
 
   return (
-    <div className="p-2 sm:p-0 shadow-xl rounded-lg min-h-0 h-auto sm:h-full border-b border-[#235347]">
+    <div className="p-0 shadow-xl rounded-lg">
       <h2 className="flex items-center justify-center text-lg sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-auto sm:h-[40px] rounded">Top-25 Team Rankings</h2>
-      <div className="sm:hidden p-2">
+      <div className="flex justify-center p-2 sm:hidden">
         <button
           onClick={() => setShowAllColumns(!showAllColumns)}
-          className="text-black hover:bg-[#235347]/70 hover:text-white px-3 py-1 rounded text-sm"
+          className="bg-[#235347] text-white text-sm font-medium py-2 px-4 rounded hover:bg-[#1c3f33]"
         >
-          {showAllColumns ? 'Show Key Columns' : 'Show All Columns'}
+          {showAllColumns ? 'Hide Extra Columns' : 'Show All Columns'}
         </button>
       </div>
-      <div className="h-auto sm:h-[420px] overflow-y-auto border-b border-[#235347]">
+      <div className={isMobile ? "h-[300px] overflow-y-auto" : "h-[420px] overflow-y-auto"}>
         <table className="w-full text-center border-collapse">
           <thead className="sticky top-0 bg-white z-0">
             {tableInstance.getHeaderGroups().map(headerGroup => (
@@ -253,7 +253,7 @@ function TopTeams() {
                 {headerGroup.headers.map(column => (
                   <th
                     key={column.id}
-                    className={`p-2 sm:p-3 text-sm sm:text-xs font-semibold border-b border-[#235347] text-black ${column.column.columnDef.meta?.mobileHidden && !showAllColumns ? 'hidden sm:table-cell' : ''} ${column.column.columnDef.enableSorting ? 'cursor-pointer' : ''}`}
+                    className={`p-${isMobile ? '2' : '3'} text-${isMobile ? '[10px]' : 'xs'} font-semibold border-b border-[#235347] text-black ${column.column.columnDef.enableSorting ? 'cursor-pointer' : ''} ${column.column.columnDef.meta?.mobileHidden && !showAllColumns ? 'hidden sm:table-cell' : ''}`}
                     style={{
                       textAlign: column.id === 'School' ? 'left' : 'center',
                       verticalAlign: 'middle',
@@ -288,7 +288,7 @@ function TopTeams() {
                 {row.getVisibleCells().map(cell => (
                   <td
                     key={cell.id}
-                    className={`p-2 sm:p-1 text-sm sm:text-xs text-black border-b border-gray-300 ${cell.column.columnDef.meta?.mobileHidden && !showAllColumns ? 'hidden sm:table-cell' : ''}`}
+                    className={`p-${isMobile ? '0.5' : '1'} text-${isMobile ? '[10px]' : 'xs'} text-black border-b border-gray-300 ${cell.column.columnDef.meta?.mobileHidden && !showAllColumns ? 'hidden sm:table-cell' : ''}`}
                     style={{
                       textAlign: cell.column.id === 'School' ? 'left' : 'center',
                       verticalAlign: 'middle',
@@ -303,7 +303,7 @@ function TopTeams() {
           </tbody>
         </table>
       </div>
-      <div className="p-2 sm:p-1 text-center text-sm">
+      <div className="p-2 text-center text-[10px] sm:text-xs">
         <Link
           to="/team_rankings"
           className="text-black hover:text-gray-900 underline underline-offset-2 inline-block cursor-pointer"
