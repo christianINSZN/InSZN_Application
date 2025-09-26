@@ -53,7 +53,7 @@ function NavBar() {
   return (
     <div className="w-full fixed top-0 left-0 z-10">
       <div
-        className="text-black text-[16px] w-full py-3 border-b-4 border-t-4 border-[#235347] bg-cover bg-center"
+        className="text-black text-[16px] w-full py-3 border-b-2 border-[#235347] bg-cover bg-center"
         style={{
           height: '64px',
           backgroundImage: 'url(/Header_Gradient.png)',
