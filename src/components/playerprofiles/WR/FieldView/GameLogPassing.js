@@ -31,6 +31,7 @@ const GameLogReceiving = ({
   const isMobile = window.innerWidth < 640;
 
   useEffect(() => {
+    // Cleanup previous charts
     if (distanceChartRef.current?.chart) {
       distanceChartRef.current.chart.destroy();
     }
@@ -38,6 +39,7 @@ const GameLogReceiving = ({
       positionChartRef.current.chart.destroy();
     }
 
+    // Aggregate data for distance donut chart
     const distanceTotals = distances.map(distance => {
       let total = 0;
       let count = 0;
@@ -60,6 +62,7 @@ const GameLogReceiving = ({
       totalDistanceValue > 0 ? (value / totalDistanceValue) * 100 : 0
     );
 
+    // Aggregate data for position donut chart
     const positionTotals = positions.map(position => {
       let total = 0;
       let count = 0;
@@ -85,18 +88,7 @@ const GameLogReceiving = ({
     setDistanceData(newDistanceData);
     setPositionData(newPositionData);
 
-    const colors = [
-      'rgba(171, 62, 86, 0.8)', // Red
-      'rgba(41, 121, 175, 0.8)', // Blue
-      'rgba(46, 123, 123, 0.8)', // Teal
-      'rgba(193, 121, 49, 0.8)', // Orange
-    ];
-
-    const formattedMetric = metricRenames[selectedMetric] || selectedMetric
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
-
+    // Initialize charts only after canvas elements are rendered
     const distanceCtx = document.getElementById('distanceDonutChart')?.getContext('2d');
     if (distanceCtx) {
       distanceChartRef.current = {
@@ -106,8 +98,8 @@ const GameLogReceiving = ({
             labels: distances.map(d => d.charAt(0).toUpperCase() + d.slice(1).replace('_', ' ')),
             datasets: [{
               data: newDistanceData,
-              backgroundColor: colors.slice(0, distances.length),
-              borderColor: colors.slice(0, distances.length).map(c => c.replace('0.8', '1')),
+              backgroundColor: colors,
+              borderColor: colors.map(c => c.replace('0.8', '1')),
               borderWidth: 1,
             }],
           },
@@ -126,7 +118,7 @@ const GameLogReceiving = ({
                 text: 'Rate (%) by Field Depth',
                 position: 'top',
                 font: { size: isMobile ? 12 : 14, weight: 'bold' },
-                color: 'rgba(35, 83, 71, 1)',
+                color: 'rgba(55, 65, 81, 1)',
               },
             },
             cutout: isMobile ? '60%' : '70%',
@@ -138,8 +130,8 @@ const GameLogReceiving = ({
               ctx.save();
               ctx.textAlign = 'center';
               ctx.textBaseline = 'middle';
-              ctx.font = isMobile ? "14px system-ui" : "18px system-ui";
-              ctx.fillStyle = 'rgba(35, 83, 71, 1)';
+              ctx.font = "18px system-ui";
+              ctx.fillStyle = 'rgba(55, 65, 81, 1)';
               ctx.fillText(formattedMetric, width / 2, height / 1.72);
               ctx.restore();
             },
@@ -189,8 +181,8 @@ const GameLogReceiving = ({
               ctx.save();
               ctx.textAlign = 'center';
               ctx.textBaseline = 'middle';
-              ctx.font = isMobile ? "14px system-ui" : "18px system-ui";
-              ctx.fillStyle = 'rgba(35, 83, 71, 1)';
+              ctx.font = "18px system-ui";
+              ctx.fillStyle = 'rgba(55, 65, 81, 1)';
               ctx.fillText(formattedMetric, width / 2, height / 1.72);
               ctx.restore();
             },
@@ -200,27 +192,43 @@ const GameLogReceiving = ({
     }
 
     return () => {
-      if (distanceChartRef.current?.chart) distanceChartRef.current.chart.destroy();
-      if (positionChartRef.current?.chart) positionChartRef.current.chart.destroy();
+      if (distanceChartRef.current?.chart) {
+        distanceChartRef.current.chart.destroy();
+      }
+      if (positionChartRef.current?.chart) {
+        positionChartRef.current.chart.destroy();
+      }
     };
-  }, [weeklyGradesContext, teamGames, selectedMetric, metricRenames]);
+  }, [weeklyGradesContext, teamGames, selectedMetric]);
+
+  const colors = [
+    'rgba(171, 62, 86, 0.8)', // Red
+    'rgba(41, 121, 175, 0.8)', // Blue
+    'rgba(46, 123, 123, 0.8)', // Teal
+    'rgba(193, 121, 49, 0.8)', // Orange
+  ];
+
+  const formattedMetric = metricRenames[selectedMetric] || selectedMetric
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 
   return (
-    <div className={`bg-white rounded-lg shadow ${className}`}>
+    <div className="bg-white rounded-lg shadow">
       <h2 className="flex items-center justify-center text-base sm:text-lg bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 sm:h-10 rounded">Rates by Field Depth and Orientation</h2>
       <div className="flex flex-col sm:grid sm:grid-cols-2 gap-2 sm:gap-4 h-auto sm:h-88 w-full">
         <div className="bg-gray-0 p-2 sm:p-4 rounded shadow h-64 sm:h-full">
           {distanceData.length && distanceData.some(v => v > 0) ? (
             <canvas id="distanceDonutChart" className="w-full h-full" />
           ) : (
-            <p className={`text-xs sm:text-sm text-gray-500 text-center ${className}`}>No data available for Distance Breakdown</p>
+            <p className="text-xs sm:text-sm text-gray-500 text-center">No data available for Distance Breakdown</p>
           )}
         </div>
         <div className="bg-gray-0 p-2 sm:p-4 rounded shadow h-64 sm:h-full">
           {positionData.length && positionData.some(v => v > 0) ? (
             <canvas id="positionDonutChart" className="w-full h-full" />
           ) : (
-            <p className={`text-xs sm:text-sm text-gray-500 text-center ${className}`}>No data available for Position Breakdown</p>
+            <p className="text-xs sm:text-sm text-gray-500 text-center">No data available for Position Breakdown</p>
           )}
         </div>
       </div>
