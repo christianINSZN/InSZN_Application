@@ -47,11 +47,9 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
   const [availableMetrics, setAvailableMetrics] = useState([]);
   const [selectedCustomMetric, setSelectedCustomMetric] = useState(null);
   const [activeTab, setActiveTab] = useState('Metrics');
-
-  // Define excluded metrics
+  const isMobile = window.innerWidth < 640;
   const excludedMetrics = ['name', 'playerId', 'year', 'team', 'school', 'position'];
 
-  // Persist year1 to localStorage
   useEffect(() => {
     localStorage.setItem('selectedYear', year1);
   }, [year1]);
@@ -139,7 +137,6 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
       try {
         const response = await fetch(`${process.env.REACT_APP_API_URL}/api/player_qb_list`);
         const data = await response.json();
-        // Deduplicate by playerId
         const uniquePlayers = Array.from(
           new Map(data.map(player => [player.playerId, player])).values()
         );
@@ -278,240 +275,476 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
 
   return (
     <div className={`bg-white rounded-lg shadow-xl ${className}`}>
-      <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Head-to-Head</h2>
-      <div className="grid grid-cols-2 text-center">
-        <div className="mb-1">
-          <div className="flex justify-center items-center mb-4 mt-4 space-x-4">
-            <div className="w-60">
-              <Select
-                value={player1}
-                onChange={setPlayer1}
-                options={playerOptions}
-                className="mt-1"
-                classNamePrefix="react-select"
-                placeholder="Select Player..."
-                isSearchable={true}
-                isDisabled={true}
-              />
-            </div>
-            <div className="w-28">
-              <Select
-                value={year1 ? { value: year1, label: year1.toString() } : null}
-                onChange={(selected) => setYear1(selected ? selected.value : null)}
-                options={yearOptions1}
-                className="mt-1"
-                classNamePrefix="react-select"
-                placeholder="Year"
-                isDisabled={true}
-              />
-            </div>
-          </div>
-          <div className="w-[250px] h-[185px] bg-white mx-auto shadow-xl border-2 border-[#235347]">
-            {headshotUrl1 ? (
-              <img src={headshotUrl1} alt={`${player1?.label} headshot`} className="w-full h-full object-cover rounded" />
-            ) : (
-              <div className="w-full h-full bg-white"></div>
-            )}
-          </div>
-        </div>
-        <div className="mb-1">
-          <div className="flex justify-center items-center mb-4 mt-4 space-x-4">
-            <div className="w-28">
-              <Select
-                value={year2 ? { value: year2, label: year2.toString() } : null}
-                onChange={(selected) => setYear2(selected ? selected.value : null)}
-                options={yearOptions2}
-                className="mt-1"
-                classNamePrefix="react-select"
-                placeholder="Year"
-                isDisabled={!player2}
-              />
-            </div>
-            <div className="w-60">
-              <Select
-                value={player2}
-                onChange={setPlayer2}
-                options={playerOptions}
-                className="mt-1"
-                classNamePrefix="react-select"
-                placeholder="Select Player..."
-                isSearchable={true}
-              />
-            </div>
-          </div>
-          <div className="w-[250px] h-[185px] bg-white mx-auto shadow-xl border-2 border-[#235347]">
-            {headshotUrl2 ? (
-              <img src={headshotUrl2} alt={`${player2?.label} headshot`} className="w-full h-full object-cover rounded" />
-            ) : (
-              <div className="w-full h-full bg-white"></div>
-            )}
-          </div>
-        </div>
-      </div>
-      <div className="text-center">
-        <div className="bg-white rounded-lg p-0 mx-auto max-w-2xl">
-          {loading && (
-            <div className="flex justify-center mb-2">
-              <div className="w-6 h-6 border-4 border-t-blue-500 border-blue-200 rounded-full animate-spin"></div>
-            </div>
-          )}
-          <div className="border-b border-gray-300">
-            <ul className="flex gap-8 justify-center p-0">
-              <li>
-                <button
-                  className={`text-[#235347] hover:text-[#235347] pb-2 border-b-2 ${activeTab === 'Metrics' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
-                  onClick={() => setActiveTab('Metrics')}
-                >
-                  Metrics
-                </button>
-              </li>
-              <li>
-                <button
-                  className={`text-[#235347] hover:text-[#235347] pb-2 border-b-2 ${activeTab === 'Grades' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
-                  onClick={() => setActiveTab('Grades')}
-                >
-                  Grades
-                </button>
-              </li>
-              <li>
-                <button
-                  className={`text-[#235347] hover:text-[#235347] pb-2 border-b-2 ${activeTab === 'Custom' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
-                  onClick={() => setActiveTab('Custom')}
-                >
-                  Custom
-                </button>
-              </li>
-            </ul>
-          </div>
-          {activeTab === 'Metrics' && (
-            <div className="space-y-1 p-4">
-              {metrics.map((metric, index) => {
-                const maxValue = Math.max(metric.p1Value, metric.p2Value) || 1;
-                const totalWidth = 100;
-                const p1Width = (metric.p1Value / maxValue) * totalWidth;
-                const p2Width = (metric.p2Value / maxValue) * totalWidth;
-                return (
-                  <div key={index} className="flex flex-col items-center">
-                    <div className="flex items-center w-full justify-center">
-                      <span className="text-gray-700 font-semibold">{metric.label}</span>
-                      <button
-                        onClick={() => removeMetric(metric.field, 'metrics')}
-                        className="ml-2 text-gray-500 hover:text-red-700 text-xs"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                    <div className="w-[130%] flex justify-center relative" style={{ height: '24px' }}>
-                      <span className="absolute left-0 text-left pr-2">{metric.p1Value}</span>
-                      <div className="w-5/6 flex">
-                        <div className="bg-blue-800 h-6 rounded-l" style={{ width: `${p1Width}%` }}></div>
-                        <div className="bg-rose-800 h-6 rounded-r" style={{ width: `${p2Width}%` }}></div>
-                      </div>
-                      <span className="absolute right-0 text-right pl-2">{metric.p2Value}</span>
-                      <div
-                        className="absolute w-[1px] bg-black"
-                        style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)', height: '24px' }}
-                      ></div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-          {activeTab === 'Grades' && (
-            <div className="space-y-1 p-4">
-              {metricsGrades.map((metric, index) => {
-                const maxValue = Math.max(metric.p1Value, metric.p2Value) || 1;
-                const totalWidth = 100;
-                const p1Width = (metric.p1Value / maxValue) * totalWidth;
-                const p2Width = (metric.p2Value / maxValue) * totalWidth;
-                return (
-                  <div key={index} className="flex flex-col items-center">
-                    <div className="flex items-center w-full justify-center">
-                      <span className="text-gray-700 font-semibold">{metric.label}</span>
-                      <button
-                        onClick={() => removeMetric(metric.field, 'grades')}
-                        className="ml-2 text-gray-500 hover:text-red-700 text-xs"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                    <div className="w-[130%] flex justify-center relative" style={{ height: '24px' }}>
-                      <span className="absolute left-0 text-left pr-2">{metric.p1Value}</span>
-                      <div className="w-5/6 flex">
-                        <div className="bg-blue-800 h-6 rounded-l" style={{ width: `${p1Width}%` }}></div>
-                        <div className="bg-rose-800 h-6 rounded-r" style={{ width: `${p2Width}%` }}></div>
-                      </div>
-                      <span className="absolute right-0 text-right pl-2">{metric.p2Value}</span>
-                      <div
-                        className="absolute w-[1px] bg-black"
-                        style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)', height: '24px' }}
-                      ></div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-          {activeTab === 'Custom' && (
-            <div className="space-y-1 p-4">
-              <div className="flex justify-center items-center mb-4">
+      <h2 className="flex items-center justify-center text-base sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 sm:h-[40px] rounded">Head-to-Head</h2>
+      {isMobile ? (
+        <div className="flex flex-col gap-2 p-2">
+          <div className="flex flex-col items-center gap-2 mb-2">
+            <div className="flex justify-center items-center gap-2">
+              <div className="w-40">
                 <Select
-                  value={selectedCustomMetric}
-                  onChange={setSelectedCustomMetric}
-                  options={availableMetrics}
-                  className="w-80 mr-2"
+                  value={player1}
+                  onChange={setPlayer1}
+                  options={playerOptions}
+                  className="mt-1"
                   classNamePrefix="react-select"
-                  placeholder="Select Metric..."
+                  placeholder="Select Player..."
                   isSearchable={true}
+                  isDisabled={true}
                 />
-                <button
-                  onClick={addCustomMetric}
-                  className="w-8 h-8 flex justify-center items-center rounded-full bg-blue-500 text-white hover:bg-blue-700"
-                  disabled={!selectedCustomMetric}
-                >
-                  +
-                </button>
               </div>
-              {customMetrics.length > 0 ? (
-                customMetrics.map((metric, index) => {
-                  const maxValue = Math.max(metric.p1Value, metric.p2Value) || 1;
-                  const totalWidth = 100;
-                  const p1Width = (metric.p1Value / maxValue) * totalWidth;
-                  const p2Width = (metric.p2Value / maxValue) * totalWidth;
-                  return (
-                    <div key={index} className="flex flex-col items-center">
-                      <div className="flex items-center w-full justify-center">
-                        <span className="text-gray-700 font-semibold">{metric.label}</span>
-                        <button
-                          onClick={() => removeMetric(metric.field, 'custom')}
-                          className="ml-2 text-gray-500 hover:text-red-700 text-xs"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                      <div className="w-[130%] flex justify-center relative" style={{ height: '24px' }}>
-                        <span className="absolute left-0 text-left pr-2">{metric.p1Value}</span>
-                        <div className="w-5/6 flex">
-                          <div className="bg-blue-800 h-6 rounded-l" style={{ width: `${p1Width}%` }}></div>
-                          <div className="bg-rose-800 h-6 rounded-r" style={{ width: `${p2Width}%` }}></div>
-                        </div>
-                        <span className="absolute right-0 text-right pl-2">{metric.p2Value}</span>
-                        <div
-                          className="absolute w-[1px] bg-black"
-                          style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)', height: '24px' }}
-                        ></div>
-                      </div>
-                    </div>
-                  );
-                })
+              <div className="w-20">
+                <Select
+                  value={year1 ? { value: year1, label: year1.toString() } : null}
+                  onChange={(selected) => setYear1(selected ? selected.value : null)}
+                  options={yearOptions1}
+                  className="mt-1"
+                  classNamePrefix="react-select"
+                  placeholder="Year"
+                  isDisabled={true}
+                />
+              </div>
+            </div>
+            <div className="w-[150px] h-[111px] bg-white mx-auto shadow-xl border-2 border-[#235347]">
+              {headshotUrl1 ? (
+                <img src={headshotUrl1} alt={`${player1?.label} headshot`} className="w-full h-full object-cover rounded" />
               ) : (
-                <p className="text-gray-500 text-center">Please Select Comparison Player</p>
+                <div className="w-full h-full bg-white"></div>
               )}
             </div>
-          )}
+          </div>
+          <div className="flex flex-col items-center gap-2 mb-2">
+            <div className="flex justify-center items-center gap-2">
+              <div className="w-20">
+                <Select
+                  value={year2 ? { value: year2, label: year2.toString() } : null}
+                  onChange={(selected) => setYear2(selected ? selected.value : null)}
+                  options={yearOptions2}
+                  className="mt-1"
+                  classNamePrefix="react-select"
+                  placeholder="Year"
+                  isDisabled={!player2}
+                />
+              </div>
+              <div className="w-40">
+                <Select
+                  value={player2}
+                  onChange={setPlayer2}
+                  options={playerOptions}
+                  className="mt-1"
+                  classNamePrefix="react-select"
+                  placeholder="Select Player..."
+                  isSearchable={true}
+                />
+              </div>
+            </div>
+            <div className="w-[150px] h-[111px] bg-white mx-auto shadow-xl border-2 border-[#235347]">
+              {headshotUrl2 ? (
+                <img src={headshotUrl2} alt={`${player2?.label} headshot`} className="w-full h-full object-cover rounded" />
+              ) : (
+                <div className="w-full h-full bg-white"></div>
+              )}
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="bg-white rounded-lg p-2 mx-auto">
+              {loading && (
+                <div className="flex justify-center mb-2">
+                  <div className="w-6 h-6 border-4 border-t-blue-500 border-blue-200 rounded-full animate-spin"></div>
+                </div>
+              )}
+              <div className="border-b border-gray-300">
+                <ul className="flex gap-4 justify-center p-0">
+                  <li>
+                    <button
+                      className={`text-[#235347] hover:text-[#235347] pb-1 text-xs sm:text-base sm:pb-2 border-b-2 ${activeTab === 'Metrics' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+                      onClick={() => setActiveTab('Metrics')}
+                    >
+                      Metrics
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      className={`text-[#235347] hover:text-[#235347] pb-1 text-xs sm:text-base sm:pb-2 border-b-2 ${activeTab === 'Grades' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+                      onClick={() => setActiveTab('Grades')}
+                    >
+                      Grades
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      className={`text-[#235347] hover:text-[#235347] pb-1 text-xs sm:text-base sm:pb-2 border-b-2 ${activeTab === 'Custom' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+                      onClick={() => setActiveTab('Custom')}
+                    >
+                      Custom
+                    </button>
+                  </li>
+                </ul>
+              </div>
+              {activeTab === 'Metrics' && (
+                <div className="space-y-1 p-2">
+                  {metrics.map((metric, index) => {
+                    const maxValue = Math.max(metric.p1Value, metric.p2Value) || 1;
+                    const totalWidth = 100;
+                    const p1Width = (metric.p1Value / maxValue) * totalWidth;
+                    const p2Width = (metric.p2Value / maxValue) * totalWidth;
+                    return (
+                      <div key={index} className="flex flex-col items-center">
+                        <div className="flex items-center w-full justify-center">
+                          <span className="text-gray-700 font-semibold text-xs sm:text-base">{metric.label}</span>
+                          <button
+                            onClick={() => removeMetric(metric.field, 'metrics')}
+                            className="ml-2 text-gray-500 hover:text-red-700 text-xs"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                        <div className="w-[100%] flex justify-center relative" style={{ height: '16px' }}>
+                          <span className="absolute left-0 text-left pr-2 text-xs sm:text-base">{metric.p1Value}</span>
+                          <div className="w-5/6 flex">
+                            <div className="bg-blue-800 h-4 rounded-l" style={{ width: `${p1Width}%` }}></div>
+                            <div className="bg-rose-800 h-4 rounded-r" style={{ width: `${p2Width}%` }}></div>
+                          </div>
+                          <span className="absolute right-0 text-right pl-2 text-xs sm:text-base">{metric.p2Value}</span>
+                          <div
+                            className="absolute w-[1px] bg-black"
+                            style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)', height: '16px' }}
+                          ></div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              {activeTab === 'Grades' && (
+                <div className="space-y-1 p-2">
+                  {metricsGrades.map((metric, index) => {
+                    const maxValue = Math.max(metric.p1Value, metric.p2Value) || 1;
+                    const totalWidth = 100;
+                    const p1Width = (metric.p1Value / maxValue) * totalWidth;
+                    const p2Width = (metric.p2Value / maxValue) * totalWidth;
+                    return (
+                      <div key={index} className="flex flex-col items-center">
+                        <div className="flex items-center w-full justify-center">
+                          <span className="text-gray-700 font-semibold text-xs sm:text-base">{metric.label}</span>
+                          <button
+                            onClick={() => removeMetric(metric.field, 'grades')}
+                            className="ml-2 text-gray-500 hover:text-red-700 text-xs"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                        <div className="w-[100%] flex justify-center relative" style={{ height: '16px' }}>
+                          <span className="absolute left-0 text-left pr-2 text-xs sm:text-base">{metric.p1Value}</span>
+                          <div className="w-5/6 flex">
+                            <div className="bg-blue-800 h-4 rounded-l" style={{ width: `${p1Width}%` }}></div>
+                            <div className="bg-rose-800 h-4 rounded-r" style={{ width: `${p2Width}%` }}></div>
+                          </div>
+                          <span className="absolute right-0 text-right pl-2 text-xs sm:text-base">{metric.p2Value}</span>
+                          <div
+                            className="absolute w-[1px] bg-black"
+                            style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)', height: '16px' }}
+                          ></div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              {activeTab === 'Custom' && (
+                <div className="space-y-1 p-2">
+                  <div className="flex justify-center items-center mb-2">
+                    <Select
+                      value={selectedCustomMetric}
+                      onChange={setSelectedCustomMetric}
+                      options={availableMetrics}
+                      className="w-48 sm:w-80 mr-2"
+                      classNamePrefix="react-select"
+                      placeholder="Select Metric..."
+                      isSearchable={true}
+                    />
+                    <button
+                      onClick={addCustomMetric}
+                      className="w-6 sm:w-8 h-6 sm:h-8 flex justify-center items-center rounded-full bg-blue-500 text-white hover:bg-blue-700 text-xs sm:text-base"
+                      disabled={!selectedCustomMetric}
+                    >
+                      +
+                    </button>
+                  </div>
+                  {customMetrics.length > 0 ? (
+                    customMetrics.map((metric, index) => {
+                      const maxValue = Math.max(metric.p1Value, metric.p2Value) || 1;
+                      const totalWidth = 100;
+                      const p1Width = (metric.p1Value / maxValue) * totalWidth;
+                      const p2Width = (metric.p2Value / maxValue) * totalWidth;
+                      return (
+                        <div key={index} className="flex flex-col items-center">
+                          <div className="flex items-center w-full justify-center">
+                            <span className="text-gray-700 font-semibold text-xs sm:text-base">{metric.label}</span>
+                            <button
+                              onClick={() => removeMetric(metric.field, 'custom')}
+                              className="ml-2 text-gray-500 hover:text-red-700 text-xs"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                          <div className="w-[100%] flex justify-center relative" style={{ height: '16px' }}>
+                            <span className="absolute left-0 text-left pr-2 text-xs sm:text-base">{metric.p1Value}</span>
+                            <div className="w-5/6 flex">
+                              <div className="bg-blue-800 h-4 rounded-l" style={{ width: `${p1Width}%` }}></div>
+                              <div className="bg-rose-800 h-4 rounded-r" style={{ width: `${p2Width}%` }}></div>
+                            </div>
+                            <span className="absolute right-0 text-right pl-2 text-xs sm:text-base">{metric.p2Value}</span>
+                            <div
+                              className="absolute w-[1px] bg-black"
+                              style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)', height: '16px' }}
+                            ></div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <p className="text-gray-500 text-center text-sm sm:text-base">Please Select Comparison Player</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="grid grid-cols-2 text-center">
+          <div className="mb-1">
+            <div className="flex justify-center items-center mb-4 mt-4 space-x-4">
+              <div className="w-60">
+                <Select
+                  value={player1}
+                  onChange={setPlayer1}
+                  options={playerOptions}
+                  className="mt-1"
+                  classNamePrefix="react-select"
+                  placeholder="Select Player..."
+                  isSearchable={true}
+                  isDisabled={true}
+                />
+              </div>
+              <div className="w-28">
+                <Select
+                  value={year1 ? { value: year1, label: year1.toString() } : null}
+                  onChange={(selected) => setYear1(selected ? selected.value : null)}
+                  options={yearOptions1}
+                  className="mt-1"
+                  classNamePrefix="react-select"
+                  placeholder="Year"
+                  isDisabled={true}
+                />
+              </div>
+            </div>
+            <div className="w-[250px] h-[185px] bg-white mx-auto shadow-xl border-2 border-[#235347]">
+              {headshotUrl1 ? (
+                <img src={headshotUrl1} alt={`${player1?.label} headshot`} className="w-full h-full object-cover rounded" />
+              ) : (
+                <div className="w-full h-full bg-white"></div>
+              )}
+            </div>
+          </div>
+          <div className="mb-1">
+            <div className="flex justify-center items-center mb-4 mt-4 space-x-4">
+              <div className="w-28">
+                <Select
+                  value={year2 ? { value: year2, label: year2.toString() } : null}
+                  onChange={(selected) => setYear2(selected ? selected.value : null)}
+                  options={yearOptions2}
+                  className="mt-1"
+                  classNamePrefix="react-select"
+                  placeholder="Year"
+                  isDisabled={!player2}
+                />
+              </div>
+              <div className="w-60">
+                <Select
+                  value={player2}
+                  onChange={setPlayer2}
+                  options={playerOptions}
+                  className="mt-1"
+                  classNamePrefix="react-select"
+                  placeholder="Select Player..."
+                  isSearchable={true}
+                />
+              </div>
+            </div>
+            <div className="w-[250px] h-[185px] bg-white mx-auto shadow-xl border-2 border-[#235347]">
+              {headshotUrl2 ? (
+                <img src={headshotUrl2} alt={`${player2?.label} headshot`} className="w-full h-full object-cover rounded" />
+              ) : (
+                <div className="w-full h-full bg-white"></div>
+              )}
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="bg-white rounded-lg p-0 mx-auto max-w-2xl">
+              {loading && (
+                <div className="flex justify-center mb-2">
+                  <div className="w-6 h-6 border-4 border-t-blue-500 border-blue-200 rounded-full animate-spin"></div>
+                </div>
+              )}
+              <div className="border-b border-gray-300">
+                <ul className="flex gap-8 justify-center p-0">
+                  <li>
+                    <button
+                      className={`text-[#235347] hover:text-[#235347] pb-2 border-b-2 ${activeTab === 'Metrics' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+                      onClick={() => setActiveTab('Metrics')}
+                    >
+                      Metrics
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      className={`text-[#235347] hover:text-[#235347] pb-2 border-b-2 ${activeTab === 'Grades' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+                      onClick={() => setActiveTab('Grades')}
+                    >
+                      Grades
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      className={`text-[#235347] hover:text-[#235347] pb-2 border-b-2 ${activeTab === 'Custom' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+                      onClick={() => setActiveTab('Custom')}
+                    >
+                      Custom
+                    </button>
+                  </li>
+                </ul>
+              </div>
+              {activeTab === 'Metrics' && (
+                <div className="space-y-1 p-4">
+                  {metrics.map((metric, index) => {
+                    const maxValue = Math.max(metric.p1Value, metric.p2Value) || 1;
+                    const totalWidth = 100;
+                    const p1Width = (metric.p1Value / maxValue) * totalWidth;
+                    const p2Width = (metric.p2Value / maxValue) * totalWidth;
+                    return (
+                      <div key={index} className="flex flex-col items-center">
+                        <div className="flex items-center w-full justify-center">
+                          <span className="text-gray-700 font-semibold">{metric.label}</span>
+                          <button
+                            onClick={() => removeMetric(metric.field, 'metrics')}
+                            className="ml-2 text-gray-500 hover:text-red-700 text-xs"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                        <div className="w-[130%] flex justify-center relative" style={{ height: '24px' }}>
+                          <span className="absolute left-0 text-left pr-2">{metric.p1Value}</span>
+                          <div className="w-5/6 flex">
+                            <div className="bg-blue-800 h-6 rounded-l" style={{ width: `${p1Width}%` }}></div>
+                            <div className="bg-rose-800 h-6 rounded-r" style={{ width: `${p2Width}%` }}></div>
+                          </div>
+                          <span className="absolute right-0 text-right pl-2">{metric.p2Value}</span>
+                          <div
+                            className="absolute w-[1px] bg-black"
+                            style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)', height: '24px' }}
+                          ></div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              {activeTab === 'Grades' && (
+                <div className="space-y-1 p-4">
+                  {metricsGrades.map((metric, index) => {
+                    const maxValue = Math.max(metric.p1Value, metric.p2Value) || 1;
+                    const totalWidth = 100;
+                    const p1Width = (metric.p1Value / maxValue) * totalWidth;
+                    const p2Width = (metric.p2Value / maxValue) * totalWidth;
+                    return (
+                      <div key={index} className="flex flex-col items-center">
+                        <div className="flex items-center w-full justify-center">
+                          <span className="text-gray-700 font-semibold">{metric.label}</span>
+                          <button
+                            onClick={() => removeMetric(metric.field, 'grades')}
+                            className="ml-2 text-gray-500 hover:text-red-700 text-xs"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                        <div className="w-[130%] flex justify-center relative" style={{ height: '24px' }}>
+                          <span className="absolute left-0 text-left pr-2">{metric.p1Value}</span>
+                          <div className="w-5/6 flex">
+                            <div className="bg-blue-800 h-6 rounded-l" style={{ width: `${p1Width}%` }}></div>
+                            <div className="bg-rose-800 h-6 rounded-r" style={{ width: `${p2Width}%` }}></div>
+                          </div>
+                          <span className="absolute right-0 text-right pl-2">{metric.p2Value}</span>
+                          <div
+                            className="absolute w-[1px] bg-black"
+                            style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)', height: '24px' }}
+                          ></div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              {activeTab === 'Custom' && (
+                <div className="space-y-1 p-4">
+                  <div className="flex justify-center items-center mb-4">
+                    <Select
+                      value={selectedCustomMetric}
+                      onChange={setSelectedCustomMetric}
+                      options={availableMetrics}
+                      className="w-80 mr-2"
+                      classNamePrefix="react-select"
+                      placeholder="Select Metric..."
+                      isSearchable={true}
+                    />
+                    <button
+                      onClick={addCustomMetric}
+                      className="w-8 h-8 flex justify-center items-center rounded-full bg-blue-500 text-white hover:bg-blue-700"
+                      disabled={!selectedCustomMetric}
+                    >
+                      +
+                    </button>
+                  </div>
+                  {customMetrics.length > 0 ? (
+                    customMetrics.map((metric, index) => {
+                      const maxValue = Math.max(metric.p1Value, metric.p2Value) || 1;
+                      const totalWidth = 100;
+                      const p1Width = (metric.p1Value / maxValue) * totalWidth;
+                      const p2Width = (metric.p2Value / maxValue) * totalWidth;
+                      return (
+                        <div key={index} className="flex flex-col items-center">
+                          <div className="flex items-center w-full justify-center">
+                            <span className="text-gray-700 font-semibold">{metric.label}</span>
+                            <button
+                              onClick={() => removeMetric(metric.field, 'custom')}
+                              className="ml-2 text-gray-500 hover:text-red-700 text-xs"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                          <div className="w-[130%] flex justify-center relative" style={{ height: '24px' }}>
+                            <span className="absolute left-0 text-left pr-2">{metric.p1Value}</span>
+                            <div className="w-5/6 flex">
+                              <div className="bg-blue-800 h-6 rounded-l" style={{ width: `${p1Width}%` }}></div>
+                              <div className="bg-rose-800 h-6 rounded-r" style={{ width: `${p2Width}%` }}></div>
+                            </div>
+                            <span className="absolute right-0 text-right pl-2">{metric.p2Value}</span>
+                            <div
+                              className="absolute w-[1px] bg-black"
+                              style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)', height: '24px' }}
+                            ></div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <p className="text-gray-500 text-center">Please Select Comparison Player</p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
