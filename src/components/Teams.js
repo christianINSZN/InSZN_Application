@@ -7,9 +7,6 @@ const conferences = [
   'Pac-12', 'SEC', 'Sun Belt'
 ];
 
-const firstRowConferences = conferences.slice(0, 13);
-const secondRowConferences = conferences.slice(13);
-
 function TeamsComponent({ year = '2025' }) {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
@@ -31,9 +28,7 @@ function TeamsComponent({ year = '2025' }) {
     if (isLoading) {
       fetch(`${process.env.REACT_APP_API_URL}/api/teams`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
       })
         .then(response => {
           if (!response.ok) {
@@ -67,11 +62,11 @@ function TeamsComponent({ year = '2025' }) {
   }, [isLoading]);
 
   if (isLoading) {
-    return <div className="p-4"><p className="text-black">Loading teams...</p></div>;
+    return <div className="p-4"><p className="text-black text-base sm:text-lg">Loading teams...</p></div>;
   }
 
   if (teamsData.length === 0) {
-    return <div className="p-4"><p className="text-black">No teams data available.</p></div>;
+    return <div className="p-4"><p className="text-black text-base sm:text-lg">No teams data available.</p></div>;
   }
 
   const filteredTeams = teamsData.filter(team => {
@@ -92,11 +87,11 @@ function TeamsComponent({ year = '2025' }) {
   const sortedConferences = Object.keys(teamsByConference).sort();
 
   return (
-    <div className="p-0 shadow-xl rounded-lg mt-0 sm:mt-12">
-      <div className="mb-6 mt-3 gap-4 items-end bg-gray-200 p-2 rounded-lg shadow-xl">
-        <div className="flex flex-wrap gap-4 items-end">
-          <div className="w-full md:w-auto flex-1">
-            <label htmlFor="teamNameFilter" className="block text-sm font-medium text-gray-700">
+    <div className="p-2 sm:p-4 shadow-xl rounded-lg mt-0 sm:mt-12">
+      <div className="mb-4 sm:mb-6 mt-3 gap-4 items-end bg-gray-200 p-2 sm:p-4 rounded-lg shadow-xl">
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+          <div className="w-full">
+            <label htmlFor="teamNameFilter" className="block text-sm sm:text-base font-medium text-gray-700 mb-1">
               Filter by Team Name
             </label>
             <input
@@ -104,8 +99,8 @@ function TeamsComponent({ year = '2025' }) {
               id="teamNameFilter"
               value={filterTeamName}
               onChange={(e) => setFilterTeamName(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded text-black"
-              placeholder="Type or scroll to select..."
+              className="w-full p-3 sm:p-2 border border-gray-300 rounded text-black text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-[#235347]"
+              placeholder="Search teams..."
             />
             <datalist id="teamNames">
               {uniqueTeamNames.map((team, index) => (
@@ -113,8 +108,8 @@ function TeamsComponent({ year = '2025' }) {
               ))}
             </datalist>
           </div>
-          <div className="w-full md:w-auto flex-1">
-            <label htmlFor="conferenceFilter" className="block text-sm font-medium text-gray-700">
+          <div className="w-full">
+            <label htmlFor="conferenceFilter" className="block text-sm sm:text-base font-medium text-gray-700 mb-1">
               Filter by Conference
             </label>
             <input
@@ -122,8 +117,8 @@ function TeamsComponent({ year = '2025' }) {
               id="conferenceFilter"
               value={filterConference}
               onChange={(e) => setFilterConference(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded text-black"
-              placeholder="Type or scroll to select..."
+              className="w-full p-3 sm:p-2 border border-gray-300 rounded text-black text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-[#235347]"
+              placeholder="Search conferences..."
             />
             <datalist id="conferences">
               {uniqueConferences.map((conference, index) => (
@@ -133,13 +128,13 @@ function TeamsComponent({ year = '2025' }) {
           </div>
         </div>
       </div>
-      <div className="border-b border-gray-300 mb-4">
-        <ul className="flex flex-wrap gap-4 justify-center p-4">
-          <div className="flex flex-wrap gap-4 justify-center">
-            {firstRowConferences.map(conference => (
+      <div className="border-b border-gray-300 mb-4 sm:mb-6">
+        <div className="overflow-x-auto whitespace-nowrap py-2">
+          <ul className="flex gap-2 sm:gap-4 justify-start sm:justify-center p-2 sm:p-4">
+            {conferences.map(conference => (
               <li key={conference}>
                 <button
-                  className={`text-black hover:text-gray-900 pb-2 border-b-2 ${activeConference === conference ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+                  className={`text-black hover:text-gray-900 pb-2 border-b-2 text-sm sm:text-base px-2 sm:px-3 py-1 rounded ${activeConference === conference ? 'border-[#235347] bg-[#235347]/10' : 'border-transparent hover:border-[#235347]'}`}
                   onClick={() => {
                     setActiveConference(conference);
                     setFilterConference(conference);
@@ -149,49 +144,35 @@ function TeamsComponent({ year = '2025' }) {
                 </button>
               </li>
             ))}
-          </div>
-          <div className="flex flex-wrap gap-4 justify-center">
-            {secondRowConferences.map(conference => (
-              <li key={conference}>
-                <button
-                  className={`text-black hover:text-gray-900 pb-2 border-b-2 ${activeConference === conference ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
-                  onClick={() => {
-                    setActiveConference(conference);
-                    setFilterConference(conference);
-                  }}
-                >
-                  {conference}
-                </button>
-              </li>
-            ))}
-          </div>
-        </ul>
+          </ul>
+        </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 p-2 sm:p-4">
         {sortedConferences.map((conference, index) => (
           <div key={conference} className="p-0 shadow-xl rounded-lg">
-            <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">{conference}</h2>
+            <h2 className="flex items-center justify-center text-base sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 sm:h-[40px] rounded">
+              {conference}
+            </h2>
             <div className="h-[362px] overflow-y-auto">
               <table className="w-full text-center border-collapse">
                 <thead className="sticky top-0 bg-gray-0 z-10">
                   <tr className="bg-gray-0">
-                    <th className="p-3 text-xs font-semibold border-b border-[#235347] text-black" style={{ textAlign: 'left', verticalAlign: 'middle', lineHeight: '1.1' }}>
+                    <th className="p-2 sm:p-3 text-sm sm:text-base font-semibold border-b border-[#235347] text-black" style={{ textAlign: 'left', verticalAlign: 'middle', lineHeight: '1.2' }}>
                       Team
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {teamsByConference[conference].map((team, teamIndex) => (
-                    <tr key={team.id} className={teamIndex % 2 === 0 ? 'bg-gray-0' : 'bg-[#235347]/20'}>
+                    <tr key={team.id} className={teamIndex % 2 === 0 ? 'bg-gray-0' : 'bg-[#235347]/10'}>
                       <td
-                        className="p-1 text-xs text-black border-b border-gray-300"
+                        className="p-2 sm:p-3 text-sm sm:text-base text-black border-b border-gray-300"
                         style={{ textAlign: 'left', verticalAlign: 'middle', lineHeight: '1.2' }}
                       >
                         <Link
                           to={`/teams/${team.id}/${year}`}
                           className="text-black hover:text-gray-900 underline underline-offset-2 inline-block cursor-pointer"
                           style={{ display: 'inline-block' }}
-                          onClick={(e) => navigate(`/teams/${team.id}/${year}`)}
                         >
                           {team.school} {team.mascot}
                         </Link>
