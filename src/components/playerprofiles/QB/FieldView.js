@@ -126,9 +126,9 @@ function FieldViewInterface() {
     setSelectedDistance(distanceMatch ? distanceMatch[0] : selectedDistance);
   };
 
-  if (loading) return <div className="p-4 text-gray-500">Loading...</div>;
-  if (error) return <div className="p-4 text-red-500">Error: {error}</div>;
-  if (!playerData || !basicData) return <div className="p-4 text-gray-500">No player data available.</div>;
+  if (loading) return <div className="p-2 sm:p-4 text-gray-500 text-sm sm:text-base">Loading...</div>;
+  if (error) return <div className="p-2 sm:p-4 text-red-500 text-sm sm:text-base">Error: {error}</div>;
+  if (!playerData || !basicData) return <div className="p-2 sm:p-4 text-gray-500 text-sm sm:text-base">No player data available.</div>;
 
   const { name, school, position, yards, touchdowns, interceptions, grades_pass } = playerData;
   const [firstName, lastName] = name ? name.split(' ') : ['', ''];
@@ -147,8 +147,8 @@ function FieldViewInterface() {
 
   return (
     <WeeklyGradesContext.Provider value={weeklyGrades}>
-      <div className="w-full min-h-fit overflow-y-auto bg-gray-0">
-        <div className="px-4 sm:px-0 py-0">
+      <div className="w-full min-h-fit overflow-y-auto bg-gray-50">
+        <div className="px-2 sm:px-0 py-4 sm:py-8">
           <Header
             firstName={firstName}
             lastName={lastName}
@@ -160,14 +160,15 @@ function FieldViewInterface() {
             year={year}
             playerId={playerId}
             gradesData={gradesData}
+            className="text-sm sm:text-base"
           />
-          <div className="border-b border-gray-300 mb-4">
-            <ul className="flex gap-4 overflow-x-auto whitespace-nowrap">
+          <div className="border-b border-gray-300 mb-4 sm:mb-4">
+            <ul className="flex gap-1 sm:gap-4 overflow-x-auto whitespace-nowrap">
               <li>
                 <Link
                   to={`/players/qb/${playerId || ''}`}
                   state={{ year }}
-                  className={`text-gray-500 hover:text-gray-700 pb-2 border-b-2 ${isOverviewActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
+                  className={`text-[#235347] hover:text-[#235347] pb-0.5 sm:pb-2 border-b-2 text-xs sm:text-base px-1 sm:px-0 ${isOverviewActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
                 >
                   Overview
                 </Link>
@@ -176,7 +177,7 @@ function FieldViewInterface() {
                 <Link
                   to={`/players/qb/${playerId || ''}/passing`}
                   state={{ year }}
-                  className={`text-gray-500 hover:text-gray-700 pb-2 border-b-2 ${isPassingActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
+                  className={`text-gray-500 hover:text-gray-700 pb-0.5 sm:pb-2 border-b-2 text-xs sm:text-base px-1 sm:px-0 ${isPassingActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
                 >
                   Passing Analytics
                 </Link>
@@ -185,7 +186,7 @@ function FieldViewInterface() {
                 <Link
                   to={`/players/qb/${playerId || ''}/fieldview`}
                   state={{ year }}
-                  className={`text-[#235347] hover:text-[#235347] pb-2 border-b-2 ${isFieldViewActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+                  className={`text-gray-500 hover:text-gray-700 pb-0.5 sm:pb-2 border-b-2 text-xs sm:text-base px-1 sm:px-0 ${isFieldViewActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
                 >
                   FieldView
                 </Link>
@@ -194,7 +195,7 @@ function FieldViewInterface() {
                 <Link
                   to={`/players/qb/${playerId || ''}/h2h`}
                   state={{ year }}
-                  className={`text-gray-500 hover:text-gray-700 pb-2 border-b-2 ${ish2hActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
+                  className={`text-gray-500 hover:text-gray-700 pb-0.5 sm:pb-2 border-b-2 text-xs sm:text-base px-1 sm:px-0 ${ish2hActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
                 >
                   Head-to-Head
                 </Link>
