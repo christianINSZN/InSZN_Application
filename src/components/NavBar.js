@@ -21,15 +21,15 @@ function NavBar() {
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
-        teamsDropdownRef.current && 
-        !teamsDropdownRef.current.contains(event.target) && 
+        teamsDropdownRef.current &&
+        !teamsDropdownRef.current.contains(event.target) &&
         (!teamsButtonRef.current || !teamsButtonRef.current.contains(event.target))
       ) {
         setIsTeamsDropdownOpen(false);
       }
       if (
-        profileDropdownRef.current && 
-        !profileDropdownRef.current.contains(event.target) && 
+        profileDropdownRef.current &&
+        !profileDropdownRef.current.contains(event.target) &&
         (!profileButtonRef.current || !profileButtonRef.current.contains(event.target))
       ) {
         setIsProfileDropdownOpen(false);
@@ -44,7 +44,6 @@ function NavBar() {
     };
   }, []);
 
-  // Handle click for mobile dropdown links to ensure navigation and close dropdowns
   const handleMobileLinkClick = () => {
     console.log('Mobile link clicked');
     setIsTeamsDropdownOpen(false);
@@ -63,7 +62,7 @@ function NavBar() {
         <div className="max-w-7xl mx-auto flex items-center px-4 sm:px-6 h-full relative">
           {/* Mobile: Centered Logo and Hamburger */}
           <div className="sm:hidden flex items-center w-full relative">
-            <div className="absolute left-1/2 transform -translate-x-1/2">
+            <div className="absolute left-1/2 transform -translate-x-[calc(52px)]">
               <Link to="/" className="flex items-center">
                 <img src="/TurfLogo_RemovedBkg.png" alt="INSZN Logo" className="h-14 w-auto" />
               </Link>
