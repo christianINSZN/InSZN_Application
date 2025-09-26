@@ -88,7 +88,7 @@ function PlayersComponent() {
   }
 
   return (
-    <div className="bg-gray-100 w-full min-h-0 h-auto mt-0 sm:mt-12" onClick={() => console.log('Component rendered with players count:', playersData.length)}>
+    <div className="bg-gray-100 w-full min-h-0 h-auto mt-0 sm:mt-12 p-2" onClick={() => console.log('Component rendered with players count:', playersData.length)}>
       <header className="mb-6 mt-3 flex flex-wrap gap-4 items-end bg-gray-200 p-2 rounded-lg shadow-xl">
         <div className="w-full sm:w-auto sm:flex-1 mb-4">
           <label htmlFor="gamesPlayedFilter" className="block text-sm font-medium text-gray-700">

@@ -69,7 +69,7 @@ function NavBar() {
             </div>
             <button
               onClick={() => setIsHamburgerOpen(!isHamburgerOpen)}
-              className="ml-auto text-black hover:text-[#235347] focus:outline-none"
+              className="ml-auto text-white hover:text-black focus:outline-none"
             >
               {isHamburgerOpen ? <HiX className="h-8 w-8" /> : <HiMenu className="h-8 w-8" />}
             </button>
@@ -77,14 +77,14 @@ function NavBar() {
           {/* Desktop: Main navigation (centered) */}
           <div className="hidden sm:flex absolute left-1/2 transform -translate-x-1/2 items-center justify-center gap-4 sm:gap-6">
             <div className="flex items-center">
-              <Link to="/players" className="flex items-center space-x-2 hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base sm:text-lg">
+              <Link to="/players" className="flex items-center space-x-2 text-white hover:bg-[#829994] hover:text-black px-3 py-2 rounded text-base sm:text-lg">
                 <BsFillPersonFill /> <span>Players</span>
               </Link>
             </div>
             <div className="relative" ref={teamsDropdownRef}>
               <button
                 onClick={() => setIsTeamsDropdownOpen(!isTeamsDropdownOpen)}
-                className="flex items-center space-x-2 hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base sm:text-lg focus:outline-none"
+                className="flex items-center space-x-2 text-white hover:bg-[#829994] hover:text-black px-3 py-2 rounded text-base sm:text-lg"
               >
                 <RiTeamFill /> <span>Teams</span>
               </button>
@@ -117,12 +117,12 @@ function NavBar() {
               </Link>
             </div>
             <div className="flex items-center">
-              <Link to="/h2h" className="flex items-center space-x-2 hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base sm:text-lg">
+              <Link to="/h2h" className="flex items-center space-x-2 text-white hover:bg-[#829994] hover:text-black px-3 py-2 rounded text-base sm:text-lg">
                 <MdPeople /> <span>H2H</span>
               </Link>
             </div>
             <div className="flex items-center">
-              <Link to="/subscribe" className="flex items-center space-x-2 hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base sm:text-lg">
+              <Link to="/subscribe" className="flex items-center space-x-2 text-white hover:bg-[#829994] hover:text-black px-3 py-2 rounded text-base sm:text-lg">
                 <MdOutlineJoinFull /> <span>Subscribe</span>
               </Link>
             </div>
