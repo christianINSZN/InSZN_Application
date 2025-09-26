@@ -318,7 +318,7 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
                     styles={selectStyles}
                   />
                 </div>
-                <div className="w-20">
+                <div className="w-40">
                   <Select
                     value={year1 ? { value: year1, label: year1.toString() } : null}
                     onChange={(selected) => setYear1(selected ? selected.value : null)}
@@ -351,7 +351,7 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
                     styles={selectStyles}
                   />
                 </div>
-                <div className="w-20">
+                <div className="w-40">
                   <Select
                     value={year2 ? { value: year2, label: year2.toString() } : null}
                     onChange={(selected) => setYear2(selected ? selected.value : null)}
