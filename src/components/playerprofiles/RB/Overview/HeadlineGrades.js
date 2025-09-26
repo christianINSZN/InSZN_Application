@@ -229,14 +229,14 @@ const HeadlineGrades = ({
         </div>
         {isPopupOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className={isMobile ? "bg-white p-2 rounded-lg shadow-lg w-[95%] h-[50%] flex flex-col" : "bg-white p-4 rounded-lg shadow-lg w-1/2 h-1/2 flex flex-col"} style={{ width: width, height: height }}>
-              <h3 className={isMobile ? "text-sm font-semibold mb-1" : "text-lg font-semibold mb-2"}>{selectedGrade}</h3>
-              <div className="flex-1 overflow-auto" style={{ maxHeight: isMobile ? '275px' : undefined }}>
-                <canvas id={isMobile ? "mobileTrendChart" : "trendChart"} className="w-full h-full" />
+            <div className="bg-white p-2 rounded-lg shadow-lg w-[95%] h-[50%] flex flex-col">
+              <h3 className="text-sm font-semibold mb-1">{selectedGrade}</h3>
+              <div className="flex-1 overflow-auto" style={{ maxHeight: '275px' }}>
+                <canvas id="mobileTrendChart" className="w-full h-full" />
               </div>
-              <div className={isMobile ? "mt-1 flex justify-end" : "mt-2 flex justify-end"}>
+              <div className="mt-1 flex justify-end">
                 <button
-                  className={isMobile ? "bg-red-500 text-white p-1 rounded hover:bg-red-700" : "bg-red-500 text-white p-2 rounded hover:bg-red-700"}
+                  className="bg-red-500 text-white p-1 rounded hover:bg-red-700"
                   onClick={() => setIsPopupOpen(false)}
                 >
                   Close
@@ -303,14 +303,14 @@ const HeadlineGrades = ({
       </div>
       {isPopupOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className={isMobile ? "bg-white p-2 rounded-lg shadow-lg w-[95%] h-[50%] flex flex-col" : "bg-white p-4 rounded-lg shadow-lg w-1/2 h-1/2 flex flex-col"} style={{ width: width, height: height }}>
-            <h3 className={isMobile ? "text-sm font-semibold mb-1" : "text-lg font-semibold mb-2"}>{selectedGrade}</h3>
-            <div className="flex-1 overflow-auto" style={{ maxHeight: isMobile ? '275px' : undefined }}>
-              <canvas id={isMobile ? "mobileTrendChart" : "trendChart"} className="w-full h-full" />
+          <div className="bg-white p-4 rounded-lg shadow-lg w-1/2 h-1/2 flex flex-col">
+            <h3 className="text-lg font-semibold mb-2">{selectedGrade}</h3>
+            <div className="flex-1 overflow-auto">
+              <canvas id="trendChart" className="w-full h-full" />
             </div>
-            <div className={isMobile ? "mt-1 flex justify-end" : "mt-2 flex justify-end"}>
+            <div className="mt-2 flex justify-end">
               <button
-                className={isMobile ? "bg-red-500 text-white p-1 rounded hover:bg-red-700" : "bg-red-500 text-white p-2 rounded hover:bg-red-700"}
+                className="bg-red-500 text-white p-2 rounded hover:bg-red-700"
                 onClick={() => setIsPopupOpen(false)}
               >
                 Close
