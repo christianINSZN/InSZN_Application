@@ -71,13 +71,13 @@ function TeamsRankings({ year = '2025', week = '4' }) {
       id: 'HOME',
       enableSorting: true,
       cell: info => info.getValue() || '0-0',
-      meta: { mobileHidden: false },
+      meta: { mobileHidden: true },
     }),
     columnHelper.accessor('away_record', {
       id: 'AWAY',
       enableSorting: true,
       cell: info => info.getValue() || '0-0',
-      meta: { mobileHidden: false },
+      meta: { mobileHidden: true },
     }),
     columnHelper.accessor('FPI_Ranking', {
       id: 'FPI Rank',
