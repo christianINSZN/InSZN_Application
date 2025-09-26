@@ -265,7 +265,7 @@ const MetricChart = ({
         </div>
       )}
       <div className="sub-container bg-gray-0 p-2 sm:p-0 rounded shadow">
-        <div style={{ height: isMobile ? '126px' : '320px', minHeight: 0, maxHeight: isMobile ? '126px' : '320px' }}>
+        <div style={{ height: isMobile ? '320px' : '320px', minHeight: 0, maxHeight: isMobile ? '320px' : '320px' }}>
           <canvas id="metricChart" className="w-full h-full min-h-0" />
         </div>
       </div>
