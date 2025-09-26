@@ -21,6 +21,7 @@ const ContainerB = ({
   const [teamGames, setTeamGames] = useState([]);
   const [loading, setLoading] = useState(false);
   const hasFetchedRef = useRef(false);
+  const isMobile = window.innerWidth < 640;
 
   const formatMetric = useCallback((metric) => {
     return metric
@@ -36,7 +37,6 @@ const ContainerB = ({
     if (!player1?.playerId || !player1?.year || hasFetchedRef.current) {
       return;
     }
-
     hasFetchedRef.current = true;
     const fetchData = async () => {
       setLoading(true);
@@ -47,7 +47,6 @@ const ContainerB = ({
         const gamesData = await gamesResponse.json();
         console.log('Team games:', gamesData);
         setTeamGames(gamesData || []);
-
         // Fetch metrics from weekly endpoint (use first available game)
         if (gamesData && gamesData.length > 0) {
           const { week, seasonType } = gamesData[0];
@@ -77,7 +76,6 @@ const ContainerB = ({
         setLoading(false);
       }
     };
-
     console.log('Fetching data for player1:', player1);
     fetchData();
   }, [player1?.playerId, player1?.year, formatMetric]);
@@ -107,26 +105,20 @@ const ContainerB = ({
       }
       return;
     }
-
     if (chartRef.current) {
       chartRef.current.destroy();
       console.log('Chart destroyed');
     }
-
     const ctx = document.getElementById('metricChartB')?.getContext('2d');
     if (!ctx) {
       console.warn('Canvas not available for metricChartB');
       return;
     }
-
     console.log('Canvas dimensions:', { width: ctx.canvas.width, height: ctx.canvas.height });
-
     // Sort games by week
     const sortedGames = [...teamGames].sort((a, b) => a.week - b.week);
-
     // Create labels using week numbers
     const labels = sortedGames.map(game => `Week ${game.week}`);
-
     // Prepare datasets for both players
     const datasets = [
       {
@@ -160,7 +152,6 @@ const ContainerB = ({
         pointHoverRadius: 7,
       },
     ];
-
     // Calculate dynamic y-axis range
     const allData = datasets.flatMap(ds => ds.data.filter(value => value !== null && !isNaN(value)));
     const minValue = allData.length ? Math.min(...allData) : 0;
@@ -168,9 +159,7 @@ const ContainerB = ({
     const buffer = (maxValue - minValue) * 0.1;
     const yMin = Math.max(0, minValue - buffer);
     const yMax = maxValue + buffer;
-
     console.log('Chart datasets:', { datasets, labels, selectedMetric });
-
     chartRef.current = new Chart(ctx, {
       type: 'line',
       data: {
@@ -187,7 +176,6 @@ const ContainerB = ({
         maintainAspectRatio: false,
       },
     });
-
     return () => {
       if (chartRef.current) {
         chartRef.current.destroy();
