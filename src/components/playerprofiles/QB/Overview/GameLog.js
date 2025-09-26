@@ -164,7 +164,7 @@ const GameLog = ({ teamGames, weeklyGrades, year }) => {
           className="bg-[#235347] text-white px-3 py-1 rounded hover:bg-[#1b3e32] text-sm"
           onClick={() => setShowFullColumns(!showFullColumns)}
         >
-          {showFullColumns ? 'Show Fewer Columns' : 'Show All Columns'}
+          {showFullColumns ? 'Display Basic Log' : 'Display Full Log'}
         </button>
       </div>
       <div className={showFullColumns ? 'h-auto sm:h-100 overflow-x-auto sm:overflow-auto relative' : 'h-auto sm:h-100 overflow-x-hidden sm:overflow-auto relative'}>

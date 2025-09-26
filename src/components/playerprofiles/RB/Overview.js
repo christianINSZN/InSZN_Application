@@ -19,9 +19,8 @@ function OverviewRB() {
   const [percentileGrades, setPercentileGrades] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Get year from navigation state, default to 2025
   const year = location.state?.year || 2025;
+  const isMobile = window.innerWidth < 640;
 
   useEffect(() => {
     const fetchPlayerData = async () => {
@@ -45,7 +44,6 @@ function OverviewRB() {
             headers: { 'Content-Type': 'application/json' },
           }),
         ]);
-
         if (!gradesResponse.ok) throw new Error('Failed to fetch grades data');
         if (!basicResponse.ok) throw new Error('Failed to fetch basic data');
         if (!gamesResponse.ok) {
@@ -56,26 +54,20 @@ function OverviewRB() {
           const errorText = await percentilesResponse.text();
           throw new Error(`Failed to fetch percentile data: ${errorText}`);
         }
-
         const gradesData = await gradesResponse.json();
         const basicData = await basicResponse.json();
         const gamesData = await gamesResponse.json();
         const percentileGradesData = await percentilesResponse.json();
-
         setPlayerData(gradesData[0] || null);
         setBasicData(Array.isArray(basicData) ? basicData[0] : basicData);
         setTeamGames(gamesData || []);
         setPercentileGrades(percentileGradesData);
-
-        // Derive teamID from teamGames if basicData.teamID is unavailable
         let derivedTeamID = null;
         if (basicData && 'teamID' in basicData) {
           derivedTeamID = basicData.teamID;
         } else if (gamesData.length > 0) {
           derivedTeamID = gamesData[0].homeId || gamesData[0].awayId;
         }
-
-        // Fetch grades with startDate-based matching
         const gradesPromises = gamesData.map(game => {
           const url = `${process.env.REACT_APP_API_URL}/api/player_rushing_weekly_all/${playerId}/${year}/${game.week}/${game.seasonType}`;
           return fetch(url, {
@@ -92,7 +84,6 @@ function OverviewRB() {
             return response.json().then(data => ({ week: game.week, seasonType: game.seasonType, data: data[0] || null }));
           });
         });
-
         const gradesResults = await Promise.all(gradesPromises);
         setWeeklyGrades(gradesResults.reduce((acc, { week, seasonType, data }) => ({ ...acc, [`${week}_${seasonType}`]: data }), {}));
       } catch (err) {
@@ -101,25 +92,21 @@ function OverviewRB() {
         setLoading(false);
       }
     };
-
     if (playerId) fetchPlayerData();
   }, [playerId, year]);
 
-  if (loading) return <div className="p-4 text-gray-500">Loading...</div>;
-  if (error) return <div className="p-4 text-red-500">Error: {error}</div>;
-  if (!playerData || !basicData) return <div className="p-4 text-gray-500">No player data available.</div>;
+  if (loading) return <div className="p-2 sm:p-4 text-gray-500 text-sm sm:text-base">Loading...</div>;
+  if (error) return <div className="p-2 sm:p-4 text-red-500 text-sm sm:text-base">Error: {error}</div>;
+  if (!playerData || !basicData) return <div className="p-2 sm:p-4 text-gray-500 text-sm sm:text-base">No player data available.</div>;
 
   const { name, school, position, yards, touchdowns, ypa, grades_run } = playerData;
   const [firstName, lastName] = name ? name.split(' ') : ['', ''];
   const { height, weight, jersey } = basicData;
   const teamID = basicData && 'teamID' in basicData ? basicData.teamID : (teamGames.length > 0 ? teamGames[0].homeId || teamGames[0].awayId : null);
-
   const isOverviewActive = location.pathname === `/players/rb/${playerId}`;
   const isRushingActive = location.pathname === `/players/rb/${playerId}/rushing`;
-  const isFieldViewActive = location.pathname === `/players/rb/${playerId}/fieldview`;
   const isH2HActive = location.pathname === `/players/rb/${playerId}/h2h`;
 
-  // Create gradesData object from playerData
   const gradesData = {
     yards,
     touchdowns,
@@ -129,7 +116,7 @@ function OverviewRB() {
 
   return (
     <div className="w-full min-h-screen bg-gray-50">
-      <div className="px-0 py-0">
+      <div className={isMobile ? "px-2 py-4" : "px-0 py-8"}>
         <Header
           firstName={firstName}
           lastName={lastName}
@@ -141,14 +128,15 @@ function OverviewRB() {
           year={year}
           playerId={playerId}
           gradesData={gradesData}
+          className="text-sm sm:text-base"
         />
         <div className="border-b border-gray-300 mb-4">
-          <ul className="flex gap-4">
+          <ul className={isMobile ? "flex gap-1 text-xs" : "flex gap-4 text-base"}>
             <li>
               <Link
                 to={`/players/rb/${playerId || ''}`}
                 state={{ year }}
-                className={`text-[#235347] hover:text-[#235347] pb-2 border-b-2 ${isOverviewActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+                className={isMobile ? `text-[#235347] hover:text-[#235347] pb-0.5 px-1 border-b-2 ${isOverviewActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}` : `text-[#235347] hover:text-[#235347] pb-2 border-b-2 ${isOverviewActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
               >
                 Overview
               </Link>
@@ -157,7 +145,7 @@ function OverviewRB() {
               <Link
                 to={`/players/rb/${playerId || ''}/rushing`}
                 state={{ year }}
-                className={`text-gray-500 hover:text-gray-700 pb-2 border-b-2 ${isRushingActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
+                className={isMobile ? `text-gray-500 hover:text-gray-700 pb-0.5 px-1 border-b-2 ${isRushingActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}` : `text-gray-500 hover:text-gray-700 pb-2 border-b-2 ${isRushingActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
               >
                 Rushing Analytics
               </Link>
@@ -166,17 +154,17 @@ function OverviewRB() {
               <Link
                 to={`/players/rb/${playerId || ''}/h2h`}
                 state={{ year }}
-                className={`text-gray-500 hover:text-gray-700 pb-2 border-b-2 ${isH2HActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
+                className={isMobile ? `text-gray-500 hover:text-gray-700 pb-0.5 px-1 border-b-2 ${isH2HActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}` : `text-gray-500 hover:text-gray-700 pb-2 border-b-2 ${isH2HActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
               >
                 Head-to-Head
               </Link>
             </li>
           </ul>
         </div>
-        <div className="grid grid-cols-[67%_32%] gap-4 w-[100%]">
-          <div className="space-y-4">
-            <MatchupProjection teamId={teamID} year={year} />
-            <GameLog teamGames={teamGames} weeklyGrades={weeklyGrades} />
+        <div className={isMobile ? "grid grid-cols-1 gap-2 w-full" : "grid grid-cols-[67%_32%] gap-4 w-[100%]"}>
+          <div className={isMobile ? "space-y-2" : "space-y-4"}>
+            <MatchupProjection teamId={teamID} year={year} className="text-sm sm:text-base" />
+            <GameLog teamGames={teamGames} weeklyGrades={weeklyGrades} className="text-sm sm:text-base overflow-x-auto" />
             <HeadlineGrades
               isPopupOpen={isPopupOpen}
               setIsPopupOpen={setIsPopupOpen}
@@ -185,14 +173,15 @@ function OverviewRB() {
               percentileGrades={percentileGrades}
               weeklyGrades={weeklyGrades}
               teamGames={teamGames}
+              className="text-sm sm:text-base"
             />
           </div>
-          <div className="grid grid-rows-[1fr_1fr] gap-4 h-full">
+          <div className={isMobile ? "grid grid-rows-1 gap-2 h-full" : "grid grid-rows-[1fr_1fr] gap-4 h-full"}>
             <AttributionRadial
               playerId={playerId}
               year={year}
               percentileGrades={percentileGrades}
-              className="row-span-2"
+              className="text-sm sm:text-base row-span-2"
             />
             <Trends
               isPopupOpen={isPopupOpen}
@@ -202,6 +191,7 @@ function OverviewRB() {
               year={year}
               teamGames={teamGames}
               weeklyGrades={weeklyGrades}
+              className="text-sm sm:text-base"
             />
           </div>
         </div>
