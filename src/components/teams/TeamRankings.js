@@ -1,17 +1,16 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useReactTable, getCoreRowModel, getSortedRowModel, createColumnHelper, flexRender } from '@tanstack/react-table';
 import { Link, useNavigate } from 'react-router-dom';
-import NavBar from '../NavBar'; // Adjust path as needed
+import NavBar from '../NavBar';
 
 const conferences = [
   'All', 'ACC', 'American Athletic', 'Big 12', 'Big Ten', 'Conference USA',
   'FBS Independents', 'Mid-American', 'Mountain West',
   'Pac-12', 'SEC', 'Sun Belt'
 ];
-const firstRowConferences = conferences.slice(0, 13);
-const secondRowConferences = conferences.slice(13);
 
 function TeamsRankings({ year = '2025', week = '4' }) {
+  const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -19,7 +18,8 @@ function TeamsRankings({ year = '2025', week = '4' }) {
   const [filterTeamName, setFilterTeamName] = useState('');
   const [filterConference, setFilterConference] = useState('');
   const [activeConference, setActiveConference] = useState('All');
-  const navigate = useNavigate();
+  const [showAllColumns, setShowAllColumns] = useState(false);
+  const isMobile = window.innerWidth < 640;
   const columnHelper = createColumnHelper();
 
   const uniqueTeamNames = useMemo(() => {
@@ -48,100 +48,114 @@ function TeamsRankings({ year = '2025', week = '4' }) {
             to={toPath}
             className="text-black hover:text-gray-900 underline underline-offset-2 inline-block cursor-pointer"
             style={{ display: 'inline-block' }}
-            onClick={(e) => {
-              e.preventDefault();
-              navigate(toPath, { state: { year } });
-            }}
           >
             {row.original.school.charAt(0).toUpperCase() + row.original.school.slice(1) || 'N/A'}
           </Link>
         );
       },
+      meta: { mobileHidden: false },
     }),
     columnHelper.accessor('conference', {
       id: 'CONF',
       enableSorting: true,
       cell: info => info.getValue() || 'N/A',
+      meta: { mobileHidden: false },
     }),
     columnHelper.accessor('record', {
       id: 'OVR',
       enableSorting: true,
       cell: info => info.getValue() || '0-0',
+      meta: { mobileHidden: false },
     }),
     columnHelper.accessor('home_record', {
       id: 'HOME',
       enableSorting: true,
       cell: info => info.getValue() || '0-0',
+      meta: { mobileHidden: false },
     }),
     columnHelper.accessor('away_record', {
       id: 'AWAY',
       enableSorting: true,
       cell: info => info.getValue() || '0-0',
-    }),
-    columnHelper.accessor('neutral_record', {
-      id: 'NEU',
-      enableSorting: true,
-      cell: info => info.getValue() || '0-0',
-    }),
-    columnHelper.accessor('quad1_record', {
-      id: 'QUAD 1',
-      enableSorting: true,
-      cell: info => info.getValue() || '0-0',
-    }),
-    columnHelper.accessor('quad2_record', {
-      id: 'QUAD 2',
-      enableSorting: true,
-      cell: info => info.getValue() || '0-0',
-    }),
-    columnHelper.accessor('quad3_record', {
-      id: 'QUAD 3',
-      enableSorting: true,
-      cell: info => info.getValue() || '0-0',
-    }),
-    columnHelper.accessor('quad4_record', {
-      id: 'QUAD 4',
-      enableSorting: true,
-      cell: info => info.getValue() || '0-0',
-    }),
-    columnHelper.accessor('SP_Rating', {
-      id: 'SP+ Rating',
-      enableSorting: true,
-      cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue().toFixed(1) : 'N/A'),
-    }),
-    columnHelper.accessor('SP_Ranking', {
-      id: 'SP+ Rank',
-      enableSorting: true,
-      cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue() : 'N/A'),
-    }),
-    columnHelper.accessor('SP_Off_Ranking', {
-      id: 'SP+ Off. Rank',
-      enableSorting: true,
-      cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue() : 'N/A'),
-    }),
-    columnHelper.accessor('SP_Def_Ranking', {
-      id: 'SP+ Def. Rank',
-      enableSorting: true,
-      cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue() : 'N/A'),
+      meta: { mobileHidden: false },
     }),
     columnHelper.accessor('FPI_Ranking', {
       id: 'FPI Rank',
       enableSorting: true,
       cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue() : 'N/A'),
+      meta: { mobileHidden: false },
+    }),
+    columnHelper.accessor('neutral_record', {
+      id: 'NEU',
+      enableSorting: true,
+      cell: info => info.getValue() || '0-0',
+      meta: { mobileHidden: true },
+    }),
+    columnHelper.accessor('quad1_record', {
+      id: 'QUAD 1',
+      enableSorting: true,
+      cell: info => info.getValue() || '0-0',
+      meta: { mobileHidden: true },
+    }),
+    columnHelper.accessor('quad2_record', {
+      id: 'QUAD 2',
+      enableSorting: true,
+      cell: info => info.getValue() || '0-0',
+      meta: { mobileHidden: true },
+    }),
+    columnHelper.accessor('quad3_record', {
+      id: 'QUAD 3',
+      enableSorting: true,
+      cell: info => info.getValue() || '0-0',
+      meta: { mobileHidden: true },
+    }),
+    columnHelper.accessor('quad4_record', {
+      id: 'QUAD 4',
+      enableSorting: true,
+      cell: info => info.getValue() || '0-0',
+      meta: { mobileHidden: true },
+    }),
+    columnHelper.accessor('SP_Rating', {
+      id: 'SP+ Rating',
+      enableSorting: true,
+      cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue().toFixed(1) : 'N/A'),
+      meta: { mobileHidden: true },
+    }),
+    columnHelper.accessor('SP_Ranking', {
+      id: 'SP+ Rank',
+      enableSorting: true,
+      cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue() : 'N/A'),
+      meta: { mobileHidden: true },
+    }),
+    columnHelper.accessor('SP_Off_Ranking', {
+      id: 'SP+ Off. Rank',
+      enableSorting: true,
+      cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue() : 'N/A'),
+      meta: { mobileHidden: true },
+    }),
+    columnHelper.accessor('SP_Def_Ranking', {
+      id: 'SP+ Def. Rank',
+      enableSorting: true,
+      cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue() : 'N/A'),
+      meta: { mobileHidden: true },
     }),
     columnHelper.accessor('SOR', {
       id: 'SOR',
       enableSorting: true,
       cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue() : 'N/A'),
+      meta: { mobileHidden: true },
     }),
     columnHelper.accessor('SOS', {
       id: 'SOS',
       enableSorting: true,
       cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue() : 'N/A'),
+      meta: { mobileHidden: true },
     }),
     columnHelper.accessor('coaches_poll_rank', {
       id: 'Coaches Poll',
       enableSorting: true,
       cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue() : 'NR'),
+      meta: { mobileHidden: true },
       sortType: (rowA, rowB, columnId) => {
         const a = rowA.values[columnId];
         const b = rowB.values[columnId];
@@ -154,6 +168,7 @@ function TeamsRankings({ year = '2025', week = '4' }) {
       id: 'AP Poll',
       enableSorting: true,
       cell: info => (info.getValue() !== null && info.getValue() !== undefined ? info.getValue() : 'NR'),
+      meta: { mobileHidden: true },
       sortType: (rowA, rowB, columnId) => {
         const a = rowA.values[columnId];
         const b = rowB.values[columnId];
@@ -162,7 +177,7 @@ function TeamsRankings({ year = '2025', week = '4' }) {
         return aVal - bVal;
       },
     }),
-  ], [navigate, year]);
+  ], [year]);
 
   useEffect(() => {
     let isMounted = true;
@@ -210,7 +225,7 @@ function TeamsRankings({ year = '2025', week = '4' }) {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [year, week]);
 
   const tableInstance = useReactTable({
     data: filteredData,
@@ -226,10 +241,10 @@ function TeamsRankings({ year = '2025', week = '4' }) {
     return (
       <div className="w-full">
         <NavBar />
-        <div className="pt-5 px-4 mx-auto">
-          <div className="p-0 shadow-xl rounded-lg h-full">
-            <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Full Team Rankings</h2>
-            <p className="text-gray-500 text-center p-4">Loading...</p>
+        <div className="pt-5 px-2 sm:px-4 mx-auto">
+          <div className="p-2 sm:p-4 shadow-xl rounded-lg">
+            <h2 className="flex items-center justify-center text-base sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 sm:h-[40px] rounded">Full Team Rankings</h2>
+            <p className="text-gray-500 text-center p-4 text-base sm:text-lg">Loading...</p>
           </div>
         </div>
       </div>
@@ -240,10 +255,10 @@ function TeamsRankings({ year = '2025', week = '4' }) {
     return (
       <div className="w-full">
         <NavBar />
-        <div className="pt-5 px-4 mx-auto">
-          <div className="p-0 shadow-xl rounded-lg h-full">
-            <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Full Team Rankings</h2>
-            <p className="text-red-500 text-center p-4">Error: {error}</p>
+        <div className="pt-5 px-2 sm:px-4 mx-auto">
+          <div className="p-2 sm:p-4 shadow-xl rounded-lg">
+            <h2 className="flex items-center justify-center text-base sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 sm:h-[40px] rounded">Full Team Rankings</h2>
+            <p className="text-red-500 text-center p-4 text-base sm:text-lg">Error: {error}</p>
           </div>
         </div>
       </div>
@@ -254,10 +269,10 @@ function TeamsRankings({ year = '2025', week = '4' }) {
     return (
       <div className="w-full">
         <NavBar />
-        <div className="pt-5 px-4 mx-auto">
-          <div className="p-0 shadow-xl rounded-lg h-full">
-            <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Full Team Rankings</h2>
-            <p className="text-gray-500 text-center p-4">No data available for {year}, week {week}.</p>
+        <div className="pt-5 px-2 sm:px-4 mx-auto">
+          <div className="p-2 sm:p-4 shadow-xl rounded-lg">
+            <h2 className="flex items-center justify-center text-base sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 sm:h-[40px] rounded">Full Team Rankings</h2>
+            <p className="text-gray-500 text-center p-4 text-base sm:text-lg">No data available for {year}, week {week}.</p>
           </div>
         </div>
       </div>
@@ -267,11 +282,11 @@ function TeamsRankings({ year = '2025', week = '4' }) {
   return (
     <div className="w-full mt-0 sm:mt-12">
       <NavBar />
-      <div className=" px-4 mx-auto">
-        <div className="mb-6 mt-3 gap-4 items-end bg-gray-0 p-2 rounded-lg shadow-xl">
-          <div className="flex flex-wrap gap-4 items-end">
-            <div className="w-full md:w-auto flex-1">
-              <label htmlFor="teamNameFilter" className="block text-sm font-medium text-gray-700">
+      <div className="px-2 sm:px-4 mx-auto">
+        <div className="mb-4 sm:mb-6 mt-3 gap-4 items-end bg-gray-0 p-2 sm:p-4 rounded-lg shadow-xl">
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+            <div className="w-full">
+              <label htmlFor="teamNameFilter" className="block text-sm sm:text-base font-medium text-gray-700 mb-1">
                 Filter by Team Name
               </label>
               <input
@@ -279,8 +294,8 @@ function TeamsRankings({ year = '2025', week = '4' }) {
                 id="teamNameFilter"
                 value={filterTeamName}
                 onChange={(e) => setFilterTeamName(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded text-black"
-                placeholder="Type or scroll to select..."
+                className="w-full p-3 sm:p-2 border border-gray-300 rounded text-black text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-[#235347]"
+                placeholder="Search teams..."
               />
               <datalist id="teamNames">
                 {uniqueTeamNames.map((team, index) => (
@@ -288,8 +303,8 @@ function TeamsRankings({ year = '2025', week = '4' }) {
                 ))}
               </datalist>
             </div>
-            <div className="w-full md:w-auto flex-1">
-              <label htmlFor="conferenceFilter" className="block text-sm font-medium text-gray-700">
+            <div className="w-full">
+              <label htmlFor="conferenceFilter" className="block text-sm sm:text-base font-medium text-gray-700 mb-1">
                 Filter by Conference
               </label>
               <input
@@ -297,8 +312,8 @@ function TeamsRankings({ year = '2025', week = '4' }) {
                 id="conferenceFilter"
                 value={filterConference}
                 onChange={(e) => setFilterConference(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded text-black"
-                placeholder="Type or scroll to select..."
+                className="w-full p-3 sm:p-2 border border-gray-300 rounded text-black text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-[#235347]"
+                placeholder="Search conferences..."
               />
               <datalist id="conferences">
                 {uniqueConferences.map((conference, index) => (
@@ -308,13 +323,13 @@ function TeamsRankings({ year = '2025', week = '4' }) {
             </div>
           </div>
         </div>
-        <div className="border-b border-gray-300 mb-4">
-          <ul className="flex flex-wrap gap-4 justify-center p-4">
-            <div className="flex flex-wrap gap-4 justify-center">
-              {firstRowConferences.map(conference => (
+        <div className="border-b border-gray-300 mb-4 sm:mb-6">
+          <div className="overflow-x-auto whitespace-nowrap py-2">
+            <ul className="flex gap-2 sm:gap-4 justify-start sm:justify-center p-2 sm:p-4">
+              {conferences.map(conference => (
                 <li key={conference}>
                   <button
-                    className={`text-black hover:text-gray-900 pb-2 border-b-2 ${activeConference === conference ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+                    className={`text-black hover:text-gray-900 pb-2 border-b-2 text-sm sm:text-base px-2 sm:px-3 py-1 rounded ${activeConference === conference ? 'border-[#235347] bg-[#235347]/10' : 'border-transparent hover:border-[#235347]'}`}
                     onClick={() => {
                       setActiveConference(conference);
                       setFilterConference(conference);
@@ -324,39 +339,32 @@ function TeamsRankings({ year = '2025', week = '4' }) {
                   </button>
                 </li>
               ))}
-            </div>
-            <div className="flex flex-wrap gap-4 justify-center">
-              {secondRowConferences.map(conference => (
-                <li key={conference}>
-                  <button
-                    className={`text-black hover:text-gray-900 pb-2 border-b-2 ${activeConference === conference ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
-                    onClick={() => {
-                      setActiveConference(conference);
-                      setFilterConference(conference);
-                    }}
-                  >
-                    {conference}
-                  </button>
-                </li>
-              ))}
-            </div>
-          </ul>
+            </ul>
+          </div>
         </div>
-        <div className="p-0 shadow-xl rounded-lg h-full border-b border-[#235347]">
-          <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Full Team Rankings</h2>
-          <div className="h-[full] overflow-y-auto border-b border-[#235347]">
+        <div className="p-2 sm:p-4 shadow-xl rounded-lg border-b border-[#235347]">
+          <h2 className="flex items-center justify-center text-base sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 sm:h-[40px] rounded">Full Team Rankings</h2>
+          <div className="flex justify-center p-2 sm:hidden">
+            <button
+              onClick={() => setShowAllColumns(!showAllColumns)}
+              className="bg-[#235347] text-white text-sm sm:text-base font-medium py-2 px-4 rounded hover:bg-[#1c3f33]"
+            >
+              {showAllColumns ? 'Hide Extra Columns' : 'Show All Columns'}
+            </button>
+          </div>
+          <div className="relative overflow-y-auto">
             <table className="w-full text-center border-collapse">
-              <thead className="sticky top-0 bg-white z-500">
+              <thead className="sticky top-0 bg-white z-0">
                 {tableInstance.getHeaderGroups().map(headerGroup => (
                   <tr key={headerGroup.id} className="bg-gray-0">
                     {headerGroup.headers.map(column => (
                       <th
                         key={column.id}
-                        className={`p-3 text-xs font-semibold border-b border-[#235347] text-black ${column.column.columnDef.enableSorting ? 'cursor-pointer' : ''}`}
+                        className={`p-2 sm:p-3 text-sm sm:text-base font-semibold border-b border-[#235347] text-black ${column.column.columnDef.enableSorting ? 'cursor-pointer' : ''} ${column.column.columnDef.meta?.mobileHidden && !showAllColumns ? 'hidden sm:table-cell' : ''}`}
                         style={{
                           textAlign: column.id === 'TEAM' ? 'left' : 'center',
                           verticalAlign: 'middle',
-                          lineHeight: '1.1',
+                          lineHeight: '1.2',
                         }}
                         onClick={column.column.columnDef.enableSorting ? () => {
                           const sorting = tableInstance.getState().sorting;
@@ -382,12 +390,12 @@ function TeamsRankings({ year = '2025', week = '4' }) {
                 {tableInstance.getRowModel().rows.map((row, index) => (
                   <tr
                     key={row.id}
-                    className={index % 2 === 0 ? 'bg-gray-0' : 'bg-[#235347]/20'}
+                    className={index % 2 === 0 ? 'bg-gray-0' : 'bg-[#235347]/10'}
                   >
                     {row.getVisibleCells().map(cell => (
                       <td
                         key={cell.id}
-                        className="p-1 text-xs text-black border-b border-gray-300"
+                        className={`p-2 sm:p-3 text-sm sm:text-base text-black border-b border-gray-300 ${cell.column.columnDef.meta?.mobileHidden && !showAllColumns ? 'hidden sm:table-cell' : ''}`}
                         style={{
                           textAlign: cell.column.id === 'TEAM' ? 'left' : 'center',
                           verticalAlign: 'middle',

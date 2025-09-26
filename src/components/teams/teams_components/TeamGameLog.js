@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-const TeamGameLog = ({ teamData, year }) => {
+const TeamGameLog = ({ teamData, year, className = "text-sm sm:text-base" }) => {
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showComingSoon, setShowComingSoon] = useState(false);
+  const [showFullColumns, setShowFullColumns] = useState(false);
+  const isMobile = window.innerWidth < 640;
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '-';
@@ -20,7 +22,6 @@ const TeamGameLog = ({ teamData, year }) => {
       console.log('Fetching games and stats for teamId:', teamData.id, 'year:', year);
       try {
         setLoading(true);
-        // Fetch games
         const gamesResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/teams/${teamData.id}/${year}/games`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
@@ -31,8 +32,6 @@ const TeamGameLog = ({ teamData, year }) => {
         }
         const gamesData = await gamesResponse.json();
         console.log('Games data received:', gamesData);
-
-        // Fetch stats
         const statsResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/teams_stats/${teamData.id}/${year}/stats`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
@@ -43,8 +42,6 @@ const TeamGameLog = ({ teamData, year }) => {
         }
         const statsData = await statsResponse.json();
         console.log('Stats data received:', statsData);
-
-        // Map stats by game_id
         const statsMap = statsData.reduce((map, stat) => {
           map[stat.game_id] = {
             totalYards: stat.totalYards,
@@ -56,16 +53,14 @@ const TeamGameLog = ({ teamData, year }) => {
             interceptions: stat.interceptions,
             possessionTime: stat.possessionTime,
             totalTDs: (parseInt(stat.defensiveTDs || 0) +
-                       parseInt(stat.kickReturnTDs || 0) +
-                       parseInt(stat.interceptionTDs || 0) +
-                       parseInt(stat.passingTDs || 0) +
-                       parseInt(stat.puntReturnTDs || 0) +
-                       parseInt(stat.rushingTDs || 0)),
+              parseInt(stat.kickReturnTDs || 0) +
+              parseInt(stat.interceptionTDs || 0) +
+              parseInt(stat.passingTDs || 0) +
+              parseInt(stat.puntReturnTDs || 0) +
+              parseInt(stat.rushingTDs || 0)),
           };
           return map;
         }, {});
-
-        // Filter unique games and merge with stats
         const uniqueGames = [];
         const seenGames = new Set();
         const teamGames = gamesData
@@ -92,7 +87,6 @@ const TeamGameLog = ({ teamData, year }) => {
             };
           })
           .sort((a, b) => new Date(`2025-${a.date}`) - new Date(`2025-${b.date}`));
-
         setGames(teamGames);
       } catch (err) {
         console.error('Fetch error:', err.message);
@@ -101,6 +95,7 @@ const TeamGameLog = ({ teamData, year }) => {
         setLoading(false);
       }
     };
+
     if (teamData?.id && !isNaN(parseInt(year))) {
       fetchGamesAndStats();
     } else {
@@ -109,120 +104,145 @@ const TeamGameLog = ({ teamData, year }) => {
     }
   }, [teamData, year]);
 
-  if (loading) return <div className="p-0 text-gray-500">Loading game log...</div>;
-  if (error) return <div className="p-0 text-red-500">Error: {error}</div>;
+  if (loading) return <div className={`p-2 text-gray-500 ${className}`}>Loading game log...</div>;
+  if (error) return <div className={`p-2 text-red-500 ${className}`}>Error: {error}</div>;
 
-  return (
-    <div className="relative">
+  const columns = [
+    { key: 'Date', label: 'Date', align: 'left', mobileHidden: false, minWidth: '60px' },
+    { key: 'Score', label: 'Score', align: 'left', mobileHidden: false, minWidth: '60px' },
+    { key: 'Opponent', label: 'Opponent', align: 'left', mobileHidden: false, minWidth: '60px' },
+    { key: 'TotalYards', label: 'Total Yards', align: 'left', mobileHidden: false, minWidth: '60px' },
+    { key: 'CompAtt', label: 'Comp-Att', align: 'left', mobileHidden: true, minWidth: '60px' },
+    { key: 'PassYards', label: 'Pass Yards', align: 'left', mobileHidden: true, minWidth: '60px' },
+    { key: 'RushAtt', label: 'Rush Att', align: 'left', mobileHidden: true, minWidth: '60px' },
+    { key: 'RushYards', label: 'Rush Yards', align: 'left', mobileHidden: true, minWidth: '60px' },
+    { key: 'FUM', label: 'FUM', align: 'left', mobileHidden: true, minWidth: '60px' },
+    { key: 'INT', label: 'INT', align: 'left', mobileHidden: true, minWidth: '60px' },
+    { key: 'TOP', label: 'TOP', align: 'left', mobileHidden: true, minWidth: '60px' },
+    { key: 'TD', label: 'TD', align: 'left', mobileHidden: false, minWidth: '60px' },
+  ];
+
+  const renderTable = (isFullView) => {
+    const visibleColumns = isFullView ? columns : columns.filter(col => !col.mobileHidden);
+    return (
       <table className="w-full text-left border-collapse">
-        <thead className="sticky top-0 bg-white z-10">
+        <thead className="sticky top-0 bg-white z-2">
           <tr>
-            <th className="p-1 text-xs font-semibold border-b border-gray-400 text-gray-800" style={{ textAlign: 'left', lineHeight: '1.2' }}>Date</th>
-            <th className="p-1 text-xs font-semibold border-b border-gray-400 text-gray-800" style={{ textAlign: 'left', lineHeight: '1.2' }}>Score</th>
-            <th className="p-1 text-xs font-semibold border-b border-gray-400 text-gray-800" style={{ textAlign: 'left', lineHeight: '1.2' }}>Opponent</th>
-            <th className="p-1 text-xs font-semibold border-b border-gray-400 text-gray-800" style={{ textAlign: 'left', lineHeight: '1.2' }}>Total Yards</th>
-            <th className="p-1 text-xs font-semibold border-b border-gray-400 text-gray-800" style={{ textAlign: 'left', lineHeight: '1.2' }}>Comp-Att</th>
-            <th className="p-1 text-xs font-semibold border-b border-gray-400 text-gray-800" style={{ textAlign: 'left', lineHeight: '1.2' }}>Pass Yards</th>
-            <th className="p-1 text-xs font-semibold border-b border-gray-400 text-gray-800" style={{ textAlign: 'left', lineHeight: '1.2' }}>Rush Att</th>
-            <th className="p-1 text-xs font-semibold border-b border-gray-400 text-gray-800" style={{ textAlign: 'left', lineHeight: '1.2' }}>Rush Yards</th>
-            <th className="p-1 text-xs font-semibold border-b border-gray-400 text-gray-800" style={{ textAlign: 'left', lineHeight: '1.2' }}>FUM</th>
-            <th className="p-1 text-xs font-semibold border-b border-gray-400 text-gray-800" style={{ textAlign: 'left', lineHeight: '1.2' }}>INT</th>
-            <th className="p-1 text-xs font-semibold border-b border-gray-400 text-gray-800" style={{ textAlign: 'left', lineHeight: '1.2' }}>TOP</th>
-            <th className="p-1 text-xs font-semibold border-b border-gray-400 text-gray-800" style={{ textAlign: 'left', lineHeight: '1.2' }}>TD</th>
+            {visibleColumns.map(col => (
+              <th
+                key={col.key}
+                className="p-0.5 text-[11px] font-semibold border-b border-gray-400 text-gray-800"
+                style={{ textAlign: col.align, lineHeight: '1.1', minWidth: col.minWidth }}
+              >
+                {col.label}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
-          {games.map((game, index) => {
-            const hasScore = game.teamPoints != null && game.opponentPoints != null;
-            const winLoss = game.teamPoints > game.opponentPoints ? 'W' : game.teamPoints < game.opponentPoints ? 'L' : '';
-            const gameScore = !hasScore ? (
-              <span>
-                {winLoss && (
-                  <span style={{ color: winLoss === 'W' ? 'green' : 'red', marginRight: '4px' }}>
-                    {winLoss}
-                  </span>
-                )}
-                {`${game.teamPoints ?? '-'}-${game.opponentPoints ?? '-'}`}
-              </span>
-            ) : (
-              <span>
-                {winLoss && (
-                  <span style={{ color: winLoss === 'W' ? 'green' : 'red', marginRight: '4px' }}>
-                    {winLoss}
-                  </span>
-                )}
-                <span
-                  className="text-black hover:text-blue underline underline-offset-2 inline-block cursor-pointer"
-                  style={{ display: 'inline-block', lineHeight: '1.1' }}
-                  onClick={() => setShowComingSoon(true)}
-                >
-                  {`${game.teamPoints}-${game.opponentPoints}`}
-                </span>
-              </span>
-            );
-
-            return (
-              <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-gray-200'}>
-                <td className="p-1 text-xs text-left border-b border-gray-300" style={{ verticalAlign: 'middle', lineHeight: '1.2' }}>
-                  {game.date}
-                </td>
-                <td className="p-1 text-xs text-left border-b border-gray-300" style={{ verticalAlign: 'middle', lineHeight: '1.2' }}>
-                  {gameScore}
-                </td>
-                <td className="p-1 text-xs text-left border-b border-gray-300" style={{ verticalAlign: 'middle', lineHeight: '1.2' }}>
-                  {game.opponentId ? (
-                    <>
-                      <span>{game.isHomeGame ? 'vs' : 'at'} </span>
-                      <Link
-                        to={`/teams/${game.opponentId}/${year}`}
-                        className="text-gray-700 hover:text-gray-900 underline underline-offset-2 inline-block cursor-pointer"
-                        style={{ display: 'inline-block' }}
-                      >
-                        {game.opponent.charAt(0).toUpperCase() + game.opponent.slice(1)}
-                      </Link>
-                    </>
-                  ) : (
-                    `${game.isHomeGame ? 'vs' : 'at'} ${game.opponent.charAt(0).toUpperCase() + game.opponent.slice(1) || '-'}`
+          {games.length > 0 ? (
+            games.map((game, index) => {
+              const hasScore = game.teamPoints != null && game.opponentPoints != null;
+              const winLoss = game.teamPoints > game.opponentPoints ? 'W' : game.teamPoints < game.opponentPoints ? 'L' : '';
+              const gameScore = !hasScore ? (
+                <span>
+                  {winLoss && (
+                    <span style={{ color: winLoss === 'W' ? 'green' : 'red', marginRight: '4px' }}>
+                      {winLoss}
+                    </span>
                   )}
-                </td>
-                <td className="p-1 text-xs text-left border-b border-gray-300" style={{ verticalAlign: 'middle', lineHeight: '1.2' }}>
-                  {game.totalYards || '-'}
-                </td>
-                <td className="p-1 text-xs text-left border-b border-gray-300" style={{ verticalAlign: 'middle', lineHeight: '1.2' }}>
-                  {game.completionAttempts || '-'}
-                </td>
-                <td className="p-1 text-xs text-left border-b border-gray-300" style={{ verticalAlign: 'middle', lineHeight: '1.2' }}>
-                  {game.netPassingYards || '-'}
-                </td>
-                <td className="p-1 text-xs text-left border-b border-gray-300" style={{ verticalAlign: 'middle', lineHeight: '1.2' }}>
-                  {game.rushingAttempts || '-'}
-                </td>
-                <td className="p-1 text-xs text-left border-b border-gray-300" style={{ verticalAlign: 'middle', lineHeight: '1.2' }}>
-                  {game.rushingYards || '-'}
-                </td>
-                <td className="p-1 text-xs text-left border-b border-gray-300" style={{ verticalAlign: 'middle', lineHeight: '1.2' }}>
-                  {game.fumblesLost || '-'}
-                </td>
-                <td className="p-1 text-xs text-left border-b border-gray-300" style={{ verticalAlign: 'middle', lineHeight: '1.2' }}>
-                  {game.interceptions || '-'}
-                </td>
-                <td className="p-1 text-xs text-left border-b border-gray-300" style={{ verticalAlign: 'middle', lineHeight: '1.2' }}>
-                  {game.possessionTime || '-'}
-                </td>
-                <td className="p-1 text-xs text-left border-b border-gray-300" style={{ verticalAlign: 'middle', lineHeight: '1.2' }}>
-                  {game.totalTDs || '-'}
-                </td>
-              </tr>
-            );
-          })}
+                  {`${game.teamPoints ?? '-'}-${game.opponentPoints ?? '-'}`}
+                </span>
+              ) : (
+                <span>
+                  {winLoss && (
+                    <span style={{ color: winLoss === 'W' ? 'green' : 'red', marginRight: '4px' }}>
+                      {winLoss}
+                    </span>
+                  )}
+                  <span
+                    className="text-[#235347] hover:text-[#235347]/50 underline underline-offset-2 inline-block cursor-pointer"
+                    style={{ display: 'inline-block', padding: '4px 8px' }}
+                    onClick={() => setShowComingSoon(true)}
+                  >
+                    {`${game.teamPoints}-${game.opponentPoints}`}
+                  </span>
+                </span>
+              );
+              const data = {
+                Date: game.date,
+                Score: gameScore,
+                Opponent: game.opponentId ? (
+                  <>
+                    <span>{game.isHomeGame ? 'vs' : 'at'} </span>
+                    <Link
+                      to={`/teams/${game.opponentId}/${year}`}
+                      className="text-[#235347] hover:text-[#235347]/50 underline underline-offset-2 inline-block cursor-pointer"
+                      style={{ display: 'inline-block', padding: '4px 8px' }}
+                    >
+                      {game.opponent.charAt(0).toUpperCase() + game.opponent.slice(1)}
+                    </Link>
+                  </>
+                ) : (
+                  `${game.isHomeGame ? 'vs' : 'at'} ${game.opponent.charAt(0).toUpperCase() + game.opponent.slice(1) || '-'}`
+                ),
+                TotalYards: game.totalYards || '-',
+                CompAtt: game.completionAttempts || '-',
+                PassYards: game.netPassingYards || '-',
+                RushAtt: game.rushingAttempts || '-',
+                RushYards: game.rushingYards || '-',
+                FUM: game.fumblesLost || '-',
+                INT: game.interceptions || '-',
+                TOP: game.possessionTime || '-',
+                TD: game.totalTDs || '-',
+              };
+              return (
+                <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-[#235347]/20'}>
+                  {visibleColumns.map(col => (
+                    <td
+                      key={col.key}
+                      className="p-0.5 text-[10px] text-left border-b border-gray-300"
+                      style={{ verticalAlign: 'middle', lineHeight: '1.1', textAlign: col.align }}
+                    >
+                      {data[col.key]}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })
+          ) : (
+            <tr>
+              <td colSpan={visibleColumns.length} className={`p-2 sm:p-4 text-center text-gray-500 ${className}`}>
+                No game data available
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
+    );
+  };
+
+  return (
+    <div className="bg-gray-100 p-2 sm:p-0 rounded-lg shadow-lg">
+      {isMobile && (
+        <div className="mb-2">
+          <button
+            className="bg-[#235347] text-white px-3 py-1 rounded hover:bg-[#1b3e32] text-sm"
+            onClick={() => setShowFullColumns(!showFullColumns)}
+          >
+            {showFullColumns ? 'Display Basic Log' : 'Display Full Log'}
+          </button>
+        </div>
+      )}
+      <div className={isMobile ? 'overflow-x-auto relative' : 'relative'}>
+        {renderTable(isMobile ? showFullColumns : true)}
+      </div>
       {showComingSoon && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl">
-            <p className="text-lg font-semibold text-black">Game Recaps Coming Soon</p>
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-xl w-[90%] sm:w-auto">
+            <p className="text-sm sm:text-lg font-semibold text-black">Game Recaps Coming Soon</p>
             <button
-              className="mt-4 px-4 py-2 bg-[#235347] text-white rounded hover:bg-[#1b3e32]"
+              className="mt-2 sm:mt-4 px-3 sm:px-4 py-1 sm:py-2 bg-[#235347] text-white rounded hover:bg-[#1b3e32] text-sm"
               onClick={() => setShowComingSoon(false)}
             >
               Close

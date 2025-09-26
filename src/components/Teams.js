@@ -153,11 +153,11 @@ function TeamsComponent({ year = '2025' }) {
             <h2 className="flex items-center justify-center text-base sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 sm:h-[40px] rounded">
               {conference}
             </h2>
-            <div className="h-[362px] overflow-y-auto">
+            <div className="relative h-[362px] overflow-y-auto">
               <table className="w-full text-center border-collapse">
-                <thead className="sticky top-0 bg-gray-0 z-10">
+                <thead className="sticky top-0 bg-gray-0 z-0">
                   <tr className="bg-gray-0">
-                    <th className="p-2 sm:p-3 text-sm sm:text-base font-semibold border-b border-[#235347] text-black" style={{ textAlign: 'left', verticalAlign: 'middle', lineHeight: '1.2' }}>
+                    <th className="p-2 sm:p-3 text-sm sm:text-base font-semibold border-b border-[#235347] text-black bg-white" style={{ textAlign: 'left', verticalAlign: 'middle', lineHeight: '1.2' }}>
                       Team
                     </th>
                   </tr>
