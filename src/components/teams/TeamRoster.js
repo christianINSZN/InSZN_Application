@@ -172,6 +172,7 @@ const TeamRoster = ({ className = "text-sm sm:text-base" }) => {
 
   const renderTable = (isFullView) => {
     const visibleColumns = isFullView ? columns : columns.filter(col => !col.meta?.mobileHidden);
+    console.log('Rendering table with columns:', visibleColumns.map(col => col.id), 'isFullView:', isFullView);
     return (
       <table className="w-full text-left border-collapse">
         <thead className="sticky top-0 bg-white z-2">
@@ -180,7 +181,7 @@ const TeamRoster = ({ className = "text-sm sm:text-base" }) => {
               {headerGroup.headers.map(column => (
                 <th
                   key={column.id}
-                  className={`p-0.5 text-[${isMobile ? '12px' : '12px'}] font-semibold border-b border-gray-400 text-gray-800 cursor-pointer`}
+                  className={`p-0.5 text-[${isMobile ? '11px' : '13px'}] font-semibold border-b border-gray-400 text-gray-800 cursor-pointer`}
                   style={{ textAlign: column.id === 'Headshot' || column.id === 'Player Name' || column.id === 'Hometown' ? 'left' : 'center', verticalAlign: 'middle', lineHeight: `${isMobile ? '1.2' : '1.1'}` }}
                   onClick={() => {
                     if (column.id !== 'Headshot') {
@@ -205,8 +206,8 @@ const TeamRoster = ({ className = "text-sm sm:text-base" }) => {
               {row.getVisibleCells().map(cell => (
                 <td
                   key={cell.id}
-                  className={`p-0.5 text-[${isMobile ? '11px' : '14px'}] border-b border-gray-300`}
-                  style={{ textAlign: cell.column.id === 'Headshot' || cell.column.id === 'Player Name' || cell.column.id === 'Hometown' ? 'left' : 'center', verticalAlign: 'middle', lineHeight: `${isMobile ? '1.2' : '2'}` }}
+                  className={`p-0.5 text-[${isMobile ? '11px' : '12px'}] border-b border-gray-300`}
+                  style={{ textAlign: cell.column.id === 'Headshot' || cell.column.id === 'Player Name' || cell.column.id === 'Hometown' ? 'left' : 'center', verticalAlign: 'middle', lineHeight: `${isMobile ? '1.2' : '1.1'}` }}
                 >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
@@ -315,12 +316,12 @@ const TeamRoster = ({ className = "text-sm sm:text-base" }) => {
             </header>
             <h3 className="text-sm font-semibold mb-2 bg-[#235347] text-white p-2 rounded-t">Team Roster</h3>
             <div className="mb-2">
-              <button
+              {/* <button
                 className="bg-[#235347] text-white px-3 py-1 rounded hover:bg-[#1b3e32] text-sm"
                 onClick={() => setShowFullColumns(!showFullColumns)}
               >
                 {showFullColumns ? 'Show Basic Roster' : 'Show Full Roster'}
-              </button>
+              </button> */}
             </div>
             <div className="overflow-x-auto relative">
               {renderTable(showFullColumns)}
@@ -374,7 +375,7 @@ const TeamRoster = ({ className = "text-sm sm:text-base" }) => {
                   Roster
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link
                   to={`/teams/${id}/${year}/stats`}
                   className={`text-[#235347] hover:text-[#235347]/50 pb-2 border-b-2 text-base px-0 ${isStatsActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
@@ -389,7 +390,7 @@ const TeamRoster = ({ className = "text-sm sm:text-base" }) => {
                 >
                   Schedule
                 </Link>
-              </li>
+              </li> */}
             </ul>
           </div>
           {/* Roster Content */}

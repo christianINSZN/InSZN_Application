@@ -65,7 +65,7 @@ function NavBar() {
           <div className="sm:hidden flex items-center w-full relative">
             <div className="absolute left-1/2 transform -translate-x-1/2">
               <Link to="/" className="flex items-center">
-                <img src="/TurfLogo_RemovedBkg.png" alt="INSZN Logo" className="h-10 w-auto" />
+                <img src="/TurfLogo_RemovedBkg.png" alt="INSZN Logo" className="h-14 w-auto" />
               </Link>
             </div>
             <button

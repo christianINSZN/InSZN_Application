@@ -96,7 +96,7 @@ const TeamLanding = () => {
                   Roster
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link
                   to={`/teams/${id}/${year}/stats`}
                   className={`text-[#235347] hover:text-[#235347] pb-0.5 border-b-2 text-xs px-1 ${isStatsActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
@@ -111,7 +111,7 @@ const TeamLanding = () => {
                 >
                   Schedule
                 </Link>
-              </li>
+              </li> */}
             </ul>
           </div>
           {/* Main Containers: Single-Column Layout */}
