@@ -4,7 +4,7 @@ import Select from 'react-select';
 
 const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
   const location = useLocation();
-  const defaultYear = year || location.state?.year || localStorage.getItem('selectedYear') || '2025';
+  const defaultYear = '2025';
   const [player1, setPlayer1] = useState(() => {
     const savedPlayer = localStorage.getItem('player1');
     return savedPlayer ? JSON.parse(savedPlayer) : null;

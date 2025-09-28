@@ -19,7 +19,7 @@ class ErrorBoundary extends Component {
 
 function HeadToHeadQB() {
   const location = useLocation();
-  const year = location.state?.year || '2024';
+  const year = '2025';
   const [playerData, setPlayerData] = useState({ player1: null, player2: null });
   const [weeklyGrades, setWeeklyGrades] = useState({ player1: {}, player2: {} });
   const [loading, setLoading] = useState(false);
