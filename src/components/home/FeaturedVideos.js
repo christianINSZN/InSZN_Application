@@ -44,7 +44,7 @@ function FeaturedVideos() {
 
   return (
     <div className="p-0 shadow-xl rounded-lg h-full relative">
-      <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Featured Videos</h2>
+      <h2 className="flex items-center justify-center text-md sm:text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-auto sm:h-auto rounded-t-lg">Featured Videos</h2>
       <div className="h-[225px] overflow-hidden relative">
         <div
           className="flex transition-transform duration-500 ease-in-out"

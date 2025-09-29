@@ -5,7 +5,7 @@ function FeaturedContent() {
 
   return (
     <div className="p-0 shadow-xl rounded-lg h-full">
-      <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Featured Content</h2>
+      <h2 className="flex items-center justify-center text-md sm:text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-auto sm:h-auto rounded-t-lg">Featured Content</h2>
       <div className="h-[200px] flex items-center justify-center bg-gray-100">
         <a
           href="https://www.youtube.com/@qbspotlight2336"

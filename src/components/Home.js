@@ -8,12 +8,12 @@ import FeaturedPosts from './home/FeaturedPosts';
 function Home() {
   return (
     <div className="p-4 sm:p-4 mt-0 sm:mt-12">
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 sm:h-[490px]">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 sm:h-[480px]">
         <div className="w-full sm:w-[100%] h-auto sm:h-full">
           <TopTeams />
         </div>
       </div>
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 sm:h-[260px] mt-2 sm:mt-4">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:h-[260px] mt-2 sm:mt-4">
         <div className="w-full sm:w-[23%] h-auto sm:h-full">
           <FeaturedVideos />
         </div>
