@@ -16,25 +16,19 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange }) => {
   const [loading, setLoading] = useState(false);
   const [metrics, setMetrics] = useState([
     { label: 'Games Played', field: 'player_game_count', p1Value: 0, p2Value: 0 },
-    { label: 'Attempts', field: 'attempts', p1Value: 0, p2Value: 0 },
+    { label: 'Receptions', field: 'receptions', p1Value: 0, p2Value: 0 },
     { label: 'Yards', field: 'yards', p1Value: 0, p2Value: 0 },
-    { label: 'YPA', field: 'ypa', p1Value: 0, p2Value: 0 },
-    { label: 'Gap Attempts', field: 'gap_attempts', p1Value: 0, p2Value: 0 },
-    { label: 'Zone Attempts', field: 'zone_attempts', p1Value: 0, p2Value: 0 },
-    { label: 'Yards After Contact', field: 'yards_after_contact', p1Value: 0, p2Value: 0 },
-    { label: 'Yards After Contact (per Att.)', field: 'yco_attempt', p1Value: 0, p2Value: 0 },
-    { label: 'Breakaway Yards', field: 'breakaway_yards', p1Value: 0, p2Value: 0 },
-    { label: 'Breakaway (%)', field: 'breakaway_percent', p1Value: 0, p2Value: 0 },
-    { label: 'Longest (Run)', field: 'longest_rushing', p1Value: 0, p2Value: 0 },
-    { label: 'TD (Rushing)', field: 'touchdowns_rushing', p1Value: 0, p2Value: 0 },
-    { label: 'Fumbles', field: 'fumbles', p1Value: 0, p2Value: 0 },
-    { label: 'Receiving Yards', field: 'rec_yards', p1Value: 0, p2Value: 0 },
-    { label: 'Yards per Pass Route Run', field: 'yprr', p1Value: 0, p2Value: 0 },
-    { label: 'TD (Receiving)', field: 'touchdowns_receiving', p1Value: 0, p2Value: 0 },
+    { label: 'Yards Per Reception', field: 'yards_per_reception', p1Value: 0, p2Value: 0 },
+    { label: 'Catch %', field: 'caught_percent', p1Value: 0, p2Value: 0 },
+    { label: 'Touchdowns', field: 'touchdowns', p1Value: 0, p2Value: 0 },
+    { label: 'Yards Per Route Run', field: 'yprr', p1Value: 0, p2Value: 0 },
+    { label: 'Slot Route Rate', field: 'slot_rate', p1Value: 0, p2Value: 0 },
+    { label: 'Wide Route Rate', field: 'wide_rate', p1Value: 0, p2Value: 0 },
+    { label: 'Contested Catch %', field: 'contested_catch_rate', p1Value: 0, p2Value: 0 },
+    { label: 'Drop Rate', field: 'drop_rate', p1Value: 0, p2Value: 0 },
   ]);
   const [metricsGrades, setMetricsGrades] = useState([
     { label: 'Offense Grade', field: 'grades_offense', p1Value: 0, p2Value: 0 },
-    { label: 'Run Grade', field: 'grades_run', p1Value: 0, p2Value: 0 },
     { label: 'Receiving Grade', field: 'grades_pass_route', p1Value: 0, p2Value: 0 },
     { label: 'Ball Security Grade', field: 'grades_hands_fumble', p1Value: 0, p2Value: 0 },
     { label: 'Penalty Aversion Grade', field: 'grades_offense_penalty', p1Value: 0, p2Value: 0 },
@@ -104,7 +98,7 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange }) => {
   useEffect(() => {
     const fetchPlayers = async () => {
       try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/player_rb_list`);
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/player_te_list`);
         const data = await response.json();
         const uniquePlayers = Array.from(
           new Map(data.map(player => [player.playerId, player])).values()
@@ -197,10 +191,10 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange }) => {
       const fetchData = async () => {
         try {
           const [metadataResponse1, metadataResponse2, statsResponse1, statsResponse2] = await Promise.all([
-            fetch(`${process.env.REACT_APP_API_URL}/api/player_metadata_rb/${player1.value}`),
-            fetch(`${process.env.REACT_APP_API_URL}/api/player_metadata_rb/${player2.value}`),
-            fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_rb/${player1.value}/${year1}`),
-            fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_rb/${player2.value}/${year2}`),
+            fetch(`${process.env.REACT_APP_API_URL}/api/player_metadata_te/${player1.value}`),
+            fetch(`${process.env.REACT_APP_API_URL}/api/player_metadata_te/${player2.value}`),
+            fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_te/${player1.value}/${year1}`),
+            fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_te/${player2.value}/${year2}`),
           ]);
           if (!metadataResponse1.ok) throw new Error(`Failed to fetch metadata for Player 1: ${await metadataResponse1.text()}`);
           if (!metadataResponse2.ok) throw new Error(`Failed to fetch metadata for Player 2: ${await metadataResponse2.text()}`);
@@ -290,7 +284,7 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange }) => {
   return (
     <div className={`bg-white rounded-lg shadow-xl ${className}`}>
       <div className="flex flex-col items-center">
-        <h2 className="flex items-center justify-center text-base sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 sm:h-[40px] rounded w-full">Running Back Comparison</h2>
+        <h2 className="flex items-center justify-center text-base sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 sm:h-[40px] rounded w-full">Tight End Comparison</h2>
         {isMobile ? (
           <div className="w-full max-w-md mx-auto">
             <div className="grid grid-cols-2 gap-2 text-center">

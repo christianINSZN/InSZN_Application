@@ -322,7 +322,7 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange }) => {
                     styles={selectStyles}
                   />
                 </div>
-                <div className="w-[80px] h-[59px] bg-white shadow-xl border-2 border-[#235347]">
+                <div className="w-[120px] h-[89px] bg-white shadow-xl border-2 border-[#235347]">
                   {headshotUrl1 ? (
                     <img src={headshotUrl1} alt={`${player1?.label} headshot`} className="w-full h-full object-cover rounded" />
                   ) : (
@@ -356,7 +356,7 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange }) => {
                     styles={selectStyles}
                   />
                 </div>
-                <div className="w-[80px] h-[59px] bg-white shadow-xl border-2 border-[#235347]">
+                <div className="w-[120px] h-[89px] bg-white shadow-xl border-2 border-[#235347]">
                   {headshotUrl2 ? (
                     <img src={headshotUrl2} alt={`${player2?.label} headshot`} className="w-full h-full object-cover rounded" />
                   ) : (
@@ -450,7 +450,9 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange }) => {
             <button
               onClick={handleCompare}
               disabled={!player1 || !year1 || !player2 || !year2 || loading}
-              className="bg-[#235347] text-white font-bold py-2 px-4 rounded disabled:bg-gray-400"
+              className={`${
+                isMobile ? 'py-1 px-3 text-sm' : 'py-2 px-4 text-base'
+              } bg-[#235347] text-white font-bold rounded disabled:bg-gray-400`}
             >
               Compare
             </button>

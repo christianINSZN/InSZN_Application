@@ -58,19 +58,15 @@ function HeadToHeadQB() {
             headers: { 'Content-Type': 'application/json' },
           }),
         ]);
-
         if (!gradesResponse.ok) throw new Error(`Failed to fetch grades data for ${playerKey}: ${await gradesResponse.text()}`);
         if (!basicResponse.ok) throw new Error(`Failed to fetch basic data for ${playerKey}: ${await basicResponse.text()}`);
         if (!gamesResponse.ok) throw new Error(`Failed to fetch games data for ${playerKey}: ${await gamesResponse.text()}`);
         if (!percentilesResponse.ok) throw new Error(`Failed to fetch percentile data for ${playerKey}: ${await percentilesResponse.text()}`);
-
         const gradesData = await gradesResponse.json();
         const basicData = await basicResponse.json();
         const gamesData = await gamesResponse.json();
         const percentileGradesData = await percentilesResponse.json();
-
         console.log(`Games data for ${playerKey}:`, gamesData);
-
         setPlayerData(prev => ({
           ...prev,
           [playerKey]: {
@@ -80,18 +76,15 @@ function HeadToHeadQB() {
             percentiles: percentileGradesData,
           },
         }));
-
         if (!gamesData || gamesData.length === 0) {
           console.warn(`No games data for ${playerKey}, setting empty weeklyGrades`);
           setWeeklyGrades(prev => ({ ...prev, [playerKey]: {} }));
           return;
         }
-
         const validGames = gamesData.filter(game => game.week <= currentWeek);
         const uniqueGames = Array.from(
           new Map(validGames.map(game => [`${game.week}_${game.seasonType}`, game])).values()
         );
-
         const gradesPromises = uniqueGames.map(game => {
           const url = `${process.env.REACT_APP_API_URL}/api/player_passing_weekly_all/${player.playerId}/${player.year}/${game.week}/${game.seasonType}`;
           console.log(`Fetching grades for ${playerKey}: ${url}`);
@@ -115,7 +108,6 @@ function HeadToHeadQB() {
               }));
             });
         });
-
         const gradesResults = await Promise.all(gradesPromises);
         console.log(`Grades results for ${playerKey}:`, gradesResults);
         setWeeklyGrades(prev => ({
@@ -133,7 +125,6 @@ function HeadToHeadQB() {
         setLoading(false);
       }
     };
-
     if (playerData.player1?.playerId && playerData.player1?.year) {
       fetchPlayerData(playerData.player1, 'player1');
     }
@@ -149,22 +140,18 @@ function HeadToHeadQB() {
     <WeeklyGradesContext.Provider value={weeklyGrades}>
       <div className="w-full min-h-screen bg-gray-50 mt-0 sm:mt-12">
         <div className="border-b border-gray-300 mb-4">
-          <ul className={`flex ${isMobile ? 'flex-col gap-2 p-4' : 'gap-4 px-4 py-2'} justify-center`}>
+          <ul className={`flex gap-4 px-4 py-2 justify-center ${isMobile ? 'flex-wrap' : ''}`}>
             {[
               { path: '/h2h/qb', label: 'Quarterback' },
               { path: '/h2h/rb', label: 'Running Back' },
               { path: '/h2h/te', label: 'Tight End' },
               { path: '/h2h/wr', label: 'Wide Receiver' },
             ].map(({ path, label }) => (
-              <li key={path} className={isMobile ? 'w-full' : ''}>
+              <li key={path} className={isMobile ? 'w-auto' : ''}>
                 <Link
                   to={path}
                   state={{ year }}
-                  className={`block text-[#235347] hover:text-[#1b3e32] ${
-                    isMobile
-                      ? 'px-4 py-3 text-sm border-2 border-[#235347] rounded-lg hover:bg-[#235347]/10'
-                      : 'px-2 py-2 text-base border-b-2'
-                  } ${
+                  className={`block text-[#235347] hover:text-[#1b3e32] px-2 py-2 text-sm border-b-2 ${
                     location.pathname === path
                       ? 'border-[#235347]'
                       : 'border-transparent hover:border-[#235347]'
