@@ -182,22 +182,6 @@ function HeadToHeadQB() {
               <div className="bg-white rounded-lg shadow">
                 <HeadToHeadContainer year={year} onPlayerDataChange={setPlayerData} />
               </div>
-              <div className="bg-white rounded-lg shadow">
-                <ContainerB
-                  player1={playerData.player1}
-                  player2={playerData.player2}
-                  excludedMetrics={excludedMetrics}
-                  metricRenames={metricRenames}
-                />
-              </div>
-              <div className="bg-white rounded-lg shadow">
-                <ContainerA
-                  player1={playerData.player1}
-                  player2={playerData.player2}
-                  excludedMetrics={excludedMetrics}
-                  metricRenames={metricRenames}
-                />
-              </div>
             </div>
           ) : (
             <div className="w-full p-4">
