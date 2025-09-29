@@ -56,7 +56,7 @@ const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlaye
 
   const metricsList = [
     { id: 'yards', field: 'yards', title: 'Rushing Yards', min: 0, max: 300, unit: 'Yards' },
-    { id: 'total_touches', field: 'total_touches', title: 'Total Touches', min: 0, max: 30, unit: 'Touches' },
+    { id: 'total_touches', field: 'total_touches', title: 'Total Touches', min: 0, max: 50, unit: 'Touches' },
     { id: 'longest', field: 'longest', title: 'Longest Rush', min: 0, max: 100, unit: 'Yards' },
     { id: 'touchdowns', field: 'touchdowns', title: 'Touchdowns', min: 0, max: 5, unit: 'TD' },
     { id: 'fumbles', field: 'fumbles', title: 'Fumbles', min: 0, max: 5, unit: 'Fumbles' },

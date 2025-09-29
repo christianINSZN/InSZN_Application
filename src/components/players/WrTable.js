@@ -19,7 +19,7 @@ const WrTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
             onClick={(e) => {
               e.preventDefault();
               console.log('Navigating to:', toPath);
-              navigate(toPath);
+              navigate(toPath, { state: { year } });
             }}
           >
             {row.original.name || 'No Name'}
