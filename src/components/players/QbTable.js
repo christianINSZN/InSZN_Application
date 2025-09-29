@@ -128,7 +128,7 @@ const QbTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
           className="bg-[#235347] text-white text-sm font-medium py-2 px-4 rounded hover:bg-[#1c3f33]"
           onClick={() => setShowAllColumns(!showAllColumns)}
         >
-          {showAllColumns ? 'Hide Extra Columns' : 'Show All Columns'}
+          {showAllColumns ? 'Basic Stats' : 'Advanced Stats'}
         </button>
       </div>
       <div className="h-[300px] sm:h-[362px] overflow-y-auto">
@@ -174,7 +174,7 @@ const QbTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
                 {row.getVisibleCells().map(cell => (
                   <td
                     key={cell.id}
-                    className={`p-0.5 sm:p-1 text-[10px] sm:text-xs text-black border-b border-gray-300 ${cell.column.columnDef.meta?.mobileHidden && !showAllColumns ? 'hidden sm:table-cell' : ''}`}
+                    className={`p-0.5 sm:p-1 text-[10px] sm:text-xs text-black border-b border-gray-300 ${cell.column.columnDef.meta?.mobileHidden && !showAllColumns ? 'hidden sm:table-cell' : ''} ${showAllColumns ? 'min-w-[100px]' : ''}`}
                     style={{
                       textAlign: cell.column.id === 'Player Name' || cell.column.id === 'School' ? 'left' : 'center',
                       verticalAlign: 'middle',

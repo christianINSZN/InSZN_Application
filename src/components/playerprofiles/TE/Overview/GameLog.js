@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-const GameLog = ({ teamGames, weeklyGrades, weeklyBlockingGrades, year, className = "text-sm sm:text-base" }) => {
+const GameLog = ({ teamGames, weeklyGrades, weeklyBlockingGrades, year }) => {
   const [showComingSoon, setShowComingSoon] = useState(false);
   const [showFullColumns, setShowFullColumns] = useState(false);
 
@@ -58,7 +58,7 @@ const GameLog = ({ teamGames, weeklyGrades, weeklyBlockingGrades, year, classNam
             {columns.map(col => (
               <th
                 key={col.key}
-                className={`p-0.5 text-[11px] font-semibold border-b border-gray-400 text-black ${className}`}
+                className="p-1 text-[13px] font-semibold border-b border-gray-400 text-black"
                 style={{ textAlign: col.align, lineHeight: '1.2', minWidth: col.minWidth }}
               >
                 {col.label}
@@ -116,6 +116,7 @@ const GameLog = ({ teamGames, weeklyGrades, weeklyBlockingGrades, year, classNam
                   </span>
                 </span>
               );
+
               const data = {
                 Date: gameDate,
                 Opponent: opponentTeamId ? (
@@ -143,13 +144,14 @@ const GameLog = ({ teamGames, weeklyGrades, weeklyBlockingGrades, year, classNam
                 YDS: weekGrade['yards'] !== undefined && weekGrade['yards'] !== null ? weekGrade['yards'] : '-',
                 TD: weekGrade['touchdowns'] !== undefined && weekGrade['touchdowns'] !== null ? weekGrade['touchdowns'] : '-',
               };
+
               return (
                 <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-[#235347]/20'}>
                   {columns.map(col => (
                     <td
                       key={col.key}
-                      className="p-0.5 text-[10px] text-middle"
-                      style={{ verticalAlign: 'middle', lineHeight: '1.1', textAlign: col.align === 'middle' ? 'center' : 'left' }}
+                      className="p-1 text-xs text-middle"
+                      style={{ verticalAlign: 'middle', lineHeight: '1', textAlign: col.align === 'middle' ? 'center' : 'left' }}
                     >
                       {data[col.key]}
                     </td>
@@ -170,7 +172,7 @@ const GameLog = ({ teamGames, weeklyGrades, weeklyBlockingGrades, year, classNam
   };
 
   return (
-    <div className="bg-gray-100 p-2 sm:p-4 rounded-lg shadow-lg">
+    <div className="bg-gray-100 p-2 sm:p-0 rounded-lg shadow-lg">
       <div className="sm:hidden mb-2">
         <button
           className="bg-[#235347] text-white px-3 py-1 rounded hover:bg-[#1b3e32] text-sm"
@@ -186,7 +188,120 @@ const GameLog = ({ teamGames, weeklyGrades, weeklyBlockingGrades, year, classNam
         </div>
         {/* Non-Mobile Table */}
         <div className="hidden sm:block">
-          {renderTable(true)}
+          <table className="w-full text-left border-collapse">
+            <thead className="sticky top-0 bg-white z-2">
+              <tr>
+                <th className="p-1 text-[13px] font-semibold border-b border-gray-400 text-black" style={{ textAlign: 'left', lineHeight: '1.2' }}>Date</th>
+                <th className="p-1 text-[13px] font-semibold border-b border-gray-400 text-black" style={{ textAlign: 'left', lineHeight: '1.2' }}>Opponent</th>
+                <th className="p-1 text-[13px] font-semibold border-b border-gray-400 text-black" style={{ textAlign: 'left', lineHeight: '1.2' }}>Score</th>
+                <th className="p-1 text-[13px] font-semibold border-b border-gray-400 text-black" style={{ textAlign: 'middle', lineHeight: '1.2' }}>OVR</th>
+                <th className="p-1 text-[13px] font-semibold border-b border-gray-400 text-black" style={{ textAlign: 'middle', lineHeight: '1.2' }}>RecG</th>
+                <th className="p-1 text-[13px] font-semibold border-b border-gray-400 text-black" style={{ textAlign: 'middle', lineHeight: '1.2' }}>PBLK</th>
+                <th className="p-1 text-[13px] font-semibold border-b border-gray-400 text-black" style={{ textAlign: 'middle', lineHeight: '1.2' }}>TAR</th>
+                <th className="p-1 text-[13px] font-semibold border-b border-gray-400 text-black" style={{ textAlign: 'middle', lineHeight: '1.2' }}>REC</th>
+                <th className="p-1 text-[13px] font-semibold border-b border-gray-400 text-black" style={{ textAlign: 'middle', lineHeight: '1.2' }}>YPC</th>
+                <th className="p-1 text-[13px] font-semibold border-b border-gray-400 text-black" style={{ textAlign: 'middle', lineHeight: '1.2' }}>LONG</th>
+                <th className="p-1 text-[13px] font-semibold border-b border-gray-400 text-black" style={{ textAlign: 'middle', lineHeight: '1.2' }}>YDS</th>
+                <th className="p-1 text-[13px] font-semibold border-b border-gray-400 text-black" style={{ textAlign: 'middle', lineHeight: '1.2' }}>TD</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedGames.map((game, index) => {
+                const playerTeam = game.team;
+                const isHomeGame = playerTeam === game.homeTeam;
+                const opponentTeam = isHomeGame ? game.awayTeamAbrev : game.homeTeamAbrev;
+                const opponentTeamId = isHomeGame ? game.awayId : game.homeId;
+                const gameDate = formatDate(game.startDate);
+                const weekStr = String(game.week);
+                const seasonType = game.seasonType || 'regular';
+                const weekGradeKey = `${weekStr}_${seasonType}`;
+                let weekGrade = weeklyGrades[weekGradeKey] || {};
+                let weekBlockingGrade = weeklyBlockingGrades[weekGradeKey] || {};
+                if (!weekGrade && seasonType === 'postseason') {
+                  const matchingGrade = Object.values(weeklyGrades).find(g => g && g.startDate === game.startDate);
+                  if (matchingGrade) weekGrade = matchingGrade;
+                }
+                if (!weekBlockingGrade && seasonType === 'postseason') {
+                  const matchingBlockingGrade = Object.values(weeklyBlockingGrades).find(g => g && g.startDate === game.startDate);
+                  if (matchingBlockingGrade) weekBlockingGrade = matchingBlockingGrade;
+                }
+                const playerPoints = isHomeGame ? game.homePoints : game.awayPoints;
+                const opponentPoints = isHomeGame ? game.awayPoints : game.homePoints;
+                const winLoss = playerPoints > opponentPoints ? "W" : playerPoints < opponentPoints ? "L" : "";
+                const hasScore = playerPoints != null && opponentPoints != null;
+                const gameScore = game.status === 'scheduled' || !hasScore ? (
+                  <span>
+                    {winLoss && (
+                      <span style={{ color: winLoss === "W" ? "green" : "red", marginRight: "4px" }}>
+                        {winLoss}
+                      </span>
+                    )}
+                    {`${playerPoints ?? '-'}-${opponentPoints ?? '-'}`}
+                  </span>
+                ) : (
+                  <span>
+                    {winLoss && (
+                      <span style={{ color: winLoss === "W" ? "green" : "red", marginRight: "4px" }}>
+                        {winLoss}
+                      </span>
+                    )}
+                    <span
+                      className="text-black hover:text-blue underline underline-offset-2 inline-block cursor-pointer"
+                      style={{ display: 'inline-block', lineHeight: '1.1' }}
+                      onClick={() => setShowComingSoon(true)}
+                    >
+                      {`${playerPoints}-${opponentPoints}`}
+                    </span>
+                  </span>
+                );
+
+                const data = {
+                  Date: gameDate,
+                  Opponent: opponentTeamId ? (
+                    <>
+                      <span>{isHomeGame ? 'vs' : 'at'} </span>
+                      <Link
+                        to={`/teams/${opponentTeamId}/${year || game.season}`}
+                        className="text-black hover:text-blue underline underline-offset-2 inline-block cursor-pointer"
+                        style={{ display: 'inline-block' }}
+                      >
+                        {opponentTeam.charAt(0).toUpperCase() + opponentTeam.slice(1)}
+                      </Link>
+                    </>
+                  ) : (
+                    `${isHomeGame ? 'vs' : 'at'} ${opponentTeam.charAt(0).toUpperCase() + opponentTeam.slice(1) || '-'}`
+                  ),
+                  Score: gameScore,
+                  OVR: weekGrade['grades_offense'] !== undefined && weekGrade['grades_offense'] !== null ? weekGrade['grades_offense'].toFixed(1) : '-',
+                  RecG: weekGrade['grades_pass_route'] !== undefined && weekGrade['grades_pass_route'] !== null ? weekGrade['grades_pass_route'].toFixed(1) : '-',
+                  PassBlock: weekBlockingGrade['grades_pass_block'] !== undefined && weekBlockingGrade['grades_pass_block'] !== null ? weekBlockingGrade['grades_pass_block'].toFixed(1) : '-',
+                  TAR: weekGrade['targets'] !== undefined && weekGrade['targets'] !== null ? weekGrade['targets'] : '-',
+                  REC: weekGrade['receptions'] !== undefined && weekGrade['receptions'] !== null ? weekGrade['receptions'] : '-',
+                  YPC: weekGrade['yards_per_reception'] !== undefined && weekGrade['yards_per_reception'] !== null ? weekGrade['yards_per_reception'].toFixed(1) : '-',
+                  LONG: weekGrade['longest'] !== undefined && weekGrade['longest'] !== null ? weekGrade['longest'] : '-',
+                  YDS: weekGrade['yards'] !== undefined && weekGrade['yards'] !== null ? weekGrade['yards'] : '-',
+                  TD: weekGrade['touchdowns'] !== undefined && weekGrade['touchdowns'] !== null ? weekGrade['touchdowns'] : '-',
+                };
+
+                return (
+                  <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-[#235347]/20'}>
+                    <td className="p-1 text-xs text-middle" style={{ verticalAlign: 'middle', lineHeight: '1' }}>{data.Date}</td>
+                    <td className="p-1 text-xs text-middle" style={{ verticalAlign: 'middle', lineHeight: '1' }}>{data.Opponent}</td>
+                    <td className="p-1 text-xs text-middle" style={{ verticalAlign: 'middle', lineHeight: '1' }}>{data.Score}</td>
+                    <td className="p-1 text-xs text-middle" style={{ verticalAlign: 'middle', lineHeight: '1.1' }}>{data.OVR}</td>
+                    <td className="p-1 text-xs text-middle" style={{ verticalAlign: 'middle', lineHeight: '1.1' }}>{data.RecG}</td>
+                    <td className="p-1 text-xs text-middle" style={{ verticalAlign: 'middle', lineHeight: '1.1' }}>{data.PassBlock}</td>
+                    <td className="p-1 text-xs text-middle" style={{ verticalAlign: 'middle', lineHeight: '1.1' }}>{data.TAR}</td>
+                    <td className="p-1 text-xs text-middle" style={{ verticalAlign: 'middle', lineHeight: '1.1' }}>{data.REC}</td>
+                    <td className="p-1 text-xs text-middle" style={{ verticalAlign: 'middle', lineHeight: '1.1' }}>{data.YPC}</td>
+                    <td className="p-1 text-xs text-middle" style={{ verticalAlign: 'middle', lineHeight: '1.1' }}>{data.LONG}</td>
+                    <td className="p-1 text-xs text-middle" style={{ verticalAlign: 'middle', lineHeight: '1.1' }}>{data.YDS}</td>
+                    <td className="p-1 text-xs text-middle" style={{ verticalAlign: 'middle', lineHeight: '1.1' }}>{data.TD}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
       {showComingSoon && (

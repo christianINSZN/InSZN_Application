@@ -113,7 +113,7 @@ const WrTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
           className="bg-[#235347] text-white text-sm font-medium py-2 px-4 rounded hover:bg-[#1c3f33]"
           onClick={() => setShowAllColumns(!showAllColumns)}
         >
-          {showAllColumns ? 'Hide Extra Columns' : 'Show All Columns'}
+          {showAllColumns ? 'Basic Stats' : 'Advanced Stats'}
         </button>
       </div>
       <div className="h-[300px] sm:h-[362px] overflow-y-auto">
@@ -124,7 +124,7 @@ const WrTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
                 {headerGroup.headers.map(column => (
                   <th
                     key={column.id}
-                    className={`p-2 sm:p-3 text-[10px] sm:text-xs font-semibold border-b border-[#235347] text-black cursor-pointer ${column.column.columnDef.meta?.mobileHidden && !showAllColumns ? 'hidden sm:table-cell' : ''}`}
+                    className={`p-2 sm:p-3 text-[10px] sm:text-xs font-semibold border-b border-[#235347] text-black cursor-pointer ${column.column.columnDef.meta?.mobileHidden && !showAllColumns ? 'hidden sm:table-cell' : ''} ${showAllColumns ? 'min-w-[100px]' : ''}`}
                     style={{
                       textAlign: column.id === 'Player Name' || column.id === 'School' ? 'left' : 'center',
                       verticalAlign: 'middle',

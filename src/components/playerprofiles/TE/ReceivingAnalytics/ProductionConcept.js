@@ -42,8 +42,8 @@ const ProductionContainer = ({
   const isMobile = window.innerWidth < 640;
 
   const colors = [
-    'rgba(255, 99, 132, 1)', // Red
     'rgba(54, 162, 235, 1)', // Blue
+    'rgba(255, 99, 132, 1)', // Red
     'rgba(75, 192, 192, 1)', // Teal
     'rgba(255, 159, 64, 1)', // Orange
     'rgba(153, 102, 255, 1)', // Purple
