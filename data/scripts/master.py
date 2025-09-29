@@ -22,7 +22,7 @@ script_order = [
 
     ## Populate Players Basic Info and Grades ###
     #  "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/players/populate_players_basic.py",
-    #  "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/players/populate_players_basic_grades.py", #no need for all teams
+      "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/players/populate_players_basic_grades.py", #no need for all teams
     
     ## PASSING SEASON DATA ####
     #Passing Concepts Season
@@ -77,14 +77,14 @@ script_order = [
     
     # # #### BLOCKING SEASON DATA ####
     # # Blocking Concepts Season
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/blocking/season/populate_blocking_grades_season.py",
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/blocking/season/populate_pass_blocking_season.py",
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/blocking/season/populate_run_blocking_season.py",
+    "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/blocking/season/populate_blocking_grades_season.py",
+    "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/blocking/season/populate_pass_blocking_season.py",
+    "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/blocking/season/populate_run_blocking_season.py",
     
     # # Blocking Concepts Weekly
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/blocking/weekly/populate_blocking_grades_weekly.py",
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/blocking/weekly/populate_pass_blocking_weekly.py",
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/blocking/weekly/populate_run_blocking_weekly.py",
+    "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/blocking/weekly/populate_blocking_grades_weekly.py",
+    "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/blocking/weekly/populate_pass_blocking_weekly.py",
+    "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/blocking/weekly/populate_run_blocking_weekly.py",
 
     # # Team Blocking Concepts Weekly
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/blocking/weekly/populate_team_blocking_grades_weekly.py",
