@@ -75,7 +75,7 @@ const GTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTea
 
   return (
     <div className="p-0 shadow-xl rounded-lg">
-      <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Guards</h2>
+      <h2 className="flex items-center justify-center text-md sm:text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-auto sm:h-auto rounded-t-lg">Guards</h2>
       <div className="relative">
         <div className="h-[362px] overflow-y-auto filter blur-xs opacity-80" style={{ pointerEvents: 'none' }}>
           <table className="w-full text-center border-collapse">

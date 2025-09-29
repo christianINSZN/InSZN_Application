@@ -107,7 +107,7 @@ const WrTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
 
   return (
     <div className="p-0 sm:p-0 shadow-xl rounded-lg">
-      <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Wide Receivers</h2>
+      <h2 className="flex items-center justify-center text-md sm:text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-auto sm:h-auto rounded-t-lg">Wide Receivers</h2>
       <div className="flex justify-center p-2 sm:hidden">
         <button
           className="bg-[#235347] text-white text-sm font-medium py-2 px-4 rounded hover:bg-[#1c3f33]"
