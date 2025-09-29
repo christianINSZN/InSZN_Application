@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useTransition } from 'react';
 import { useLocation } from 'react-router-dom';
 import Select from 'react-select';
 
-const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
+const HeadToHeadContainer = ({ className, onPlayerDataChange }) => {
   const location = useLocation();
   const [player1, setPlayer1] = useState(null);
   const [player2, setPlayer2] = useState(null);
@@ -49,8 +49,6 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
   const excludedMetrics = ['name', 'playerId', 'year', 'team', 'school', 'position'];
   const [isPending1, startTransition1] = useTransition();
   const [isPending2, startTransition2] = useTransition();
-  const [metadata1, setMetadata1] = useState([]);
-  const [metadata2, setMetadata2] = useState([]);
 
   const selectStyles = {
     control: (provided) => ({
@@ -101,37 +99,9 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
         p2Value: 0,
       };
       setCustomMetrics(prev => [...prev, newMetric]);
-      if (player1 && year1) {
-        fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_QB/${player1.value}/${year1}`)
-          .then(response => response.json())
-          .then(statsData => {
-            if (statsData && Object.keys(statsData).length > 0) {
-              setCustomMetrics(prev => prev.map(metric =>
-                metric.field === newMetric.field
-                  ? { ...metric, p1Value: statsData[metric.field] || 0 }
-                  : metric
-              ));
-            }
-          })
-          .catch(error => console.error(`Error fetching Player 1 data for custom metric ${newMetric.field}:`, error));
-      }
-      if (player2 && year2) {
-        fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_QB/${player2.value}/${year2}`)
-          .then(response => response.json())
-          .then(statsData => {
-            if (statsData && Object.keys(statsData).length > 0) {
-              setCustomMetrics(prev => prev.map(metric =>
-                metric.field === newMetric.field
-                  ? { ...metric, p2Value: statsData[metric.field] || 0 }
-                  : metric
-              ));
-            }
-          })
-          .catch(error => console.error(`Error fetching Player 2 data for custom metric ${newMetric.field}:`, error));
-      }
       setSelectedCustomMetric(null);
     }
-  }, [selectedCustomMetric, customMetrics, player1, year1, player2, year2]);
+  }, [selectedCustomMetric, customMetrics]);
 
   useEffect(() => {
     const fetchPlayers = async () => {
@@ -154,43 +124,16 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
   }, []);
 
   useEffect(() => {
-    const fetchAvailableMetrics = async () => {
-      if (player1 && year1 && player2 && year2) {
-        try {
-          const [statsResponse1, statsResponse2] = await Promise.all([
-            fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_QB/${player1.value}/${year1}`),
-            fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_QB/${player2.value}/${year2}`),
-          ]);
-          const statsData1 = await statsResponse1.json();
-          const statsData2 = await statsResponse2.json();
-          const metrics1 = Object.keys(statsData1).filter(key => !excludedMetrics.includes(key));
-          const metrics2 = Object.keys(statsData2).filter(key => !excludedMetrics.includes(key));
-          const allMetrics = [...new Set([...metrics1, ...metrics2])];
-          setAvailableMetrics(allMetrics.map(field => ({
-            value: field,
-            label: formatMetric(field),
-          })));
-        } catch (error) {
-          console.error('Error fetching available metrics:', error);
-        }
-      }
-    };
-    fetchAvailableMetrics();
-  }, [player1, year1, player2, year2]);
-
-  useEffect(() => {
     if (player1) {
       const fetchPlayerYears = async () => {
         try {
-          const metadataResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/player_metadata_qb/${player1.value}`);
-          if (!metadataResponse.ok) throw new Error(`HTTP error! status: ${metadataResponse.status}`);
-          const metadataData = await metadataResponse.json();
-          if (!Array.isArray(metadataData)) throw new Error('API response is not an array');
-          const years = metadataData.map(item => item.year).filter(y => y !== null && y !== undefined);
-          const uniqueYears = [...new Set(years)].sort((a, b) => b - a);
+          const response = await fetch(`${process.env.REACT_APP_API_URL}/api/player_years/${player1.value}`);
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          const years = await response.json();
+          console.log(`Player 1 years:`, years);
+          if (!Array.isArray(years)) throw new Error('API response is not an array');
           startTransition1(() => {
-            setMetadata1(metadataData);
-            setYearOptions1(uniqueYears.map(y => ({ value: y, label: y.toString() })));
+            setYearOptions1(years.map(y => ({ value: y, label: y.toString() })));
             setYear1(null);
             setHeadshotUrl1(null);
             setMetrics(prevMetrics => prevMetrics.map(metric => ({ ...metric, p1Value: 0 })));
@@ -200,7 +143,6 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
         } catch (error) {
           console.error(`Error fetching years for Player 1 ${player1.label}:`, error.message);
           startTransition1(() => {
-            setMetadata1([]);
             setYearOptions1([]);
             setYear1(null);
           });
@@ -209,9 +151,9 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
       fetchPlayerYears();
     } else {
       startTransition1(() => {
-        setMetadata1([]);
         setYearOptions1([]);
         setYear1(null);
+        setHeadshotUrl1(null);
       });
     }
   }, [player1]);
@@ -220,15 +162,13 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
     if (player2) {
       const fetchPlayerYears = async () => {
         try {
-          const metadataResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/player_metadata_qb/${player2.value}`);
-          if (!metadataResponse.ok) throw new Error(`HTTP error! status: ${metadataResponse.status}`);
-          const metadataData = await metadataResponse.json();
-          if (!Array.isArray(metadataData)) throw new Error('API response is not an array');
-          const years = metadataData.map(item => item.year).filter(y => y !== null && y !== undefined);
-          const uniqueYears = [...new Set(years)].sort((a, b) => b - a);
+          const response = await fetch(`${process.env.REACT_APP_API_URL}/api/player_years/${player2.value}`);
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          const years = await response.json();
+          console.log(`Player 2 years:`, years);
+          if (!Array.isArray(years)) throw new Error('API response is not an array');
           startTransition2(() => {
-            setMetadata2(metadataData);
-            setYearOptions2(uniqueYears.map(y => ({ value: y, label: y.toString() })));
+            setYearOptions2(years.map(y => ({ value: y, label: y.toString() })));
             setYear2(null);
             setHeadshotUrl2(null);
             setMetrics(prevMetrics => prevMetrics.map(metric => ({ ...metric, p2Value: 0 })));
@@ -238,7 +178,6 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
         } catch (error) {
           console.error(`Error fetching years for Player 2 ${player2.label}:`, error.message);
           startTransition2(() => {
-            setMetadata2([]);
             setYearOptions2([]);
             setYear2(null);
           });
@@ -247,96 +186,94 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
       fetchPlayerYears();
     } else {
       startTransition2(() => {
-        setMetadata2([]);
         setYearOptions2([]);
         setYear2(null);
+        setHeadshotUrl2(null);
       });
     }
   }, [player2]);
-
-  useEffect(() => {
-    if (year1) {
-      const latestYearData = metadata1.find(item => item.year === Number(year1)) || metadata1[0];
-      startTransition1(() => setHeadshotUrl1(latestYearData?.headshotURL || null));
-    }
-  }, [year1, metadata1]);
-
-  useEffect(() => {
-    if (year2) {
-      const latestYearData = metadata2.find(item => item.year === Number(year2)) || metadata2[0];
-      startTransition2(() => setHeadshotUrl2(latestYearData?.headshotURL || null));
-    }
-  }, [year2, metadata2]);
 
   const handleCompare = () => {
     if (player1 && year1 && player2 && year2) {
       setLoading(true);
       const fetchData = async () => {
         try {
-          const [statsResponse1, statsResponse2] = await Promise.all([
+          const [metadataResponse1, metadataResponse2, statsResponse1, statsResponse2] = await Promise.all([
+            fetch(`${process.env.REACT_APP_API_URL}/api/player_metadata_qb/${player1.value}`),
+            fetch(`${process.env.REACT_APP_API_URL}/api/player_metadata_qb/${player2.value}`),
             fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_QB/${player1.value}/${year1}`),
             fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_QB/${player2.value}/${year2}`),
           ]);
-          if (!statsResponse1.ok) {
-            throw new Error(`Failed to fetch stats data for Player 1: ${await statsResponse1.text()}`);
-          }
-          if (!statsResponse2.ok) {
-            throw new Error(`Failed to fetch stats data for Player 2: ${await statsResponse2.text()}`);
-          }
-          const statsData1 = await statsResponse1.json();
-          const statsData2 = await statsResponse2.json();
+          if (!metadataResponse1.ok) throw new Error(`Failed to fetch metadata for Player 1: ${await metadataResponse1.text()}`);
+          if (!metadataResponse2.ok) throw new Error(`Failed to fetch metadata for Player 2: ${await metadataResponse2.text()}`);
+          if (!statsResponse1.ok) throw new Error(`Failed to fetch stats for Player 1: ${await statsResponse1.text()}`);
+          if (!statsResponse2.ok) throw new Error(`Failed to fetch stats for Player 2: ${await statsResponse2.text()}`);
+
+          const [metadataData1, metadataData2, statsData1, statsData2] = await Promise.all([
+            metadataResponse1.json(),
+            metadataResponse2.json(),
+            statsResponse1.json(),
+            statsResponse2.json(),
+          ]);
+
           console.log('Stats data for Player 1:', statsData1);
           console.log('Stats data for Player 2:', statsData2);
-          if (statsData1 && Object.keys(statsData1).length > 0) {
-            startTransition1(() => {
+
+          startTransition1(() => {
+            const latestYearData1 = metadataData1.find(item => item.year === Number(year1)) || metadataData1[0];
+            setHeadshotUrl1(latestYearData1?.headshotURL || null);
+            if (statsData1 && Object.keys(statsData1).length > 0 && statsData1.playerId) {
               setMetrics(prevMetrics => prevMetrics.map(metric => ({
                 ...metric,
-                p1Value: statsData1[metric.field] || 0,
+                p1Value: statsData1[metric.field] ?? 0,
               })));
               setMetricsGrades(prevMetrics => prevMetrics.map(metric => ({
                 ...metric,
-                p1Value: statsData1[metric.field] || 0,
+                p1Value: statsData1[metric.field] ?? 0,
               })));
               setCustomMetrics(prevMetrics => prevMetrics.map(metric => ({
                 ...metric,
-                p1Value: statsData1[metric.field] || 0,
+                p1Value: statsData1[metric.field] ?? 0,
               })));
-            });
-          } else {
-            console.warn('No valid stats data received for Player 1');
-            startTransition1(() => {
+            } else {
+              console.warn('No valid stats data for Player 1');
               setMetrics(prevMetrics => prevMetrics.map(metric => ({ ...metric, p1Value: 0 })));
               setMetricsGrades(prevMetrics => prevMetrics.map(metric => ({ ...metric, p1Value: 0 })));
               setCustomMetrics(prevMetrics => prevMetrics.map(metric => ({ ...metric, p1Value: 0 })));
-            });
-          }
-          if (statsData2 && Object.keys(statsData2).length > 0) {
-            startTransition2(() => {
+            }
+          });
+
+          startTransition2(() => {
+            const latestYearData2 = metadataData2.find(item => item.year === Number(year2)) || metadataData2[0];
+            setHeadshotUrl2(latestYearData2?.headshotURL || null);
+            if (statsData2 && Object.keys(statsData2).length > 0 && statsData2.playerId) {
               setMetrics(prevMetrics => prevMetrics.map(metric => ({
                 ...metric,
-                p2Value: statsData2[metric.field] || 0,
+                p2Value: statsData2[metric.field] ?? 0,
               })));
               setMetricsGrades(prevMetrics => prevMetrics.map(metric => ({
                 ...metric,
-                p2Value: statsData2[metric.field] || 0,
+                p2Value: statsData2[metric.field] ?? 0,
               })));
               setCustomMetrics(prevMetrics => prevMetrics.map(metric => ({
                 ...metric,
-                p2Value: statsData2[metric.field] || 0,
+                p2Value: statsData2[metric.field] ?? 0,
               })));
-            });
-          } else {
-            console.warn('No valid stats data received for Player 2');
-            startTransition2(() => {
+            } else {
+              console.warn('No valid stats data for Player 2');
               setMetrics(prevMetrics => prevMetrics.map(metric => ({ ...metric, p2Value: 0 })));
               setMetricsGrades(prevMetrics => prevMetrics.map(metric => ({ ...metric, p2Value: 0 })));
               setCustomMetrics(prevMetrics => prevMetrics.map(metric => ({ ...metric, p2Value: 0 })));
-            });
-          }
-          onPlayerDataChange({
-            player1: { playerId: player1.value, year: year1, name: player1.label },
-            player2: { playerId: player2.value, year: year2, name: player2.label },
+            }
           });
+
+          const metrics1 = Object.keys(statsData1).filter(key => !excludedMetrics.includes(key));
+          const metrics2 = Object.keys(statsData2).filter(key => !excludedMetrics.includes(key));
+          const allMetrics = [...new Set([...metrics1, ...metrics2])];
+          setAvailableMetrics(allMetrics.map(field => ({
+            value: field,
+            label: formatMetric(field),
+          })));
         } catch (error) {
           console.error('Error fetching comparison data:', error);
           startTransition1(() => {
@@ -670,7 +607,7 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
                   );
                 })
               ) : (
-                <p className="text-gray-500 text-center text-sm sm:text-base">Please Select Comparison Player</p>
+                <p className="text-gray-500 text-center text-sm sm:text-base">Please Select Comparison Players and Years</p>
               )}
             </div>
           )}

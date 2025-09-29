@@ -210,24 +210,6 @@ function HeadToHeadQB() {
                 </div>
                 <div className="bg-gradient-to-b from-[#235347] to-gray-100 h-full"></div>
               </div>
-              <div className="w-[100%] mx-auto grid grid-cols-[69%,30%] gap-4 mt-4">
-                <div className="bg-white rounded-lg shadow">
-                  <ContainerB
-                    player1={playerData.player1}
-                    player2={playerData.player2}
-                    excludedMetrics={excludedMetrics}
-                    metricRenames={metricRenames}
-                  />
-                </div>
-                <div className="bg-white rounded-lg shadow">
-                  <ContainerA
-                    player1={playerData.player1}
-                    player2={playerData.player2}
-                    excludedMetrics={excludedMetrics}
-                    metricRenames={metricRenames}
-                  />
-                </div>
-              </div>
             </div>
           )}
         </ErrorBoundary>

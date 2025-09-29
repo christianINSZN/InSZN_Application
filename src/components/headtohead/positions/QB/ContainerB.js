@@ -6,6 +6,7 @@ import Select from 'react-select';
 const ContainerB = ({
   player1,
   player2,
+  onCompare,
   excludedMetrics = ['bats', 'pressure_to_sack_rate', 'sack_percent', 'sacks', 'scrambles', 'spikes', 'thrown_aways'],
   metricRenames = {
     'ypa': 'YPA',
@@ -32,23 +33,28 @@ const ContainerB = ({
       : 'Unknown';
   }, [metricRenames]);
 
-  // Reset state when player1 changes
+  // Reset state when onCompare changes
   useEffect(() => {
     setTeamGames([]);
     setAvailableMetrics([]);
     setSelectedMetric(null);
     hasFetchedRef.current = false;
-  }, [player1?.playerId, player1?.year]);
+  }, [onCompare]);
 
-  // Fetch available metrics and team games
+  // Fetch data only when onCompare is triggered and player1/year are available
   useEffect(() => {
-    if (!player1?.playerId || !player1?.year || hasFetchedRef.current) return;
+    if (!onCompare || !player1?.playerId || !player1?.year || hasFetchedRef.current) return;
     hasFetchedRef.current = true;
     const fetchData = async () => {
       setLoading(true);
       try {
+        console.log('Fetching data for player1:', player1);
         const gamesResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/player_games/${player1.year}/${player1.playerId}`);
-        if (!gamesResponse.ok) throw new Error('Failed to fetch team games');
+        if (!gamesResponse.ok) {
+          console.warn(`Failed to fetch team games for ${player1.playerId}, year ${player1.year}`);
+          setTeamGames([]);
+          return;
+        }
         const gamesData = await gamesResponse.json();
         console.log('Team games:', gamesData);
         setTeamGames(gamesData || []);
@@ -56,7 +62,12 @@ const ContainerB = ({
         if (gamesData && gamesData.length > 0) {
           const { week, seasonType } = gamesData[0];
           const statsResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/player_passing_weekly_all/${player1.playerId}/${player1.year}/${week}/${seasonType}`);
-          if (!statsResponse.ok) throw new Error('Failed to fetch weekly stats data');
+          if (!statsResponse.ok) {
+            console.warn(`No weekly stats for player ${player1.playerId}, year ${player1.year}, week ${week}, season ${seasonType}`);
+            setAvailableMetrics([{ value: 'attempts', label: 'Attempts' }]);
+            setSelectedMetric({ value: 'attempts', label: 'Attempts' });
+            return;
+          }
           const statsData = await statsResponse.json();
           console.log('Player 1 weekly stats:', statsData);
           const excluded = ['name', 'team', 'playerId', 'year', 'week', 'seasonType', 'opponentID', 'teamID', 'player_id_PFF', 'position', 'player_game_count', 'franchise_id', ...excludedMetrics];
@@ -68,21 +79,24 @@ const ContainerB = ({
                   label: formatMetric(field),
                 }))
                 .sort((a, b) => a.label.localeCompare(b.label))
-            : [];
+            : [{ value: 'attempts', label: 'Attempts' }];
           setAvailableMetrics(metrics);
-          setSelectedMetric(metrics.find(m => m.value === 'attempts') || metrics[0] || null);
+          setSelectedMetric(metrics.find(m => m.value === 'attempts') || metrics[0] || { value: 'attempts', label: 'Attempts' });
+        } else {
+          console.warn('No team games available, defaulting to attempts');
+          setAvailableMetrics([{ value: 'attempts', label: 'Attempts' }]);
+          setSelectedMetric({ value: 'attempts', label: 'Attempts' });
         }
       } catch (error) {
         console.error('Error fetching data:', error);
-        setAvailableMetrics([]);
-        setSelectedMetric(null);
+        setAvailableMetrics([{ value: 'attempts', label: 'Attempts' }]);
+        setSelectedMetric({ value: 'attempts', label: 'Attempts' });
       } finally {
         setLoading(false);
       }
     };
-    console.log('Fetching data for player1:', player1);
     fetchData();
-  }, [player1?.playerId, player1?.year, formatMetric]);
+  }, [onCompare, player1?.playerId, player1?.year, formatMetric, excludedMetrics]);
 
   // Memoize chart data
   const chartData = useMemo(() => {
