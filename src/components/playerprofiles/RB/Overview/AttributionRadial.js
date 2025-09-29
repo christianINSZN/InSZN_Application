@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Chart } from 'chart.js/auto';
 
-const AttributionRadial = ({ playerId, year, percentileGrades, className = "text-sm sm:text-base" }) => {
+const AttributionRadial = ({ playerId, year, percentileGrades }) => {
+  // Function to get grade value from percentileGrades
   const getGradeValue = (gradeKey) => {
     if (!percentileGrades) return 'N/A';
     switch (gradeKey) {
@@ -9,17 +10,19 @@ const AttributionRadial = ({ playerId, year, percentileGrades, className = "text
       case 'Grade B': return percentileGrades.percentile_explosive || 'N/A';
       case 'Grade C': return percentileGrades.percentile_breakaway_percent || 'N/A';
       case 'Grade D': return percentileGrades.percentile_yards_after_contact || 'N/A';
-      case 'Grade E': return percentileGrades.percentile_grades_hands_fumble_rushing || 'N/A';
+      case 'Grade E': return percentileGrades.percentile_grades_hands_fumble_rishing || 'N/A';
       default: return 'N/A';
     }
   };
 
+  // Function to format percentile with two decimals
   const formatPercentile = (value) => {
     if (value === 'N/A' || value === null || value === undefined) return 'N/A';
     const numValue = parseFloat(value);
     return isNaN(numValue) ? 'N/A' : `${numValue.toFixed(2)}%`;
   };
 
+  // Manually adjustable label mappings
   const customLabels = {
     'Grade A': 'Usage Share',
     'Grade B': 'Explosiveness',
@@ -28,40 +31,37 @@ const AttributionRadial = ({ playerId, year, percentileGrades, className = "text
     'Grade E': 'Ball Security'
   };
 
-  const metricExplanations = {
-    'Usage Share': 'Measures the player\'s share of total team rushing attempts.',
-    'Explosiveness': 'Evaluates the ability to generate big plays in the run game.',
-    'Breakaway': 'Assesses the frequency of long runs resulting in significant yardage.',
-    'Strength': 'Evaluates yards gained after contact, indicating physicality.',
-    'Ball Security': 'Measures the ability to avoid fumbles during runs.'
-  };
-
   const [data, setData] = useState({ labels: [], data: [] });
   const chartRef = useRef(null);
   const canvasRef = useRef(null);
-  const isMobile = window.innerWidth < 640;
 
   useEffect(() => {
     console.log('AttributionRadial props:', { playerId, year, percentileGrades });
+    console.log(`Processing data for playerId: ${playerId}, year: ${year}, percentileGrades:`, percentileGrades);
+
     if (!percentileGrades) {
       console.warn('percentileGrades is undefined, setting empty data');
       setData({ labels: [], data: [] });
       return;
     }
+
+    // Extract data for the 5 specific grades
     const gradeKeys = ['Grade A', 'Grade B', 'Grade C', 'Grade D', 'Grade E'];
     const labels = gradeKeys.map(key => customLabels[key] || key.replace('Grade ', '').replace(/([A-Z])/g, ' $1').trim());
     const dataValues = gradeKeys.map(key => {
       const value = getGradeValue(key);
       console.log(`Processing ${key}: ${value}`);
       let numericValue = value === 'N/A' ? 0 : parseFloat(value) || 0;
-      if (key === 'Grade E') {
+      if (key === 'Grade F') { // Invert for Ball Security (lower fumble rate is better)
         numericValue = 100 - numericValue;
       }
       return numericValue;
     });
+
     if (dataValues.every(v => v === 0)) {
       console.warn('All data values are 0, chart may be blank');
     }
+
     console.log('Processed data:', { labels, data: dataValues });
     setData({ labels, data: dataValues });
   }, [playerId, year, percentileGrades]);
@@ -71,6 +71,7 @@ const AttributionRadial = ({ playerId, year, percentileGrades, className = "text
       chartRef.current.destroy();
       console.log('Previous chart destroyed');
     }
+
     const ctx = canvasRef.current?.getContext('2d');
     if (ctx && data.labels.length > 0 && data.data.length > 0 && data.data.some(v => v > 0)) {
       console.log('Creating chart with data:', data);
@@ -96,12 +97,12 @@ const AttributionRadial = ({ playerId, year, percentileGrades, className = "text
               ticks: {
                 stepSize: 20,
                 font: {
-                  size: isMobile ? 12 : 15,
+                  size: 10,
                 },
               },
               pointLabels: {
                 font: {
-                  size: isMobile ? 12 : 16,
+                  size: 16,
                   family: 'Arial',
                   weight: 'bold'
                 },
@@ -113,59 +114,6 @@ const AttributionRadial = ({ playerId, year, percentileGrades, className = "text
           },
           plugins: {
             legend: { display: false },
-            tooltip: {
-              enabled: false,
-              external: (context) => {
-                const tooltipModel = context.tooltip;
-                let tooltipEl = document.getElementById('chartjs-tooltip');
-                if (!tooltipEl) {
-                  tooltipEl = document.createElement('div');
-                  tooltipEl.id = 'chartjs-tooltip';
-                  document.body.appendChild(tooltipEl);
-                }
-                if (tooltipModel.opacity === 0) {
-                  tooltipEl.style.opacity = 0;
-                  return;
-                }
-                tooltipEl.style.maxWidth = '200px';
-                tooltipEl.style.wordWrap = 'break-word';
-                tooltipEl.style.fontFamily = 'Arial';
-                tooltipEl.style.fontSize = isMobile ? '12px' : '14px';
-                tooltipEl.style.padding = '8px';
-                tooltipEl.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-                tooltipEl.style.color = 'white';
-                tooltipEl.style.borderRadius = '4px';
-                tooltipEl.style.pointerEvents = 'none';
-                tooltipEl.style.position = 'absolute';
-                const title = (tooltipModel.title && tooltipModel.title.length) ? tooltipModel.title[0] : '';
-                const bodyLines = tooltipModel.body ? tooltipModel.body.map(b => b.lines).flat() : [];
-                let innerHtml = '';
-                if (title) {
-                  innerHtml += `<div style="font-size: ${isMobile ? '14px' : '16px'}; font-weight: bold; margin-bottom: 4px;">${title}</div>`;
-                }
-                bodyLines.forEach(line => {
-                  if (line) {
-                    innerHtml += `<div style="margin-bottom: 2px;">${line}</div>`;
-                  }
-                });
-                tooltipEl.innerHTML = innerHtml;
-                const { left, top } = context.chart.canvas.getBoundingClientRect();
-                tooltipEl.style.left = left + window.pageXOffset + tooltipModel.caretX + 'px';
-                tooltipEl.style.top = top + window.pageYOffset + tooltipModel.caretY + 'px';
-                tooltipEl.style.opacity = 1;
-              },
-              callbacks: {
-                title: (tooltipItems) => {
-                  return tooltipItems[0].label;
-                },
-                label: (tooltipItem) => {
-                  const label = tooltipItem.label;
-                  const value = formatPercentile(tooltipItem.raw);
-                  const explanation = metricExplanations[label] || 'No explanation available';
-                  return [`Percentile: ${value}`, "────────────", explanation];
-                }
-              }
-            }
           },
           maintainAspectRatio: false,
           responsive: true,
@@ -178,11 +126,11 @@ const AttributionRadial = ({ playerId, year, percentileGrades, className = "text
   }, [data]);
 
   return (
-    <div className={`bg-white rounded-lg shadow-lg row-span-2 ${className}`}>
+    <div className="bg-white rounded-lg shadow-lg row-span-2">
       <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Attribution Radial</h2>
-      <div className={isMobile ? "h-[320px] bg-white flex items-center justify-center relative" : "h-[380px] bg-white flex items-center justify-center relative"} style={{ position: 'relative', width: '100%' }}>
-        <canvas ref={canvasRef} id="attributionChart" style={{ width: '100%', height: '100%', maxWidth: isMobile ? '360px' : '600px', maxHeight: isMobile ? '320px' : '400px' }} />
-        {!data.labels.length && <div className={isMobile ? "absolute text-red-500 text-sm" : "absolute text-red-500 text-base"}>No data available</div>}
+      <div className="h-[380px] bg-white flex items-center justify-center relative" style={{ position: 'relative', width: '100%' }}>
+        <canvas ref={canvasRef} id="attributionChart" style={{ width: '100%', height: '100%', maxWidth: '600px', maxHeight: '320px' }} />
+        {!data.labels.length && <div className="absolute text-red-500">No data available</div>}
       </div>
     </div>
   );
