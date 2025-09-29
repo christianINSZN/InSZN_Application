@@ -147,7 +147,7 @@ function HeadToHeadQB() {
 
   return (
     <WeeklyGradesContext.Provider value={weeklyGrades}>
-      <div className="w-full min-h-screen bg-gray-50">
+      <div className="w-full min-h-screen bg-gray-50 mt-0 sm:mt-12">
         <div className="border-b border-gray-300 mb-4">
           <ul className={`flex ${isMobile ? 'flex-col gap-2 p-4' : 'gap-4 px-4 py-2'} justify-center`}>
             {[

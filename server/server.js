@@ -296,7 +296,25 @@ app.get('/api/player_metadata_qb/:playerId', (req, res) => {
       res.json([row]);
     }
   });
-}); 
+});
+
+app.get('/api/player_years/:playerId', (req, res) => {
+  const { playerId } = req.params;
+  db.all(
+    'SELECT DISTINCT year FROM Players_Basic WHERE playerId = ? ORDER BY year ASC',
+    [playerId],
+    (err, rows) => {
+      if (err) {
+        res.status(500).send(err.message);
+      } else if (!rows || rows.length === 0) {
+        res.status(404).send('No years found for this player');
+      } else {
+        // Return just an array of years like [2022, 2023]
+        res.json(rows.map(r => r.year));
+      }
+    }
+  );
+});
 
 app.get('/api/player_passing_weekly_all/:playerId/:year/:week/:seasonType', (req, res) => {
   const { playerId, year, week, seasonType } = req.params;

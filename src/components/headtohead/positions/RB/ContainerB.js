@@ -1,17 +1,18 @@
-import React, { useState, useEffect, useRef, useContext, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useContext, useCallback } from 'react';
 import Chart from 'chart.js/auto';
-import { WeeklyGradesContext } from '../../headtohead_qb';
+import { WeeklyGradesContext } from '../../headtohead_rb';
 import Select from 'react-select';
 
 const ContainerB = ({
   player1,
   player2,
-  excludedMetrics = ['bats', 'pressure_to_sack_rate', 'sack_percent', 'sacks', 'scrambles', 'spikes', 'thrown_aways'],
+  excludedMetrics = ['first_downs', 'fumbles_lost', 'longest', 'total_touches'],
   metricRenames = {
     'ypa': 'YPA',
-    'btt_rate': 'Big Time Throw Rate',
-    'qb_rating': 'QB Rating',
-    'twp_rate': 'Turnover Worthy Play Rate'
+    'elu_rush_mtf': 'Missed Tackles Forced',
+    'breakaway_percent': 'Breakaway %',
+    'yards_after_contact': 'Yards After Contact',
+    'yco_attempt': 'Yards After Contact per Attempt',
   }
 }) => {
   const chartRef = useRef(null);
@@ -32,17 +33,10 @@ const ContainerB = ({
       : 'Unknown';
   }, [metricRenames]);
 
-  // Reset state when player1 changes
   useEffect(() => {
-    setTeamGames([]);
-    setAvailableMetrics([]);
-    setSelectedMetric(null);
-    hasFetchedRef.current = false;
-  }, [player1?.playerId, player1?.year]);
-
-  // Fetch available metrics and team games
-  useEffect(() => {
-    if (!player1?.playerId || !player1?.year || hasFetchedRef.current) return;
+    if (!player1?.playerId || !player1?.year || hasFetchedRef.current) {
+      return;
+    }
     hasFetchedRef.current = true;
     const fetchData = async () => {
       setLoading(true);
@@ -52,10 +46,9 @@ const ContainerB = ({
         const gamesData = await gamesResponse.json();
         console.log('Team games:', gamesData);
         setTeamGames(gamesData || []);
-
         if (gamesData && gamesData.length > 0) {
           const { week, seasonType } = gamesData[0];
-          const statsResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/player_passing_weekly_all/${player1.playerId}/${player1.year}/${week}/${seasonType}`);
+          const statsResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/player_rushing_weekly_all/${player1.playerId}/${player1.year}/${week}/${seasonType}`);
           if (!statsResponse.ok) throw new Error('Failed to fetch weekly stats data');
           const statsData = await statsResponse.json();
           console.log('Player 1 weekly stats:', statsData);
@@ -71,11 +64,12 @@ const ContainerB = ({
             : [];
           setAvailableMetrics(metrics);
           setSelectedMetric(metrics.find(m => m.value === 'attempts') || metrics[0] || null);
+        } else {
+          setAvailableMetrics([]);
+          setSelectedMetric(null);
         }
       } catch (error) {
         console.error('Error fetching data:', error);
-        setAvailableMetrics([]);
-        setSelectedMetric(null);
       } finally {
         setLoading(false);
       }
@@ -84,102 +78,100 @@ const ContainerB = ({
     fetchData();
   }, [player1?.playerId, player1?.year, formatMetric]);
 
-  // Memoize chart data
-  const chartData = useMemo(() => {
+  useEffect(() => {
+    console.count('Chart useEffect triggered');
     if (
       !teamGames.length ||
       !selectedMetric ||
       !weeklyGrades?.player1 ||
       !Object.keys(weeklyGrades.player1).length ||
-      (player2 && (!weeklyGrades?.player2 || !Object.keys(weeklyGrades.player2).length))
+      !player2 ||
+      !weeklyGrades?.player2 ||
+      !Object.keys(weeklyGrades.player2).length
     ) {
-      console.log('Missing data for chart:', {
+      console.warn('Missing data for chart:', {
         teamGamesLength: teamGames.length,
-        selectedMetric,
+        selectedMetric: selectedMetric,
         player1Grades: weeklyGrades?.player1,
         player2Grades: weeklyGrades?.player2,
         player2Present: !!player2,
       });
-      return null;
+      if (chartRef.current) {
+        chartRef.current.destroy();
+        chartRef.current = null;
+      }
+      return;
     }
-
-    const sortedGames = [...teamGames].sort((a, b) => a.week - b.week);
-    const labels = sortedGames.map(game => `Week ${game.week}`);
+    if (chartRef.current) {
+      chartRef.current.destroy();
+      console.log('Chart destroyed');
+    }
+    const ctx = document.getElementById('metricChartB')?.getContext('2d');
+    if (!ctx) {
+      console.warn('Canvas not available for metricChartB');
+      return;
+    }
+    console.log('Canvas dimensions:', { width: ctx.canvas.width, height: ctx.canvas.height });
+    const sortedGames = [...teamGames].sort((a, b) => {
+      const dateA = new Date(a.startDate);
+      const dateB = new Date(b.startDate);
+      return isNaN(dateA) || isNaN(dateB) ? a.week - b.week : dateA - dateB;
+    });
+    const opponentLookup = sortedGames.reduce((acc, game) => {
+      const key = `${game.week}_${game.seasonType}`;
+      const playerTeam = game.team;
+      const opponent = playerTeam === game.homeTeam ? `vs. ${game.awayTeamAbrev}` : `at ${game.homeTeamAbrev}`;
+      acc[key] = { opponent, startDate: game.startDate };
+      return acc;
+    }, {});
+    const labels = sortedGames.map(game => {
+      const key = `${game.week}_${game.seasonType}`;
+      return opponentLookup[key]?.opponent || `Week ${game.week} (${game.seasonType})`;
+    });
     const datasets = [
       {
         label: player1 ? `${player1.name} ${selectedMetric.label}` : 'Player 1',
         data: sortedGames.map(game => {
           const key = `${game.week}_${game.seasonType}`;
           const weekData = weeklyGrades.player1[key] || {};
-          return weekData[selectedMetric.value] !== undefined && weekData[selectedMetric.value] !== null
-            ? weekData[selectedMetric.value]
-            : null;
+          const value = weekData[selectedMetric.value] !== undefined && weekData[selectedMetric.value] !== null ? weekData[selectedMetric.value] : null;
+          return value;
         }),
-        borderColor: 'rgba(54, 162, 235, 1)',
+        borderColor: 'rgba(54, 162, 235, 1)', // Blue
         backgroundColor: 'rgba(54, 162, 235, 0.2)',
         fill: true,
         tension: 0.2,
         pointRadius: 5,
         pointHoverRadius: 7,
       },
-      player2 && {
+      {
         label: player2 ? `${player2.name} ${selectedMetric.label}` : 'Player 2',
         data: sortedGames.map(game => {
           const key = `${game.week}_${game.seasonType}`;
           const weekData = weeklyGrades.player2[key] || {};
-          return weekData[selectedMetric.value] !== undefined && weekData[selectedMetric.value] !== null
-            ? weekData[selectedMetric.value]
-            : null;
+          const value = weekData[selectedMetric.value] !== undefined && weekData[selectedMetric.value] !== null ? weekData[selectedMetric.value] : null;
+          return value;
         }),
-        borderColor: 'rgba(255, 99, 132, 1)',
+        borderColor: 'rgba(255, 99, 132, 1)', // Red
         backgroundColor: 'rgba(255, 99, 132, 0.2)',
         fill: true,
         tension: 0.2,
         pointRadius: 5,
         pointHoverRadius: 7,
       },
-    ].filter(Boolean);
-
+    ];
     const allData = datasets.flatMap(ds => ds.data.filter(value => value !== null && !isNaN(value)));
     const minValue = allData.length ? Math.min(...allData) : 0;
     const maxValue = allData.length ? Math.max(...allData) : 100;
     const buffer = (maxValue - minValue) * 0.1;
     const yMin = Math.max(0, minValue - buffer);
     const yMax = maxValue + buffer;
-
-    return { labels, datasets, yMin, yMax, selectedMetric };
-  }, [teamGames, selectedMetric, weeklyGrades.player1, weeklyGrades.player2, player1, player2]);
-
-  // Render chart
-  useEffect(() => {
-    console.count('Chart useEffect triggered');
-    if (!chartData) {
-      if (chartRef.current) {
-        console.log('Chart destroyed');
-        chartRef.current.destroy();
-        chartRef.current = null;
-      }
-      return;
-    }
-
-    const ctx = document.getElementById('metricChartB')?.getContext('2d');
-    if (!ctx) {
-      console.warn('Canvas not available for metricChartB');
-      return;
-    }
-
-    console.log('Canvas dimensions:', { width: ctx.canvas.width, height: ctx.canvas.height });
-
-    if (chartRef.current) {
-      console.log('Chart destroyed');
-      chartRef.current.destroy();
-    }
-
+    console.log('Chart datasets:', { datasets, labels, selectedMetric });
     chartRef.current = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: chartData.labels,
-        datasets: chartData.datasets,
+        labels,
+        datasets,
       },
       options: {
         scales: {
@@ -201,7 +193,7 @@ const ContainerB = ({
           y: {
             title: {
               display: true,
-              text: chartData.selectedMetric?.label || 'Metric Value',
+              text: selectedMetric?.label || 'Metric Value',
               font: {
                 size: isMobile ? 12 : 12,
                 family: isMobile ? 'Arial' : undefined,
@@ -210,10 +202,10 @@ const ContainerB = ({
               color: isMobile ? '#235347' : undefined,
             },
             beginAtZero: true,
-            min: chartData.yMin,
-            max: chartData.yMax,
+            min: yMin,
+            max: yMax,
             ticks: {
-              stepSize: (chartData.yMax - chartData.yMin) / 5,
+              stepSize: (yMax - yMin) / 5,
               font: {
                 size: isMobile ? 12 : 12,
                 family: isMobile ? 'Arial' : undefined,
@@ -242,17 +234,13 @@ const ContainerB = ({
         maintainAspectRatio: false,
       },
     });
-
-    console.log('Chart datasets:', chartData);
-
     return () => {
       if (chartRef.current) {
-        console.log('Chart destroyed on cleanup');
         chartRef.current.destroy();
-        chartRef.current = null;
+        console.log('Chart destroyed on cleanup');
       }
     };
-  }, [chartData]);
+  }, [weeklyGrades, teamGames, selectedMetric, player1, player2]);
 
   return (
     <div className="bg-white rounded shadow">
@@ -274,6 +262,9 @@ const ContainerB = ({
             .join(', ')}
         </div>
       )}
+      {!loading && !player2 && (
+        <div className="text-black text-center">Select a second player to compare</div>
+      )}
       {!loading && player2 && (!weeklyGrades?.player2 || !Object.keys(weeklyGrades.player2).length) && (
         <div className="text-black text-center">No data available for Player 2: Missing weeklyGrades.player2</div>
       )}
@@ -286,7 +277,7 @@ const ContainerB = ({
           classNamePrefix="react-select"
           placeholder="Select Metric..."
           isSearchable={true}
-          isDisabled={!player1 || loading}
+          isDisabled={!player2}
         />
       </div>
       <div className="h-80">

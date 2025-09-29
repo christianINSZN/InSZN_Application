@@ -1,45 +1,50 @@
-import React, { useState, useEffect, useCallback, useTransition } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import Select from 'react-select';
 
 const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
   const location = useLocation();
-  const [player1, setPlayer1] = useState(null);
-  const [player2, setPlayer2] = useState(null);
-  const [year1, setYear1] = useState(null);
-  const [year2, setYear2] = useState(null);
+  const defaultYear = '2025';
+  const [player1, setPlayer1] = useState(() => {
+    const savedPlayer = localStorage.getItem('player1_rb');
+    return savedPlayer ? JSON.parse(savedPlayer) : null;
+  });
+  const [player2, setPlayer2] = useState(() => {
+    const savedPlayer = localStorage.getItem('player2_rb');
+    return savedPlayer ? JSON.parse(savedPlayer) : null;
+  });
+  const [year1, setYear1] = useState(() => localStorage.getItem('year1_rb') || defaultYear);
+  const [year2, setYear2] = useState(() => localStorage.getItem('year2') || defaultYear);
   const [playerOptions, setPlayerOptions] = useState([]);
   const [yearOptions1, setYearOptions1] = useState([]);
-  const [yearOptions2, setYearOptions2] = useState([]);
+  const [yearOptions2, setYearOptions2] = useState([{ value: Number(defaultYear), label: defaultYear.toString() }]);
   const [headshotUrl1, setHeadshotUrl1] = useState(null);
   const [headshotUrl2, setHeadshotUrl2] = useState(null);
   const [loading, setLoading] = useState(false);
   const [metrics, setMetrics] = useState([
     { label: 'Games Played', field: 'player_game_count', p1Value: 0, p2Value: 0 },
+    { label: 'Attempts', field: 'attempts', p1Value: 0, p2Value: 0 },
     { label: 'Yards', field: 'yards', p1Value: 0, p2Value: 0 },
     { label: 'YPA', field: 'ypa', p1Value: 0, p2Value: 0 },
-    { label: 'Attempts', field: 'attempts', p1Value: 0, p2Value: 0 },
-    { label: 'Completions', field: 'completions', p1Value: 0, p2Value: 0 },
-    { label: 'Completion (%)', field: 'completion_percent', p1Value: 0, p2Value: 0 },
-    { label: 'Accuracy (%)', field: 'accuracy_percent', p1Value: 0, p2Value: 0 },
-    { label: 'Time to Throw', field: 'avg_time_to_throw', p1Value: 0, p2Value: 0 },
-    { label: 'Turnover Worthy Play (%)', field: 'twp_rate', p1Value: 0, p2Value: 0 },
-    { label: 'Big Time Play (%)', field: 'btt_rate', p1Value: 0, p2Value: 0 },
-    { label: 'INTs', field: 'interceptions', p1Value: 0, p2Value: 0 },
-    { label: 'TDs', field: 'touchdowns', p1Value: 0, p2Value: 0 },
-    { label: 'QBR', field: 'qb_rating', p1Value: 0, p2Value: 0 },
+    { label: 'Gap Attempts', field: 'gap_attempts', p1Value: 0, p2Value: 0 },
+    { label: 'Zone Attempts', field: 'zone_attempts', p1Value: 0, p2Value: 0 },
+    { label: 'Yards After Contact', field: 'yards_after_contact', p1Value: 0, p2Value: 0 },
+    { label: 'Yards After Contact (per Att.)', field: 'yco_attempt', p1Value: 0, p2Value: 0 },
+    { label: 'Breakaway Yards', field: 'breakaway_yards', p1Value: 0, p2Value: 0 },
+    { label: 'Breakaway (%)', field: 'breakaway_percent', p1Value: 0, p2Value: 0 },
+    { label: 'Longest (Run)', field: 'longest_rushing', p1Value: 0, p2Value: 0 },
+    { label: 'TD (Rushing)', field: 'touchdowns_rushing', p1Value: 0, p2Value: 0 },
+    { label: 'Fumbles', field: 'fumbles', p1Value: 0, p2Value: 0 },
+    { label: 'Receiving Yards', field: 'rec_yards', p1Value: 0, p2Value: 0 },
+    { label: 'Yards per Pass Route Run', field: 'yprr', p1Value: 0, p2Value: 0 },
+    { label: 'TD (Receiving)', field: 'touchdowns_receiving', p1Value: 0, p2Value: 0 },
   ]);
   const [metricsGrades, setMetricsGrades] = useState([
     { label: 'Offense Grade', field: 'grades_offense', p1Value: 0, p2Value: 0 },
-    { label: 'Pass Grade', field: 'grades_pass', p1Value: 0, p2Value: 0 },
     { label: 'Run Grade', field: 'grades_run', p1Value: 0, p2Value: 0 },
+    { label: 'Receiving Grade', field: 'grades_pass_route', p1Value: 0, p2Value: 0 },
     { label: 'Ball Security Grade', field: 'grades_hands_fumble', p1Value: 0, p2Value: 0 },
-    { label: 'BLOS Pass Grade', field: 'behind_los_grades_pass', p1Value: 0, p2Value: 0 },
-    { label: 'Short Pass Grade', field: 'short_grades_pass', p1Value: 0, p2Value: 0 },
-    { label: 'Medium Grade Pass', field: 'medium_grades_pass', p1Value: 0, p2Value: 0 },
-    { label: 'Deep Grade Pass', field: 'deep_grades_pass', p1Value: 0, p2Value: 0 },
-    { label: 'Pressure Grade Pass', field: 'pressure_grades_pass', p1Value: 0, p2Value: 0 },
-    { label: 'Blitz Grade Pass', field: 'blitz_grades_pass', p1Value: 0, p2Value: 0 },
+    { label: 'Penalty Aversion Grade', field: 'grades_offense_penalty', p1Value: 0, p2Value: 0 },
   ]);
   const [customMetrics, setCustomMetrics] = useState([]);
   const [availableMetrics, setAvailableMetrics] = useState([]);
@@ -47,10 +52,6 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
   const [activeTab, setActiveTab] = useState('Metrics');
   const isMobile = window.innerWidth < 640;
   const excludedMetrics = ['name', 'playerId', 'year', 'team', 'school', 'position'];
-  const [isPending1, startTransition1] = useTransition();
-  const [isPending2, startTransition2] = useTransition();
-  const [metadata1, setMetadata1] = useState([]);
-  const [metadata2, setMetadata2] = useState([]);
 
   const selectStyles = {
     control: (provided) => ({
@@ -74,6 +75,26 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
       fontSize: isMobile ? '12px' : '14px',
     }),
   };
+
+  // Save state to localStorage when player1 or year1 changes
+  useEffect(() => {
+    if (player1) {
+      localStorage.setItem('player1_rb', JSON.stringify(player1));
+    } else {
+      localStorage.removeItem('player1_rb');
+    }
+    localStorage.setItem('year1_rb', year1);
+  }, [player1, year1]);
+
+  // Save state to localStorage when player2 or year2 changes
+  useEffect(() => {
+    if (player2) {
+      localStorage.setItem('player2_rb', JSON.stringify(player2));
+    } else {
+      localStorage.removeItem('player2_rb');
+    }
+    localStorage.setItem('year2_rb', year2);
+  }, [player2, year2]);
 
   const formatMetric = (metric) => {
     return metric
@@ -102,7 +123,7 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
       };
       setCustomMetrics(prev => [...prev, newMetric]);
       if (player1 && year1) {
-        fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_QB/${player1.value}/${year1}`)
+        fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_RB/${player1.value}/${year1}`)
           .then(response => response.json())
           .then(statsData => {
             if (statsData && Object.keys(statsData).length > 0) {
@@ -116,7 +137,7 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
           .catch(error => console.error(`Error fetching Player 1 data for custom metric ${newMetric.field}:`, error));
       }
       if (player2 && year2) {
-        fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_QB/${player2.value}/${year2}`)
+        fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_RB/${player2.value}/${year2}`)
           .then(response => response.json())
           .then(statsData => {
             if (statsData && Object.keys(statsData).length > 0) {
@@ -134,9 +155,18 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
   }, [selectedCustomMetric, customMetrics, player1, year1, player2, year2]);
 
   useEffect(() => {
+    if (onPlayerDataChange && player1 && year1) {
+      onPlayerDataChange({
+        player1: player1 && year1 ? { playerId: player1.value, year: year1, name: player1.label } : null,
+        player2: player2 && year2 ? { playerId: player2.value, year: year2, name: player2.label } : null,
+      });
+    }
+  }, [player1, year1, player2, year2, onPlayerDataChange]);
+
+  useEffect(() => {
     const fetchPlayers = async () => {
       try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/player_qb_list`);
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/player_rb_list`);
         const data = await response.json();
         const uniquePlayers = Array.from(
           new Map(data.map(player => [player.playerId, player])).values()
@@ -158,11 +188,12 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
       if (player1 && year1 && player2 && year2) {
         try {
           const [statsResponse1, statsResponse2] = await Promise.all([
-            fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_QB/${player1.value}/${year1}`),
-            fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_QB/${player2.value}/${year2}`),
+            fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_RB/${player1.value}/${year1}`),
+            fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_RB/${player2.value}/${year2}`),
           ]);
-          const statsData1 = await statsResponse1.json();
-          const statsData2 = await statsResponse2.json();
+          if (!statsResponse1.ok) throw new Error(`Failed to fetch stats data for Player 1: ${await statsResponse1.text()}`);
+          if (!statsResponse2.ok) throw new Error(`Failed to fetch stats data for Player 2: ${await statsResponse2.text()}`);
+          const [statsData1, statsData2] = await Promise.all([statsResponse1.json(), statsResponse2.json()]);
           const metrics1 = Object.keys(statsData1).filter(key => !excludedMetrics.includes(key));
           const metrics2 = Object.keys(statsData2).filter(key => !excludedMetrics.includes(key));
           const allMetrics = [...new Set([...metrics1, ...metrics2])];
@@ -179,178 +210,112 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
   }, [player1, year1, player2, year2]);
 
   useEffect(() => {
-    if (player1) {
-      const fetchPlayerYears = async () => {
+    let isMounted = true;
+
+    const fetchData1 = async () => {
+      if (player1 && year1 && isMounted) {
+        setLoading(true);
         try {
-          const metadataResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/player_metadata_qb/${player1.value}`);
+          console.log(`Fetching data for Player 1 ID: ${player1.value}, Year: ${year1}`);
+          const metadataResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/player_metadata_rb/${player1.value}`);
           if (!metadataResponse.ok) throw new Error(`HTTP error! status: ${metadataResponse.status}`);
           const metadataData = await metadataResponse.json();
           if (!Array.isArray(metadataData)) throw new Error('API response is not an array');
           const years = metadataData.map(item => item.year).filter(y => y !== null && y !== undefined);
-          const uniqueYears = [...new Set(years)].sort((a, b) => b - a);
-          startTransition1(() => {
-            setMetadata1(metadataData);
-            setYearOptions1(uniqueYears.map(y => ({ value: y, label: y.toString() })));
-            setYear1(null);
-            setHeadshotUrl1(null);
-            setMetrics(prevMetrics => prevMetrics.map(metric => ({ ...metric, p1Value: 0 })));
-            setMetricsGrades(prevMetrics => prevMetrics.map(metric => ({ ...metric, p1Value: 0 })));
-            setCustomMetrics(prevMetrics => prevMetrics.map(metric => ({ ...metric, p1Value: 0 })));
-          });
-        } catch (error) {
-          console.error(`Error fetching years for Player 1 ${player1.label}:`, error.message);
-          startTransition1(() => {
-            setMetadata1([]);
-            setYearOptions1([]);
-            setYear1(null);
-          });
-        }
-      };
-      fetchPlayerYears();
-    } else {
-      startTransition1(() => {
-        setMetadata1([]);
-        setYearOptions1([]);
-        setYear1(null);
-      });
-    }
-  }, [player1]);
-
-  useEffect(() => {
-    if (player2) {
-      const fetchPlayerYears = async () => {
-        try {
-          const metadataResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/player_metadata_qb/${player2.value}`);
-          if (!metadataResponse.ok) throw new Error(`HTTP error! status: ${metadataResponse.status}`);
-          const metadataData = await metadataResponse.json();
-          if (!Array.isArray(metadataData)) throw new Error('API response is not an array');
-          const years = metadataData.map(item => item.year).filter(y => y !== null && y !== undefined);
-          const uniqueYears = [...new Set(years)].sort((a, b) => b - a);
-          startTransition2(() => {
-            setMetadata2(metadataData);
-            setYearOptions2(uniqueYears.map(y => ({ value: y, label: y.toString() })));
-            setYear2(null);
-            setHeadshotUrl2(null);
-            setMetrics(prevMetrics => prevMetrics.map(metric => ({ ...metric, p2Value: 0 })));
-            setMetricsGrades(prevMetrics => prevMetrics.map(metric => ({ ...metric, p2Value: 0 })));
-            setCustomMetrics(prevMetrics => prevMetrics.map(metric => ({ ...metric, p2Value: 0 })));
-          });
-        } catch (error) {
-          console.error(`Error fetching years for Player 2 ${player2.label}:`, error.message);
-          startTransition2(() => {
-            setMetadata2([]);
-            setYearOptions2([]);
-            setYear2(null);
-          });
-        }
-      };
-      fetchPlayerYears();
-    } else {
-      startTransition2(() => {
-        setMetadata2([]);
-        setYearOptions2([]);
-        setYear2(null);
-      });
-    }
-  }, [player2]);
-
-  useEffect(() => {
-    if (year1) {
-      const latestYearData = metadata1.find(item => item.year === Number(year1)) || metadata1[0];
-      startTransition1(() => setHeadshotUrl1(latestYearData?.headshotURL || null));
-    }
-  }, [year1, metadata1]);
-
-  useEffect(() => {
-    if (year2) {
-      const latestYearData = metadata2.find(item => item.year === Number(year2)) || metadata2[0];
-      startTransition2(() => setHeadshotUrl2(latestYearData?.headshotURL || null));
-    }
-  }, [year2, metadata2]);
-
-  const handleCompare = () => {
-    if (player1 && year1 && player2 && year2) {
-      setLoading(true);
-      const fetchData = async () => {
-        try {
-          const [statsResponse1, statsResponse2] = await Promise.all([
-            fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_QB/${player1.value}/${year1}`),
-            fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_QB/${player2.value}/${year2}`),
-          ]);
-          if (!statsResponse1.ok) {
-            throw new Error(`Failed to fetch stats data for Player 1: ${await statsResponse1.text()}`);
+          const uniqueYears = [...new Set([...years, Number(year1)])].sort((a, b) => b - a);
+          setYearOptions1(uniqueYears.map(y => ({ value: y, label: y.toString() })));
+          
+          // Only update year1 if it differs from the current value
+          if (!uniqueYears.includes(Number(year1))) {
+            setYear1(uniqueYears[0] || null);
           }
-          if (!statsResponse2.ok) {
-            throw new Error(`Failed to fetch stats data for Player 2: ${await statsResponse2.text()}`);
-          }
-          const statsData1 = await statsResponse1.json();
-          const statsData2 = await statsResponse2.json();
-          console.log('Stats data for Player 1:', statsData1);
-          console.log('Stats data for Player 2:', statsData2);
-          if (statsData1 && Object.keys(statsData1).length > 0) {
-            startTransition1(() => {
-              setMetrics(prevMetrics => prevMetrics.map(metric => ({
-                ...metric,
-                p1Value: statsData1[metric.field] || 0,
-              })));
-              setMetricsGrades(prevMetrics => prevMetrics.map(metric => ({
-                ...metric,
-                p1Value: statsData1[metric.field] || 0,
-              })));
-              setCustomMetrics(prevMetrics => prevMetrics.map(metric => ({
-                ...metric,
-                p1Value: statsData1[metric.field] || 0,
-              })));
-            });
+          
+          const latestYearData = metadataData.find(item => item.year === Number(year1)) || metadataData[0];
+          setHeadshotUrl1(latestYearData?.headshotURL || null);
+          const statsResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_RB/${player1.value}/${year1}`);
+          if (!statsResponse.ok) throw new Error(`Failed to fetch stats data for Player 1: ${await statsResponse.text()}`);
+          const statsData = await statsResponse.json();
+          console.log('Stats data for Player 1:', statsData);
+          if (statsData && Object.keys(statsData).length > 0 && isMounted) {
+            setMetrics(prevMetrics => prevMetrics.map(metric => ({
+              ...metric,
+              p1Value: statsData[metric.field] || 0,
+            })));
+            setMetricsGrades(prevMetrics => prevMetrics.map(metric => ({
+              ...metric,
+              p1Value: statsData[metric.field] || 0,
+            })));
+            setCustomMetrics(prevMetrics => prevMetrics.map(metric => ({
+              ...metric,
+              p1Value: statsData[metric.field] || 0,
+            })));
           } else {
             console.warn('No valid stats data received for Player 1');
-            startTransition1(() => {
-              setMetrics(prevMetrics => prevMetrics.map(metric => ({ ...metric, p1Value: 0 })));
-              setMetricsGrades(prevMetrics => prevMetrics.map(metric => ({ ...metric, p1Value: 0 })));
-              setCustomMetrics(prevMetrics => prevMetrics.map(metric => ({ ...metric, p1Value: 0 })));
-            });
           }
-          if (statsData2 && Object.keys(statsData2).length > 0) {
-            startTransition2(() => {
-              setMetrics(prevMetrics => prevMetrics.map(metric => ({
-                ...metric,
-                p2Value: statsData2[metric.field] || 0,
-              })));
-              setMetricsGrades(prevMetrics => prevMetrics.map(metric => ({
-                ...metric,
-                p2Value: statsData2[metric.field] || 0,
-              })));
-              setCustomMetrics(prevMetrics => prevMetrics.map(metric => ({
-                ...metric,
-                p2Value: statsData2[metric.field] || 0,
-              })));
-            });
+        } catch (error) {
+          console.error(`Error fetching data for Player 1 ${player1?.label || 'unknown'}:`, error.message);
+        } finally {
+          if (isMounted) setLoading(false);
+        }
+      }
+    };
+    fetchData1();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [player1, year1]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchData2 = async () => {
+      if (player2 && year2 && isMounted) {
+        setLoading(true);
+        try {
+          console.log(`Fetching data for Player 2 ID: ${player2.value}, Year: ${year2}`);
+          const metadataResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/player_metadata_rb/${player2.value}`);
+          if (!metadataResponse.ok) throw new Error(`HTTP error! status: ${metadataResponse.status}`);
+          const metadataData = await metadataResponse.json();
+          if (!Array.isArray(metadataData)) throw new Error('API response is not an array');
+          const years = metadataData.map(item => item.year).filter(y => y !== null && y !== undefined);
+          const uniqueYears = [...new Set([...years, Number(year2)])].sort((a, b) => b - a);
+          setYearOptions2(uniqueYears.map(y => ({ value: y, label: y.toString() })));
+          const latestYearData = metadataData.find(item => item.year === Number(year2)) || metadataData[0];
+          setHeadshotUrl2(latestYearData?.headshotURL || null);
+          const statsResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/player_percentiles_RB/${player2.value}/${year2}`);
+          if (!statsResponse.ok) throw new Error(`Failed to fetch stats data for Player 2: ${await statsResponse.text()}`);
+          const statsData = await statsResponse.json();
+          console.log('Stats data for Player 2:', statsData);
+          if (statsData && Object.keys(statsData).length > 0 && isMounted) {
+            setMetrics(prevMetrics => prevMetrics.map(metric => ({
+              ...metric,
+              p2Value: statsData[metric.field] || 0,
+            })));
+            setMetricsGrades(prevMetrics => prevMetrics.map(metric => ({
+              ...metric,
+              p2Value: statsData[metric.field] || 0,
+            })));
+            setCustomMetrics(prevMetrics => prevMetrics.map(metric => ({
+              ...metric,
+              p2Value: statsData[metric.field] || 0,
+            })));
           } else {
             console.warn('No valid stats data received for Player 2');
-            startTransition2(() => {
-              setMetrics(prevMetrics => prevMetrics.map(metric => ({ ...metric, p2Value: 0 })));
-              setMetricsGrades(prevMetrics => prevMetrics.map(metric => ({ ...metric, p2Value: 0 })));
-              setCustomMetrics(prevMetrics => prevMetrics.map(metric => ({ ...metric, p2Value: 0 })));
-            });
           }
-          onPlayerDataChange({
-            player1: { playerId: player1.value, year: year1, name: player1.label },
-            player2: { playerId: player2.value, year: year2, name: player2.label },
-          });
         } catch (error) {
-          console.error('Error fetching comparison data:', error);
-          startTransition1(() => {
-            setMetrics(prevMetrics => prevMetrics.map(metric => ({ ...metric, p1Value: 0, p2Value: 0 })));
-            setMetricsGrades(prevMetrics => prevMetrics.map(metric => ({ ...metric, p1Value: 0, p2Value: 0 })));
-            setCustomMetrics(prevMetrics => prevMetrics.map(metric => ({ ...metric, p1Value: 0, p2Value: 0 })));
-          });
+          console.error(`Error fetching data for Player 2 ${player2.label}:`, error.message);
         } finally {
-          setLoading(false);
+          if (isMounted) setLoading(false);
         }
-      };
-      fetchData();
-    }
-  };
+      }
+    };
+    fetchData2();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [player2, year2]);
 
   return (
     <div className={`bg-white rounded-lg shadow-xl ${className}`}>
@@ -363,25 +328,24 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
                 <div className="w-40">
                   <Select
                     value={player1}
-                    onChange={(selected) => startTransition1(() => setPlayer1(selected))}
+                    onChange={setPlayer1}
                     options={playerOptions}
                     className="mt-1"
                     classNamePrefix="react-select"
                     placeholder="Select Player..."
                     isSearchable={true}
                     styles={selectStyles}
-                    isDisabled={isPending1}
                   />
                 </div>
                 <div className="w-40">
                   <Select
                     value={year1 ? { value: year1, label: year1.toString() } : null}
-                    onChange={(selected) => startTransition1(() => setYear1(selected ? selected.value : null))}
+                    onChange={(selected) => setYear1(selected ? selected.value : null)}
                     options={yearOptions1}
                     className="mt-1"
                     classNamePrefix="react-select"
-                    placeholder="Select Year..."
-                    isDisabled={!player1 || isPending1}
+                    placeholder="Year"
+                    isDisabled={!player1}
                     styles={selectStyles}
                   />
                 </div>
@@ -397,25 +361,24 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
                 <div className="w-40">
                   <Select
                     value={player2}
-                    onChange={(selected) => startTransition2(() => setPlayer2(selected))}
+                    onChange={setPlayer2}
                     options={playerOptions}
                     className="mt-1"
                     classNamePrefix="react-select"
                     placeholder="Select Player..."
                     isSearchable={true}
                     styles={selectStyles}
-                    isDisabled={isPending2}
                   />
                 </div>
                 <div className="w-40">
                   <Select
                     value={year2 ? { value: year2, label: year2.toString() } : null}
-                    onChange={(selected) => startTransition2(() => setYear2(selected ? selected.value : null))}
+                    onChange={(selected) => setYear2(selected ? selected.value : null)}
                     options={yearOptions2}
                     className="mt-1"
                     classNamePrefix="react-select"
-                    placeholder="Select Year..."
-                    isDisabled={!player2 || isPending2}
+                    placeholder="Year"
+                    isDisabled={!player2}
                     styles={selectStyles}
                   />
                 </div>
@@ -437,24 +400,23 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
                   <div className="w-60">
                     <Select
                       value={player1}
-                      onChange={(selected) => startTransition1(() => setPlayer1(selected))}
+                      onChange={setPlayer1}
                       options={playerOptions}
                       className="mt-1"
                       classNamePrefix="react-select"
                       placeholder="Select Player..."
                       isSearchable={true}
-                      isDisabled={isPending1}
                     />
                   </div>
                   <div className="w-28">
                     <Select
                       value={year1 ? { value: year1, label: year1.toString() } : null}
-                      onChange={(selected) => startTransition1(() => setYear1(selected ? selected.value : null))}
+                      onChange={(selected) => setYear1(selected ? selected.value : null)}
                       options={yearOptions1}
                       className="mt-1"
                       classNamePrefix="react-select"
-                      placeholder="Select Year..."
-                      isDisabled={!player1 || isPending1}
+                      placeholder="Year"
+                      isDisabled={!player1}
                     />
                   </div>
                 </div>
@@ -471,24 +433,23 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
                   <div className="w-28">
                     <Select
                       value={year2 ? { value: year2, label: year2.toString() } : null}
-                      onChange={(selected) => startTransition2(() => setYear2(selected ? selected.value : null))}
+                      onChange={(selected) => setYear2(selected ? selected.value : null)}
                       options={yearOptions2}
                       className="mt-1"
                       classNamePrefix="react-select"
-                      placeholder="Select Year..."
-                      isDisabled={!player2 || isPending2}
+                      placeholder="Year"
+                      isDisabled={!player2}
                     />
                   </div>
                   <div className="w-60">
                     <Select
                       value={player2}
-                      onChange={(selected) => startTransition2(() => setPlayer2(selected))}
+                      onChange={setPlayer2}
                       options={playerOptions}
                       className="mt-1"
                       classNamePrefix="react-select"
                       placeholder="Select Player..."
                       isSearchable={true}
-                      isDisabled={isPending2}
                     />
                   </div>
                 </div>
@@ -504,20 +465,11 @@ const HeadToHeadContainer = ({ className, onPlayerDataChange, year }) => {
           </div>
         )}
         <div className={isMobile ? "w-full max-w-md mx-auto" : "w-full max-w-2xl mx-auto"}>
-          {(loading || isPending1 || isPending2) && (
+          {loading && (
             <div className="flex justify-center mb-2">
               <div className="w-6 h-6 border-4 border-t-blue-500 border-blue-200 rounded-full animate-spin"></div>
             </div>
           )}
-          <div className="flex justify-center my-4">
-            <button
-              onClick={handleCompare}
-              disabled={!player1 || !year1 || !player2 || !year2 || loading}
-              className="bg-[#235347] text-white font-bold py-2 px-4 rounded disabled:bg-gray-400"
-            >
-              Compare
-            </button>
-          </div>
           <div className="border-b border-gray-300">
             <ul className={isMobile ? "flex gap-4 justify-center p-0" : "flex gap-8 justify-center p-0"}>
               <li>
