@@ -264,7 +264,7 @@ function TopTeams() {
         </button>
       </div>
       <div className={isMobile ? "h-[300px] overflow-y-auto" : "h-[420px] overflow-y-auto" }>
-        <table className="w-full text-center border-collapse" style={{ tableLayout: 'fixed' }}>
+        <table className="w-full text-center border-collapse" >
           <thead className="sticky top-0 bg-white z-0">
             {tableInstance.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id} className="bg-white">
@@ -307,7 +307,7 @@ function TopTeams() {
                 {row.getVisibleCells().map(cell => (
                   <td
                     key={cell.id}
-                    className={`p-${isMobile ? '0.5' : '1'} text-${isMobile ? '[10px]' : 'xs'} ${index % 2 === 0 ? 'text-black' : 'text-black'} font-bold border-b border-white ${cell.column.columnDef.meta?.mobileHidden && !showAllColumns ? 'hidden sm:table-cell' : ''} ${isMobile && showAllColumns ? 'min-w-[90px]' : ''}`}
+                    className={`p-${isMobile ? '0.5' : '1'} text-${isMobile ? '[10px]' : 'xs'} ${index % 2 === 0 ? 'text-black' : 'text-black'} font-bold border-b border-white ${cell.column.columnDef.meta?.mobileHidden && !showAllColumns ? 'hidden sm:table-cell' : ''} ${isMobile && showAllColumns ? 'min-w-[100px]' : ''}`}
                     style={{
                       textAlign: cell.column.id === 'School' ? 'left' : 'center',
                       verticalAlign: 'middle',
