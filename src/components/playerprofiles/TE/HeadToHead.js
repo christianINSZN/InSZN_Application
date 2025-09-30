@@ -22,7 +22,7 @@ function HeadToHeadTE() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const subscriptionPlan = user?.publicMetadata?.subscriptionPlan;
-  const isSubscribed = subscriptionPlan === 'pro' || subscriptionPlan === 'premium';
+    const isSubscribed = subscriptionPlan === 'pro' || subscriptionPlan === 'premium' || !subscriptionPlan;
   const isMobile = window.innerWidth < 640;
 
   useEffect(() => {

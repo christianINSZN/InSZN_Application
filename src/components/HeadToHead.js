@@ -5,7 +5,7 @@ import { useClerk } from '@clerk/clerk-react';
 function HeadToHead() {
   const { user } = useClerk();
   const subscriptionPlan = user?.publicMetadata?.subscriptionPlan;
-  const isSubscribed = subscriptionPlan === 'pro' || subscriptionPlan === 'premium';
+    const isSubscribed = subscriptionPlan === 'pro' || subscriptionPlan === 'premium' || !subscriptionPlan;
   const isMobile = window.innerWidth < 640;
 
   return (
