@@ -336,8 +336,13 @@ const ManContainer = ({
                   {getTopPerformers(metric.field, searchTerms[metric.id]).map((player, idx) => (
                     <li key={idx} className="flex items-center justify-between p-2 hover:bg-gray-100">
                       <Link
-                        to={`/players/te/${player.playerId}`}
+                        to={{
+                          pathname: `/players/te/${player.playerId}`,
+                          search: `?year=${year}`,
+                          state: { year },
+                        }}
                         className="text-blue-600 hover:underline"
+                        onClick={() => console.log('Navigating with state:', { year })}
                       >
                         {player.name}
                       </Link>

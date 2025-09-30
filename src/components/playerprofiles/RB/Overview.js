@@ -7,7 +7,7 @@ import Trends from './Overview/Trends';
 import MatchupProjection from './Overview/MatchupProjection';
 import AttributionRadial from './Overview/AttributionRadial';
 
-function OverviewRB() {
+const OverviewRB = ({ year: propYear }) => {
   const { playerId } = useParams();
   const location = useLocation();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -19,8 +19,10 @@ function OverviewRB() {
   const [percentileGrades, setPercentileGrades] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const year = location.state?.year || 2025;
   const isMobile = window.innerWidth < 640;
+  const { state, search } = useLocation();
+  const query = new URLSearchParams(search);
+  const year = state?.year || query.get('year') || propYear || 2025; // Prefer state, then query, then prop, then 2025
 
   useEffect(() => {
     const fetchPlayerData = async () => {

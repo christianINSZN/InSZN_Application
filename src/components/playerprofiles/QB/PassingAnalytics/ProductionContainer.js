@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Chart from 'chart.js/auto';
 
 const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlayerPercentiles }) => {
+  console.log('Year in ProductionContainer:', year);
   const chartRefs = useRef({});
   const [checkedPlayers, setCheckedPlayers] = useState({
     yards: {},
@@ -63,7 +64,7 @@ const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlaye
           if (!response.ok) return { week, seasonType: 'regular', data: null };
           return response.json().then(data => ({ week, seasonType: 'regular', data: data[0] || null }));
         }).catch(error => {
-          console.error(`Fetch error for player ${selectedPlayerId}, week ${week}: ${error.message}`);
+          //console.error(`Fetch error for player ${selectedPlayerId}, week ${week}: ${error.message}`);
           return { week, seasonType: 'regular', data: null };
         })
       );
@@ -74,7 +75,7 @@ const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlaye
       }), {});
       return newWeeklyData;
     } catch (err) {
-      console.error(`Error fetching weekly data for player ${selectedPlayerId}: ${err.message}`);
+      //console.error(`Error fetching weekly data for player ${selectedPlayerId}: ${err.message}`);
       return null;
     }
   };
@@ -100,7 +101,7 @@ const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlaye
         [selectedPlayerId]: newWeeklyData,
       },
     }));
-    console.log(`Fetched weekly data for player ${selectedPlayerId} (metric ${metricId})`, newWeeklyData);
+   //console.log(`Fetched weekly data for player ${selectedPlayerId} (metric ${metricId})`, newWeeklyData);
   };
   const handleCheckboxChange = (metricId, selectedPlayerId) => {
     setCheckedPlayers(prev => {
@@ -153,7 +154,7 @@ const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlaye
   };
   useEffect(() => {
     if (!teamGames || teamGames.length === 0) {
-      console.warn('teamGames is empty or not iterable, using empty dataset');
+      //console.warn('teamGames is empty or not iterable, using empty dataset');
     }
     const sortedGames = (teamGames || []).slice().sort((a, b) => {
       const dateA = new Date(a.startDate);
@@ -216,14 +217,14 @@ const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlaye
             pointHoverRadius: 7,
           });
         });
-      console.log(`[ProductionContainer] datasets for ${metric.id}:`, datasets);
+      //.log(`[ProductionContainer] datasets for ${metric.id}:`, datasets);
       if (chartRefs.current[metric.id]) {
         try {
           chartRefs.current[metric.id].data.labels = labels;
           chartRefs.current[metric.id].data.datasets = datasets;
           chartRefs.current[metric.id].update();
         } catch (err) {
-          console.warn(`Error updating chart ${metric.id}:`, err);
+          //console.warn(`Error updating chart ${metric.id}:`, err);
         }
       } else {
         try {
@@ -262,7 +263,7 @@ const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlaye
             },
           });
         } catch (err) {
-          console.error(`Error creating chart for ${metric.id}:`, err);
+          //console.error(`Error creating chart for ${metric.id}:`, err);
         }
       }
     });
@@ -307,12 +308,17 @@ const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlaye
                 <ul className="text-sm text-gray-500">
                   {getTopPerformers(metric.field, searchTerms[metric.id]).map((player, idx) => (
                     <li key={idx} className="flex items-center justify-between p-2 hover:bg-gray-100">
-                      <Link
-                        to={`/players/qb/${player.playerId}`}
-                        className="text-blue-600 hover:underline"
-                      >
-                        {player.name}
-                      </Link>
+<Link
+  to={{
+    pathname: `/players/qb/${player.playerId}`,
+    search: `?year=${year}`,
+    state: { year },
+  }}
+  className="text-blue-600 hover:underline"
+  onClick={() => console.log('Navigating with state:', { year })}
+>
+  {player.name}
+</Link>
                       <div className="flex items-center">
                         <span className="mr-2">{player.value}</span>
                         <input
