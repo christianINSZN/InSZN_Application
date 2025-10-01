@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { ClerkProvider } from '@clerk/clerk-react';
 import NavBar from './components/NavBar';
 import Home from './components/Home';
 import Players from './components/Players';
@@ -39,58 +40,65 @@ import TeamRoster from './components/teams/TeamRoster';
 import TeamsRankings from './components/teams/TeamRankings';
 import './styles/App.css';
 import { useState } from 'react';
+const PUBLISHABLE_KEY = process.env.REACT_APP_CLERK_PUBLISHABLE_KEY;
 
 function App() {
   const [isOpen, setIsOpen] = useState(true);
   const [defaultYear, setDefaultYear] = useState(2025);
 
+  if (!PUBLISHABLE_KEY) {
+    console.error('Missing Clerk publishable key');
+    return <div>Error: Clerk key missing</div>;
+  }
+
   return (
-    <BrowserRouter>
-      <NavBar isOpen={isOpen} setIsOpen={setIsOpen} />
-      <div className="w-full pt-16 p-0 sm:p-4 overflow-auto bg-gray-100">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/players" element={<Players year={defaultYear} />} />
-          <Route path="/players/qb/:playerId" element={<OverviewQB year={defaultYear} />} />
-          <Route path="/players/qb/:playerId/passing" element={<PassingAnalytics year={defaultYear} />} />
-          <Route path="/players/qb/:playerId/fieldview" element={<FieldViewInterface year={defaultYear} />} />
-          <Route path="/players/qb/:playerId/h2h" element={<HeadToHeadContainer year={defaultYear} />} />
-          <Route path="/players/rb/:playerId" element={<OverviewRB year={defaultYear} />} />
-          <Route path="/players/rb/:playerId/rushing" element={<RushingAnalytics year={defaultYear} />} />
-          <Route path="/players/rb/:playerId/h2h" element={<HeadToHeadContainerRB year={defaultYear} />} />
-          <Route path="/players/wr/:playerId" element={<OverviewWR year={defaultYear} />} />
-          <Route path="/players/wr/:playerId/receiving" element={<ReceivingAnalytics year={defaultYear} />} />
-          <Route path="/players/wr/:playerId/fieldview" element={<FieldViewInterfaceWR year={defaultYear} />} />
-          <Route path="/players/wr/:playerId/h2h" element={<HeadToHeadContainerWR year={defaultYear} />} />
-          <Route path="/players/te/:playerId" element={<OverviewTE year={defaultYear} />} />
-          <Route path="/players/te/:playerId/receiving" element={<ReceivingAnalyticsTE year={defaultYear} />} />
-          <Route path="/players/te/:playerId/fieldview" element={<FieldViewInterfaceTE year={defaultYear} />} />
-          <Route path="/players/te/:playerId/h2h" element={<HeadToHeadContainerTE year={defaultYear} />} />
-          <Route path="/players/cb/:playerId" element={<OverviewCB year={defaultYear} />} />
-          <Route path="/players/dl/:playerId" element={<OverviewDL year={defaultYear} />} />
-          <Route path="/players/c/:playerId" element={<OverviewC year={defaultYear} />} />
-          <Route path="/players/g/:playerId" element={<OverviewG year={defaultYear} />} />
-          <Route path="/players/t/:playerId" element={<OverviewT year={defaultYear} />} />
-          <Route path="/players/s/:playerId" element={<OverviewS year={defaultYear} />} />
-          <Route path="/players/lb/:playerId" element={<OverviewLBE year={defaultYear} />} />
-          <Route path="/teams" element={<TeamsComponent year={defaultYear} />} />
-          <Route path="/team_rankings" element={<TeamsRankings year={defaultYear} />} />
-          <Route path="/game/:id" element={<GameRecap />} />
-          <Route path="/teams/:id/:year" element={<TeamLanding />} />
-          <Route path="/teams/:id/:year/roster" element={<TeamRoster />} />
-          <Route path="/h2h" element={<HeadToHead year={defaultYear} />} />
-          <Route path="/h2h/qb" element={<HeadToHeadQB year={defaultYear} />} />
-          <Route path="/h2h/rb" element={<HeadToHeadRB year={defaultYear} />} />
-          <Route path="/h2h/wr" element={<HeadToHeadWR year={defaultYear} />} />
-          <Route path="/h2h/te" element={<HeadToHeadTE year={defaultYear} />} />
-          <Route path="/subscribe" element={<Subscription />} />
-          <Route path="/sign-up" element={<SignUpPage />} />
-          <Route path="/sign-up/verify-email-address" element={<SignUpPage />} />
-          <Route path="/sign-in" element={<SignInPage />} />
-        </Routes>
-      </div>
-    </BrowserRouter>
+    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+      <BrowserRouter>
+        <NavBar isOpen={isOpen} setIsOpen={setIsOpen} />
+        <div className="w-full pt-16 p-0 sm:p-4 overflow-auto bg-gray-100">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/players" element={<Players year={defaultYear} />} />
+            <Route path="/players/qb/:playerId" element={<OverviewQB year={defaultYear} />} />
+            <Route path="/players/qb/:playerId/passing" element={<PassingAnalytics year={defaultYear} />} />
+            <Route path="/players/qb/:playerId/fieldview" element={<FieldViewInterface year={defaultYear} />} />
+            <Route path="/players/qb/:playerId/h2h" element={<HeadToHeadContainer year={defaultYear} />} />
+            <Route path="/players/rb/:playerId" element={<OverviewRB year={defaultYear} />} />
+            <Route path="/players/rb/:playerId/rushing" element={<RushingAnalytics year={defaultYear} />} />
+            <Route path="/players/rb/:playerId/h2h" element={<HeadToHeadContainerRB year={defaultYear} />} />
+            <Route path="/players/wr/:playerId" element={<OverviewWR year={defaultYear} />} />
+            <Route path="/players/wr/:playerId/receiving" element={<ReceivingAnalytics year={defaultYear} />} />
+            <Route path="/players/wr/:playerId/fieldview" element={<FieldViewInterfaceWR year={defaultYear} />} />
+            <Route path="/players/wr/:playerId/h2h" element={<HeadToHeadContainerWR year={defaultYear} />} />
+            <Route path="/players/te/:playerId" element={<OverviewTE year={defaultYear} />} />
+            <Route path="/players/te/:playerId/receiving" element={<ReceivingAnalyticsTE year={defaultYear} />} />
+            <Route path="/players/te/:playerId/fieldview" element={<FieldViewInterfaceTE year={defaultYear} />} />
+            <Route path="/players/te/:playerId/h2h" element={<HeadToHeadContainerTE year={defaultYear} />} />
+            <Route path="/players/cb/:playerId" element={<OverviewCB year={defaultYear} />} />
+            <Route path="/players/dl/:playerId" element={<OverviewDL year={defaultYear} />} />
+            <Route path="/players/c/:playerId" element={<OverviewC year={defaultYear} />} />
+            <Route path="/players/g/:playerId" element={<OverviewG year={defaultYear} />} />
+            <Route path="/players/t/:playerId" element={<OverviewT year={defaultYear} />} />
+            <Route path="/players/s/:playerId" element={<OverviewS year={defaultYear} />} />
+            <Route path="/players/lb/:playerId" element={<OverviewLBE year={defaultYear} />} />
+            <Route path="/teams" element={<TeamsComponent year={defaultYear} />} />
+            <Route path="/team_rankings" element={<TeamsRankings year={defaultYear} />} />
+            <Route path="/game/:id" element={<GameRecap />} />
+            <Route path="/teams/:id/:year" element={<TeamLanding />} />
+            <Route path="/teams/:id/:year/roster" element={<TeamRoster />} />
+            <Route path="/h2h" element={<HeadToHead year={defaultYear} />} />
+            <Route path="/h2h/qb" element={<HeadToHeadQB year={defaultYear} />} />
+            <Route path="/h2h/rb" element={<HeadToHeadRB year={defaultYear} />} />
+            <Route path="/h2h/wr" element={<HeadToHeadWR year={defaultYear} />} />
+            <Route path="/h2h/te" element={<HeadToHeadTE year={defaultYear} />} />
+            <Route path="/subscribe" element={<Subscription />} />
+            <Route path="/sign-up" element={<SignUpPage />} />
+            <Route path="/sign-up/verify-email-address" element={<SignUpPage />} />
+            <Route path="/sign-in" element={<SignInPage />} />
+          </Routes>
+        </div>
+      </BrowserRouter>
+    </ClerkProvider>
   );
 }
-
 export default App;
