@@ -124,7 +124,7 @@ const TeTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
                 {headerGroup.headers.map(column => (
                   <th
                     key={column.id}
-                    className={`p-2 sm:p-3 text-[10px] sm:text-xs font-semibold border-b border-[#235347] text-black cursor-pointer ${column.column.columnDef.meta?.mobileHidden && !showAllColumns ? 'hidden sm:table-cell' : ''}`}
+                    className={`p-2 sm:p-3 text-[10px] sm:text-xs font-semibold border-b border-[#235347] text-black cursor-pointer ${column.column.columnDef.meta?.mobileHidden && !showAllColumns ? 'hidden sm:table-cell' : ''} ${showAllColumns ? 'min-w-[100px]' : ''}`}
                     style={{
                       textAlign: column.id === 'Player Name' || column.id === 'School' ? 'left' : 'center',
                       verticalAlign: 'middle',

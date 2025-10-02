@@ -50,9 +50,9 @@ const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlaye
   const metricsList = [
     { id: 'yards', field: 'yards', title: 'Passing Yards', min: 0, max: 600, unit: 'Yards' },
     { id: 'ypa', field: 'ypa', title: 'Yards Per Attempt', min: 0, max: 25, unit: 'YPA' },
-    { id: 'completion', field: 'completion_percent', title: 'Completion (%)', min: 0, max: 100, unit: 'Completion (%)' },
-    { id: 'passingTouchdowns', field: 'touchdowns', title: 'Passing Touchdowns', min: 0, max: 5, unit: 'Passing TD' },
-    { id: 'passingSnaps', field: 'passing_snaps', title: 'Passing Snaps', min: 0, max: 100, unit: 'Snaps' },
+    { id: 'completion', field: 'completion', title: 'Completion (%)', min: 0, max: 100, unit: 'Completion (%)' },
+    { id: 'passingTouchdowns', field: 'passingTouchdowns', title: 'Passing Touchdowns', min: 0, max: 5, unit: 'Passing TD' },
+    { id: 'passingSnaps', field: 'passingSnaps', title: 'Passing Snaps', min: 0, max: 100, unit: 'Snaps' },
   ];
   const fetchPlayerData = async (selectedPlayerId) => {
     try {
@@ -308,17 +308,17 @@ const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlaye
                 <ul className="text-sm text-gray-500">
                   {getTopPerformers(metric.field, searchTerms[metric.id]).map((player, idx) => (
                     <li key={idx} className="flex items-center justify-between p-2 hover:bg-gray-100">
-<Link
-  to={{
-    pathname: `/players/qb/${player.playerId}`,
-    search: `?year=${year}`,
-    state: { year },
-  }}
-  className="text-blue-600 hover:underline"
-  onClick={() => console.log('Navigating with state:', { year })}
->
-  {player.name}
-</Link>
+                      <Link
+                        to={{
+                          pathname: `/players/qb/${player.playerId}`,
+                          search: `?year=${year}`,
+                          state: { year },
+                        }}
+                        className="text-blue-600 hover:underline"
+                        onClick={() => console.log('Navigating with state:', { year })}
+                      >
+                        {player.name}
+                      </Link>
                       <div className="flex items-center">
                         <span className="mr-2">{player.value}</span>
                         <input

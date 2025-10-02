@@ -20,17 +20,10 @@ const OverviewQB = ({ year: propYear }) => {
   const [percentileGrades, setPercentileGrades] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  // const { state } = useLocation();
-  // const year = location.state?.year || 2025;
 
   const { state, search } = useLocation();
   const query = new URLSearchParams(search);
   const year = state?.year || query.get('year') || propYear || 2025; // Prefer state, then query, then prop, then 2025
-  console.log('Location state in OverviewQB:', state);
-  console.log('Query params in OverviewQB:', Object.fromEntries(query));
-  console.log('Prop year in OverviewQB:', propYear);
-  console.log('Year in OverviewQB:', year);
-
 
   useEffect(() => {
 

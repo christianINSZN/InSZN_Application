@@ -47,10 +47,10 @@ const PerformanceContainer = ({ playerId, year, weeklyGrades, teamGames, allPlay
       .join(' ');
   };
   const metricsList = [
-    { id: 'accuracy', field: 'accuracy_percent', title: 'Accuracy (%)', min: 0, max: 100, unit: 'Accuracy (%)' },
+    { id: 'accuracy', field: 'accuracy', title: 'Accuracy (%)', min: 0, max: 100, unit: 'Accuracy (%)' },
     { id: 'twp_rate', field: 'twp_rate', title: 'Turnover Worthy Play (%)', min: 0, max: 20, unit: 'Turnover Worthy Play (%)' },
     { id: 'btt_rate', field: 'btt_rate', title: 'Big Time Throw (%)', min: 0, max: 20, unit: 'Big Time Throw (%)' },
-    { id: 'targetDepth', field: 'avg_depth_of_target', title: 'Avg. Depth of Target', min: 0, max: 20, unit: 'Avg. Depth of Target' },
+    { id: 'targetDepth', field: 'targetDepth', title: 'Avg. Depth of Target', min: 0, max: 20, unit: 'Avg. Depth of Target' },
     { id: 'qb_rating', field: 'qb_rating', title: 'QB Rating', min: 0, max: 160, unit: 'QB Rating' },
   ];
   const fetchPlayerData = async (selectedPlayerId) => {
