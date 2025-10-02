@@ -8,28 +8,28 @@ const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlaye
   const [checkedPlayers, setCheckedPlayers] = useState({
     yards: {},
     ypa: {},
-    completion: {},
+    completion_percent: {},
     passingTouchdowns: {},
     passingSnaps: {},
   });
   const [playerWeeklyData, setPlayerWeeklyData] = useState({
     yards: {},
     ypa: {},
-    completion: {},
+    completion_percent: {},
     passingTouchdowns: {},
     passingSnaps: {},
   });
   const [searchTerms, setSearchTerms] = useState({
     yards: '',
     ypa: '',
-    completion: '',
+    completion_percent: '',
     passingTouchdowns: '',
     passingSnaps: '',
   });
   const [showDropdown, setShowDropdown] = useState({
     yards: false,
     ypa: false,
-    completion: false,
+    completion_percent: false,
     passingTouchdowns: false,
     passingSnaps: false,
   });
@@ -50,7 +50,7 @@ const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlaye
   const metricsList = [
     { id: 'yards', field: 'yards', title: 'Passing Yards', min: 0, max: 600, unit: 'Yards' },
     { id: 'ypa', field: 'ypa', title: 'Yards Per Attempt', min: 0, max: 25, unit: 'YPA' },
-    { id: 'completion', field: 'completion_percent', title: 'Completion (%)', min: 0, max: 100, unit: 'Completion (%)' },
+    { id: 'completion_percent', field: 'completion_percent', title: 'Completion (%)', min: 0, max: 100, unit: 'Completion (%)' },
     { id: 'passingTouchdowns', field: 'touchdowns', title: 'Passing Touchdowns', min: 0, max: 5, unit: 'Passing TD' },
     { id: 'passingSnaps', field: 'passing_snaps', title: 'Passing Snaps', min: 0, max: 100, unit: 'Snaps' },
   ];
@@ -149,7 +149,7 @@ const ProductionContainer = ({ playerId, year, weeklyGrades, teamGames, allPlaye
       .map(player => ({
         playerId: player.playerId,
         name: player.name,
-        value: player.value.toFixed(metricField === 'passingSnaps' || metricField === 'passingTouchdowns' ? 2 : metricField === 'ypa' || metricField === 'completion' ? 1 : 0),
+        value: player.value.toFixed(metricField === 'passingSnaps' || metricField === 'passingTouchdowns' ? 2 : metricField === 'ypa' || metricField === 'completion_percent' ? 1 : 0),
       }));
   };
   useEffect(() => {
