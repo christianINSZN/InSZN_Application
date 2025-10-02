@@ -19,7 +19,16 @@ const Trends = ({ teamGames, weeklyGrades }) => {
         'ypa': 'YPA',
         'long_run': 'Long Run',
         'explosive_rate': 'Explosive %',
-        'fumbles': 'Fumbles'
+        'fumbles': 'Fumbles', 
+        'routes': 'Routes',
+        'receptions': 'Receptions',
+        'targets': 'Targets', 
+        'zone_attempts': 'Zone Attempts',
+        'gap_attempts': 'Gap Attempts', 
+        'yprr': 'Yards Per Route Run',
+        'yac': 'YAC',
+        'breakaway_percent': 'Breakaway %',
+        'breakaway_yards': 'Breakaway Yards'
       };
 
       const gamesWithStats = teamGames
