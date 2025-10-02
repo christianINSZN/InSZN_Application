@@ -49,6 +49,8 @@ function App() {
       <NavBar isOpen={isOpen} setIsOpen={setIsOpen} />
       <div className="w-full pt-16 p-0 sm:p-4 overflow-auto bg-gray-100">
         <Routes>
+          <Route path="/sign-in/*" element={<SignInPage />} /> {/* Handle all subroutes */}
+          <Route path="/sign-up/*" element={<SignUpPage />} />          
           <Route path="/" element={<Home />} />
           <Route path="/players" element={<Players year={defaultYear} />} />
           <Route path="/players/qb/:playerId" element={<OverviewQB year={defaultYear} />} />
@@ -84,9 +86,6 @@ function App() {
           <Route path="/h2h/wr" element={<HeadToHeadWR year={defaultYear} />} />
           <Route path="/h2h/te" element={<HeadToHeadTE year={defaultYear} />} />
           <Route path="/subscribe" element={<Subscription />} />
-          <Route path="/sign-up" element={<SignUpPage />} />
-          <Route path="/sign-up/verify-email-address" element={<SignUpPage />} />
-          <Route path="/sign-in" element={<SignInPage />} />
         </Routes>
       </div>
     </BrowserRouter>
