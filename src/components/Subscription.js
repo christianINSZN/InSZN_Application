@@ -19,34 +19,48 @@ const SubscriptionForm = () => {
   const isMobile = window.innerWidth < 640;
 
   const plans = [
-    { 
-      id: 'price_1SC4GLFQmtxCMsk5Zc2xYijK', 
-      name: 'Insider', 
-      price: '$10/month', 
-      features: ['Full platform access', 'FieldView and Head-to-Head (with LineView and CoverageView upon release)', 'Early access to beta features (Scouting Reports, Game Recaps, Weekly Reports)'], 
-      bannerImage: '/INSZN_Insider_BETA.png', 
-      bannerWidthPercent: 60 
+    {
+      id: 'price_1SC4GLFQmtxCMsk5Zc2xYijK',
+      name: 'Insider',
+      price: '$10/month',
+      features: [
+        'Full platform access',
+        'FieldView and Head-to-Head (with LineView and CoverageView upon release)',
+        'Early access to beta features (Scouting Reports, Game Recaps, Weekly Reports)',
+      ],
+      bannerImage: '/INSZN_Insider_BETA.png',
+      bannerWidthPercent: 60,
     },
-    { 
-      id: 'price_pro', 
-      name: 'Pro', 
-      price: '$25/month', 
-      features: ['Everything included in INSZN Insider', 'Access to specific player-level and positional weekly scouting reports and recaps', 'Bespoke and fully customizable weekly reports sent directly to your inbox (at the national, conference, team, or player-level)', 'Request new platform features'], 
-      bannerImage: '/INSZN_Pro.png', 
-      bannerWidthPercent: 48 
+    {
+      id: 'price_pro',
+      name: 'Pro',
+      price: '$25/month',
+      features: [
+        'Everything included in INSZN Insider',
+        'Access to specific player-level and positional weekly scouting reports and recaps',
+        'Bespoke and fully customizable weekly reports sent directly to your inbox (at the national, conference, team, or player-level)',
+        'Request new platform features',
+      ],
+      bannerImage: '/INSZN_Pro.png',
+      bannerWidthPercent: 48,
     },
-    { 
-      id: 'price_elite', 
-      name: 'Elite', 
-      price: 'Contact for Pricing', 
-      features: ['Everything included in INSZN Pro', 'Full white label solutions for your media, product, or analytical needs', 'End-to-end support for hosting your own subscription plans or platform add-ons', 'Inquire for additional details'], 
-      bannerImage: '/INSZN_Elite.png', 
-      bannerWidthPercent: 52 
+    {
+      id: 'price_elite',
+      name: 'Elite',
+      price: 'Contact for Pricing',
+      features: [
+        'Everything included in INSZN Pro',
+        'Full white label solutions for your media, product, or analytical needs',
+        'End-to-end support for hosting your own subscription plans or platform add-ons',
+        'Inquire for additional details',
+      ],
+      bannerImage: '/INSZN_Elite.png',
+      bannerWidthPercent: 52,
     },
   ];
 
   const handlePlanSelect = (planId) => {
-    if (planId !== 'price_pro' && planId !== 'price_elite') {
+    if (planId !== 'price_1SC4GLFQmtxCMsk5Zc2xYijK' && planId !== 'price_pro' && planId !== 'price_elite') {
       setSelectedPlan(planId);
       setTimeout(() => {
         paymentRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -133,13 +147,19 @@ const SubscriptionForm = () => {
         <>
           <h2 className="text-xl sm:text-2xl font-bold text-[#235347] text-center mb-6">Subscription Packages</h2>
           <div className={`flex ${isMobile ? 'flex-col gap-4' : 'flex-row gap-12'} justify-center mb-12`}>
-            {plans.map(plan => (
+            {plans.map((plan) => (
               <div
                 key={plan.id}
-                className={`relative border-2 ${selectedPlan === plan.id ? 'border-[#235347] bg-[#235347]/10' : 'border-gray-300'} rounded-lg shadow-lg ${plan.id === 'price_1SC4GLFQmtxCMsk5Zc2xYijK' ? 'cursor-pointer hover:border-[#235347] hover:bg-[#235347]/10' : 'cursor-not-allowed'} transition-colors ${isMobile ? 'w-full' : 'w-1/3'}`}
+                className={`relative border-2 ${
+                  selectedPlan === plan.id ? 'border-[#235347] bg-[#235347]/10' : 'border-gray-300'
+                } rounded-lg shadow-lg ${
+                  plan.id === 'price_1SC4GLFQmtxCMsk5Zc2xYijK' || plan.id === 'price_pro'
+                    ? 'cursor-not-allowed'
+                    : 'cursor-pointer hover:border-[#235347] hover:bg-[#235347]/10'
+                } transition-colors ${isMobile ? 'w-full' : 'w-1/3'}`}
                 onClick={() => handlePlanSelect(plan.id)}
-                onMouseEnter={() => plan.id === 'price_pro' && setHoveredPlan(plan.id)}
-                onMouseLeave={() => plan.id === 'price_pro' && setHoveredPlan(null)}
+                onMouseEnter={() => (plan.id === 'price_pro' || plan.id === 'price_1SC4GLFQmtxCMsk5Zc2xYijK') && setHoveredPlan(plan.id)}
+                onMouseLeave={() => (plan.id === 'price_pro' || plan.id === 'price_1SC4GLFQmtxCMsk5Zc2xYijK') && setHoveredPlan(null)}
               >
                 <img
                   src={plan.bannerImage}
@@ -165,7 +185,7 @@ const SubscriptionForm = () => {
                     </p>
                   )}
                 </div>
-                {plan.id === 'price_pro' && hoveredPlan === plan.id && (
+                {(plan.id === 'price_pro' || plan.id === 'price_1SC4GLFQmtxCMsk5Zc2xYijK') && hoveredPlan === plan.id && (
                   <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 border-2 border-[#235347] rounded-lg">
                     <p className="text-[#235347] font-semibold text-[12px] sm:text-sm">Coming Soon</p>
                   </div>
@@ -179,7 +199,7 @@ const SubscriptionForm = () => {
           <form onSubmit={handleSubmit} className={`p-6 w-full sm:w-1/2 bg-white rounded-lg shadow-lg border-2 border-[#235347]`}>
             <h2 className="text-xl sm:text-2xl font-bold text-[#235347] mb-6">Enter Payment Details</h2>
             <p className="text-gray-700 mb-6 text-sm sm:text-base">
-              Selected Plan: {plans.find(p => p.id === selectedPlan)?.name || 'None'}
+              Selected Plan: {plans.find((p) => p.id === selectedPlan)?.name || 'None'}
             </p>
             <div className="p-3 border border-gray-300 rounded mb-6">
               <CardElement className="text-sm sm:text-base" />
