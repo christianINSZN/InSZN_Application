@@ -277,6 +277,7 @@ function TopTeams() {
                       verticalAlign: 'middle',
                       lineHeight: '.1',
                       width: !isMobile && column.column.columnDef.size ? column.column.columnDef.size : undefined,
+                      minWidth: !isMobile && column.column.columnDef.size ? column.column.columnDef.size : '80px',
                     }}
                     onClick={column.column.columnDef.enableSorting ? () => {
                       const sorting = tableInstance.getState().sorting;
