@@ -131,7 +131,7 @@ script_order = [
 
 
 
-    # run team games, then team stats, then team records, then team next matchup then update the top teams and team rankings at the end
+    # run team games, then team stats, then team records (from weekly), then team next matchup then update the top teams and team rankings at the end
 
 
 
