@@ -35,6 +35,7 @@ const MatchupProjection = ({ teamId, year }) => {
         // Map Teams_Games fields to expected matchup structure
         const mappedMatchup = {
           startDate: nextMatchup.startDate,
+          startTimeTBD: nextMatchup.startTimeTBD,
           homeTeamName: nextMatchup.homeTeam,
           awayTeamName: nextMatchup.awayTeam,
           homeTeamLogo: nextMatchup.homeTeamLogo,
@@ -62,9 +63,8 @@ const MatchupProjection = ({ teamId, year }) => {
   if (!matchup) return <div className="p-2 sm:p-4 text-gray-500 text-sm sm:text-base">No upcoming matchup available.</div>;
 
   // Format date and time from startDate
-  const startDate = new Date(matchup.startDate);
-  const dateStr = startDate.toLocaleDateString();
-  const timeStr = startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const dateStr = matchup.startTimeTBD ? 'TBD' : new Date(matchup.startDate).toLocaleDateString();
+  const timeStr = matchup.startTimeTBD ? 'TBD' : new Date(matchup.startDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   return (
     <div className="bg-white p-2 sm:p-0 rounded-lg shadow-lg">
@@ -134,15 +134,15 @@ const MatchupProjection = ({ teamId, year }) => {
         <div className="w-3/5 pl-2 flex flex-col justify-center items-center">
           <div className="flex flex-row space-x-6">
             <div className="text-center">
-              <p className="text-lg text-black">Line: {matchup.homeMoneyline !== null ? `${matchup.homeMoneyline}` : 'N/A'}</p>
+              <p className="text-lg text-black">Line: {matchup.homeMoneyline !== null ? `${matchup.homeMoneyline}` : 'TBD'}</p>
             </div>
             <div className="h-7 border-l-[1px] border-[#235347]"></div>
             <div className="text-center">
-              <p className="text-lg text-black">Spread: {matchup.spread !== null ? `${matchup.spread}` : 'N/A'}</p>
+              <p className="text-lg text-black">Spread: {matchup.spread !== null ? `${matchup.spread}` : 'TBD'}</p>
             </div>
             <div className="h-7 border-l-[1px] border-[#235347]"></div>
             <div className="text-center">
-              <p className="text-lg text-black">O/U: {matchup.overUnder !== null ? `${matchup.overUnder}` : 'N/A'}</p>
+              <p className="text-lg text-black">O/U: {matchup.overUnder !== null ? `${matchup.overUnder}` : 'TBD'}</p>
             </div>
           </div>
           <div className="mt-6">
