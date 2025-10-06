@@ -47,7 +47,7 @@ const MatchupProjection = ({ teamId, year, className = "text-sm sm:text-base" })
   const timeStr = startDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   return (
-    <div className="bg-white p-2 sm:p-4 rounded-lg shadow-lg">
+    <div className="bg-white p-2 sm:p-0 rounded-lg shadow-lg">
       <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Next Matchup</h2>
       {/* Mobile View */}
       <div className="sm:hidden flex flex-col mt-1">

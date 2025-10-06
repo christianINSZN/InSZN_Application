@@ -14,7 +14,7 @@ conn = sqlite3.connect(DB_FILE)
 cursor = conn.cursor()
 
 YEAR = int(os.getenv("YEAR", 2025))
-WEEK = int(os.getenv("WEEK", 5))
+WEEK = int(os.getenv("WEEK", 6))
 
 # Fetch team abbreviations
 cursor.execute("SELECT id, abbreviation FROM Teams WHERE year = ?", (YEAR,))

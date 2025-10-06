@@ -128,6 +128,13 @@ script_order = [
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/blocking/season/populate_full_percentiles_t.py",
     "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/blocking/season/populate_full_percentiles_te.py",
     #### END ####
+
+
+
+    # run team games, then team stats, then team records, then team next matchup then update the top teams and team rankings at the end
+
+
+
 ]
 
 # Iterate over each team in the config
