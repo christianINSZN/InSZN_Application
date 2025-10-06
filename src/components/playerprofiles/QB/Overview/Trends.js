@@ -25,7 +25,7 @@ const Trends = ({ teamGames, weeklyGrades }) => {
         'interceptions': 'Interceptions',
         'sack_percent': 'Sack Rate',
         'fumbles': 'Fumbles',
-        'pressure_to_sack_rate': 'Sack Rate',
+        'pressure_to_sack_rate': 'Pressure to Sack Rate',
         'btt_rate': 'Big Time Throw %',
         'twp_rate': 'TO Worthy Play %',
         'btt_rate': 'Big Time Throw %',

@@ -14,15 +14,21 @@ const Trends = ({ isPopupOpen, setIsPopupOpen, setSelectedGrade, selectedGrade, 
     }
 
     const metrics = {
-      'grades_pass_route': 'Rec. Grade',
-      'grades_pass_block': 'Pass Block Grade',
-      'targets': 'Targets',
-      'receptions': 'Receptions',
-      'yards': 'Yards',
-      'yards_per_reception': 'YPC',
-      'touchdowns': 'Touchdowns',
-      'longest': 'Longest',
-      'drop_rate': 'Drop Rate'
+        'grades_pass_route': 'Rec. Grade',
+        'targets': 'Targets',
+        'receptions': 'Receptions',
+        'yards': 'Yards',
+        'yards_per_reception': 'YPC',
+        'touchdowns': 'Touchdowns',
+        'longest': 'Longest',
+        'drop_rate': 'Drop Rate',
+        'avg_depth_of_target': 'Avg. Depth of Target',
+        'yards_after_catch': 'YAC',
+        'yards_per_route_run': 'Yards Per Route Run',
+        'contested_catch_rate': 'Contested Catch %',
+        'breakaway_yards': 'Breakaway Yards',
+        'route_rates': 'Route Rate',
+        'targeted_qb_rating': 'Targeted QB Rating'
     };
 
     const gamesWithStats = teamGames

@@ -19,7 +19,14 @@ const Trends = ({ isPopupOpen, setIsPopupOpen, setSelectedGrade, selectedGrade, 
         'yards_per_reception': 'YPC',
         'touchdowns': 'Touchdowns',
         'longest': 'Longest',
-        'drop_rate': 'Drop Rate'
+        'drop_rate': 'Drop Rate',
+        'avg_depth_of_target': 'Avg. Depth of Target',
+        'yards_after_catch': 'YAC',
+        'yards_per_route_run': 'Yards Per Route Run',
+        'contested_catch_rate': 'Contested Catch %',
+        'breakaway_yards': 'Breakaway Yards',
+        'route_rates': 'Route Rate',
+        'targeted_qb_rating': 'Targeted QB Rating'
       };
       const gamesWithStats = teamGames
         .map(game => {

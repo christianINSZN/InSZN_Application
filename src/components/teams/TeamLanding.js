@@ -119,7 +119,7 @@ const TeamLanding = () => {
             {/* Conference Standings */}
             <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
               <h2 className="flex items-center justify-center text-base bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 rounded">{year} {teamData.conference} Standings</h2>
-              <div className="p-2">
+              <div className="p-0">
                 <TeamStandings teamData={teamData} year={year} currentTeamId={id} className="text-sm" />
               </div>
             </div>
@@ -140,7 +140,7 @@ const TeamLanding = () => {
             {/* Top Performers */}
             <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
               <h2 className="flex items-center justify-center text-base bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 rounded">Key Performers</h2>
-              <div className="p-2">
+              <div className="p-0">
                 <TeamTopPerformers teamData={teamData} year={year} className="text-sm" />
               </div>
             </div>
@@ -223,7 +223,7 @@ const TeamLanding = () => {
             {/* Left Container: Conference Standings */}
             <div className="p-0 bg-gray-0 rounded-lg shadow-xl" style={{ flexBasis: '20%', minWidth: '20%', boxSizing: 'border-box' }}>
               <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">{year} {teamData.conference} Standings</h2>
-              <div className="p-4">
+              <div className="p-0">
                 <TeamStandings teamData={teamData} year={year} currentTeamId={id} className="text-base" />
               </div>
             </div>
@@ -232,14 +232,14 @@ const TeamLanding = () => {
               {/* Middle Container: Season Game Log */}
               <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
                 <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Game Log</h2>
-                <div className="p-4">
+                <div className="p-0">
                   <TeamGameLog teamData={teamData} year={year} className="text-base" />
                 </div>
               </div>
               {/* Newsfeed Container */}
               <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
                 <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Featured Contributors</h2>
-                <div className="p-4">
+                <div className="p-0">
                   <TeamNewsfeed teamData={teamData} year={year} className="text-base" />
                 </div>
               </div>
@@ -249,14 +249,14 @@ const TeamLanding = () => {
               {/* Top Performers Container */}
               <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
                 <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Key Performers</h2>
-                <div className="p-4">
+                <div className="p-0">
                   <TeamTopPerformers teamData={teamData} year={year} className="text-base" />
                 </div>
               </div>
               {/* Right Container: Stat Leaders */}
               <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
                 <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Team Feed</h2>
-                <div className="p-4">
+                <div className="p-0">
                   <TeamFeed teamData={teamData} year={year} className="text-base" />
                 </div>
               </div>
