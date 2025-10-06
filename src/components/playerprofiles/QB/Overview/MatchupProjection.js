@@ -10,24 +10,42 @@ const MatchupProjection = ({ teamId, year }) => {
     const fetchMatchup = async () => {
       setLoading(true);
       setError(null);
+
       if (!teamId) {
         console.log('teamId is undefined or null');
         setLoading(false);
         setError('Team ID not available');
         return;
       }
+
       try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/teams/${teamId}/${year}/matchups`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/teams/${teamId}/${year}/games`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
         });
+
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const matchups = await response.json();
-        const nextMatchup = matchups
-          .filter(m => m.status === 'scheduled')
-          .sort((a, b) => new Date(b.startDate) - new Date(a.startDate))[0];
+        const games = await response.json();
+        const nextMatchup = games
+          .filter(m => (m.homeId === teamId || m.awayId === teamId) && !m.completed)
+          .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))[0];
+
         if (!nextMatchup) throw new Error('No scheduled matchups found');
-        setMatchup(nextMatchup);
+
+        // Map Teams_Games fields to expected matchup structure
+        const mappedMatchup = {
+          startDate: nextMatchup.startDate,
+          homeTeamName: nextMatchup.homeTeam,
+          awayTeamName: nextMatchup.awayTeam,
+          homeTeamLogo: nextMatchup.homeTeamLogo,
+          awayTeamLogo: nextMatchup.awayTeamLogo,
+          spread: nextMatchup.draftKingsSpread,
+          overUnder: nextMatchup.draftKingsOverUnder,
+          homeMoneyline: nextMatchup.draftKingsHomeMoneyline,
+          status: 'scheduled', // Map to 'scheduled' for compatibility
+        };
+
+        setMatchup(mappedMatchup);
       } catch (err) {
         console.error('Fetch error:', err.message);
         setError(err.message);
@@ -35,6 +53,7 @@ const MatchupProjection = ({ teamId, year }) => {
         setLoading(false);
       }
     };
+
     if (teamId) fetchMatchup();
   }, [teamId, year]);
 

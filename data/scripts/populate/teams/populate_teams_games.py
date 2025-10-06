@@ -1,31 +1,45 @@
 import sqlite3
 import os
 import requests
+import json  # Added import for json.loads
 from pathlib import Path
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
 API_KEY = os.getenv("API_KEY", "xPVVHT3+7AMkH/gk2Rbnpin03CxVlm6HyGgL2yNiPL1riWLPRUQGS5nE1AXEBMmV")
+YEAR = int(os.getenv("YEAR", 2025))
+WEEK = int(os.getenv("WEEK", 8))
 
 # Database connection
 DB_FILE = Path("/Users/christianberry/Desktop/Perennial Data/perennial-data-app/server/data/db/cfb_database.db")
 conn = sqlite3.connect(DB_FILE)
 cursor = conn.cursor()
 
-YEAR = int(os.getenv("YEAR", 2025))
-WEEK = int(os.getenv("WEEK", 6))
 
-# Fetch team abbreviations
-cursor.execute("SELECT id, abbreviation FROM Teams WHERE year = ?", (YEAR,))
-team_abbreviations = {row[0]: row[1] for row in cursor.fetchall()}
+# Fetch team abbreviations and logos
+cursor.execute("SELECT id, abbreviation, logos FROM Teams WHERE year = ?", (YEAR,))
+team_data = cursor.fetchall()
+team_abbreviations = {row[0]: row[1] for row in team_data}
+team_logos = {}
+for row in team_data:
+    if row[2]:  # If logos is not None or empty
+        try:
+            logos_list = json.loads(row[2])
+            team_logos[row[0]] = logos_list[0] if logos_list else None
+        except (json.JSONDecodeError, IndexError) as e:
+            print(f"Error parsing logos for team {row[0]}: {e}")
+            team_logos[row[0]] = None
+    else:
+        team_logos[row[0]] = None
 
 # Fetch existing incomplete game IDs
 cursor.execute("""
-SELECT DISTINCT id FROM Teams_Games 
+SELECT DISTINCT id, homeId, awayId FROM Teams_Games
 WHERE season = ? AND week = ? AND completed = 0
 """, (YEAR, WEEK))
-existing_game_ids = [row[0] for row in cursor.fetchall()]
+existing_games = cursor.fetchall()
+existing_game_ids = [row[0] for row in existing_games]
 
 if not existing_game_ids:
     print(f"No incomplete games found for {YEAR} week {WEEK}")
@@ -77,12 +91,13 @@ games_data = [g for g in games_data if g.get("id") in existing_game_ids]
 
 # Prepare batch update
 update_query = """
-UPDATE Teams_Games SET 
+UPDATE Teams_Games SET
     completed = ?, homePoints = ?, awayPoints = ?, homeLineScores = ?, awayLineScores = ?,
     homePostgameWinProbability = ?, awayPostgameWinProbability = ?, homePostgameElo = ?, awayPostgameElo = ?,
     excitementIndex = ?, attendance = ?,
     draftKingsSpread = ?, draftKingsFormattedSpread = ?, draftKingsSpreadOpen = ?, draftKingsOverUnder = ?,
-    draftKingsOverUnderOpen = ?, draftKingsHomeMoneyline = ?, draftKingsAwayMoneyline = ?
+    draftKingsOverUnderOpen = ?, draftKingsHomeMoneyline = ?, draftKingsAwayMoneyline = ?,
+    homeTeamLogo = ?, awayTeamLogo = ?
 WHERE id = ? AND season = ? AND week = ? AND team = ?
 """
 values = []
@@ -138,6 +153,8 @@ for game in games_data:
 
     homeTeamAbrev = team_abbreviations.get(homeId)
     awayTeamAbrev = team_abbreviations.get(awayId)
+    homeTeamLogo = team_logos.get(homeId)
+    awayTeamLogo = team_logos.get(awayId)
     betting_lines = game_lines.get(id, {})
     draftKingsSpread = betting_lines.get("draftKingsSpread")
     draftKingsFormattedSpread = betting_lines.get("draftKingsFormattedSpread")
@@ -155,9 +172,9 @@ for game in games_data:
             excitementIndex, attendance,
             draftKingsSpread, draftKingsFormattedSpread, draftKingsSpreadOpen, draftKingsOverUnder,
             draftKingsOverUnderOpen, draftKingsHomeMoneyline, draftKingsAwayMoneyline,
+            homeTeamLogo, awayTeamLogo,
             id, season, week, homeTeam
         ))
-
     # Add update values for away team
     if awayTeam:
         values.append((
@@ -166,6 +183,7 @@ for game in games_data:
             excitementIndex, attendance,
             draftKingsSpread, draftKingsFormattedSpread, draftKingsSpreadOpen, draftKingsOverUnder,
             draftKingsOverUnderOpen, draftKingsHomeMoneyline, draftKingsAwayMoneyline,
+            homeTeamLogo, awayTeamLogo,
             id, season, week, awayTeam
         ))
 
