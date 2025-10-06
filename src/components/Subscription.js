@@ -176,12 +176,12 @@ const SubscriptionForm = () => {
                   </ul>
                   {plan.id === 'price_1SC4GLFQmtxCMsk5Zc2xYijK' && (
                     <p className="text-center font-bold italic text-[12px] sm:text-sm text-gray-700 mt-8">
-                      Beta users automatic upgrade to INSZN PRO
+                      Beta users complimentary upgrade to INSZN PRO
                     </p>
                   )}
                   {plan.id === 'price_elite' && (
                     <p className="text-center font-bold text-[12px] sm:text-sm text-gray-700 mt-4">
-                      Contact: <a href="mailto:christian@perennialsportsgroup.com" className="text-[#235347] underline">christian@perennialsportsgroup.com</a>
+                      <a href="mailto:christian@inszn.co" className="text-[#235347] underline">Contact Us</a>
                     </p>
                   )}
                 </div>
