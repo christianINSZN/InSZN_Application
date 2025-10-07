@@ -3,15 +3,16 @@ import { useParams, Link, useLocation } from 'react-router-dom';
 import TeamStandings from './teams_components/TeamStandings';
 import TeamGameLog from './teams_components/TeamGameLog';
 import TeamFeed from './teams_components/TeamFeed';
+import TeamRankings from './teams_components/TeamRankings';
 import TeamTopPerformers from './teams_components/TeamTopPerformers';
-import TeamNewsfeed from './teams_components/TeamNewsFeed';
-import MatchupProjection from './teams_components/TeamNextMatchup'; // Corrected import
+import HeadlineGrades from './teams_components/HeadlineGrades';
+import MatchupProjection from './teams_components/TeamNextMatchup';
 
 const TeamLanding = () => {
   const { id, year = '2025' } = useParams();
-  console.log('Fetching team data for id:', id, 'year:', year);
   const location = useLocation();
   const [teamData, setTeamData] = useState(null);
+  const [percentileGrades, setPercentileGrades] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const isMobile = window.innerWidth < 640;
@@ -20,17 +21,25 @@ const TeamLanding = () => {
     const fetchTeamData = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/teams/${id}/${year}`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        });
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Failed to fetch team data: ${response.status} - ${errorText}`);
-        }
-        const data = await response.json();
-        console.log('Team data received:', data);
-        setTeamData(data);
+        const [teamResponse, percentilesResponse] = await Promise.all([
+          fetch(`${process.env.REACT_APP_API_URL}/api/teams/${id}/${year}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+          }),
+          fetch(`${process.env.REACT_APP_API_URL}/api/team_percentiles/${id}/${year}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+          }),
+        ]);
+
+        if (!teamResponse.ok) throw new Error(`Failed to fetch team data: ${await teamResponse.text()}`);
+        if (!percentilesResponse.ok) throw new Error(`Failed to fetch percentile data: ${await percentilesResponse.text()}`);
+
+        const teamData = await teamResponse.json();
+        const percentileGradesData = await percentilesResponse.json();
+
+        setTeamData(teamData);
+        setPercentileGrades(percentileGradesData);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -45,31 +54,20 @@ const TeamLanding = () => {
   if (!teamData) return <div className="p-2 text-black text-base">No team data available</div>;
 
   const { school, abbreviation, mascot, logo_main, color, alternateColor } = teamData;
-  console.log('Logo_main:', logo_main);
   const isOverviewActive = location.pathname === `/teams/${id}/${year}`;
   const isRosterActive = location.pathname === `/teams/${id}/${year}/roster`;
-  const isStatsActive = location.pathname === `/teams/${id}/${year}/stats`;
-  const isScheduleActive = location.pathname === `/teams/${id}/${year}/schedule`;
 
   if (isMobile) {
     return (
       <div className="w-full p-2 shadow-xl rounded-lg mt-0">
         <div className="py-2" style={{ boxSizing: 'border-box' }}>
-          {/* Header Container */}
           <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
             <div
               className="flex items-center justify-center shadow-lg border-b border-[#235347] h-16 rounded px-4"
-              style={{
-                background: `linear-gradient(to right, ${color}, white, ${alternateColor})`
-              }}
+              style={{ background: `linear-gradient(to right, ${color}, white, ${alternateColor})` }}
             >
               {logo_main ? (
-                <img
-                  src={logo_main}
-                  alt={`${school} logo`}
-                  className="w-12 h-12"
-                  onError={(e) => console.error(`Failed to load logo: ${logo_main}`)}
-                />
+                <img src={logo_main} alt={`${school} logo`} className="w-12 h-12" onError={(e) => console.error(`Failed to load logo: ${logo_main}`)} />
               ) : (
                 <div className="w-12 h-12 flex items-center justify-center">
                   <span className="text-gray-500 text-sm">No Logo</span>
@@ -77,7 +75,6 @@ const TeamLanding = () => {
               )}
             </div>
           </div>
-          {/* Nav Bar */}
           <div className="border-b border-[#235347] mb-4">
             <ul className="flex gap-2 justify-center p-2">
               <li>
@@ -98,41 +95,40 @@ const TeamLanding = () => {
               </li>
             </ul>
           </div>
-          {/* Main Containers: Single-Column Layout */}
           <div className="flex flex-col gap-4" style={{ boxSizing: 'border-box' }}>
-            {/* Upcoming Matchup */}
             <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
               <MatchupProjection teamId={id} year={year} />
             </div>
-            {/* Conference Standings */}
             <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
               <h2 className="flex items-center justify-center text-base bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 rounded">{year} {teamData.conference} Standings</h2>
               <div className="p-2">
                 <TeamStandings teamData={teamData} year={year} currentTeamId={id} className="text-sm" />
               </div>
             </div>
-            {/* Season Game Log */}
+            <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
+              <h2 className="flex items-center justify-center text-base bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 rounded">Team Rankings</h2>
+              <div className="p-2">
+                <TeamRankings teamId={id} year={year} className="text-sm" />
+              </div>
+            </div>
             <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
               <h2 className="flex items-center justify-center text-base bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 rounded">Game Log</h2>
               <div className="p-2">
                 <TeamGameLog teamData={teamData} year={year} className="text-sm" />
               </div>
             </div>
-            {/* Newsfeed */}
             <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
-              <h2 className="flex items-center justify-center text-base bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 rounded">Featured Contributors</h2>
+              <h2 className="flex items-center justify-center text-base bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 rounded">Headline Grades</h2>
               <div className="p-2">
-                <TeamNewsfeed teamData={teamData} year={year} className="text-sm" />
+                <HeadlineGrades percentileGrades={percentileGrades} className="text-sm" />
               </div>
             </div>
-            {/* Top Performers */}
             <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
               <h2 className="flex items-center justify-center text-base bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 rounded">Key Performers</h2>
-              <div className="p-0">
+              <div className="p-2">
                 <TeamTopPerformers teamData={teamData} year={year} className="text-sm" />
               </div>
             </div>
-            {/* Team Feed */}
             <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
               <h2 className="flex items-center justify-center text-base bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 rounded">Team Feed</h2>
               <div className="p-2">
@@ -147,21 +143,13 @@ const TeamLanding = () => {
     return (
       <div className="w-full p-4 shadow-xl rounded-lg mt-12">
         <div className="py-4" style={{ boxSizing: 'border-box' }}>
-          {/* Header Container */}
           <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
             <div
               className="flex items-center justify-center shadow-lg border-b border-[#235347] h-[80px] rounded px-6"
-              style={{
-                background: `linear-gradient(to right, ${color}, white, ${alternateColor})`
-              }}
+              style={{ background: `linear-gradient(to right, ${color}, white, ${alternateColor})` }}
             >
               {logo_main ? (
-                <img
-                  src={logo_main}
-                  alt={`${school} logo`}
-                  className="w-16 h-16"
-                  onError={(e) => console.error(`Failed to load logo: ${logo_main}`)}
-                />
+                <img src={logo_main} alt={`${school} logo`} className="w-16 h-16" onError={(e) => console.error(`Failed to load logo: ${logo_main}`)} />
               ) : (
                 <div className="w-16 h-16 flex items-center justify-center">
                   <span className="text-gray-500 text-base">No Logo</span>
@@ -169,7 +157,6 @@ const TeamLanding = () => {
               )}
             </div>
           </div>
-          {/* Nav Bar */}
           <div className="border-b border-[#235347] mb-6">
             <ul className="flex gap-4 justify-center p-4">
               <li>
@@ -190,49 +177,48 @@ const TeamLanding = () => {
               </li>
             </ul>
           </div>
-          {/* Main Containers: Three-Column Layout */}
           <div className="flex flex-row w-full gap-6" style={{ alignItems: 'flex-start', boxSizing: 'border-box' }}>
-            {/* Left Container: Conference Standings */}
-            <div className="p-0 bg-gray-0 rounded-lg shadow-xl" style={{ flexBasis: '20%', minWidth: '20%', boxSizing: 'border-box' }}>
-              <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">{year} {teamData.conference} Standings</h2>
-              <div className="p-0">
-                <TeamStandings teamData={teamData} year={year} currentTeamId={id} className="text-base" />
+            <div className="flex flex-col gap-6" style={{ flexBasis: '20%', minWidth: '20%', boxSizing: 'border-box' }}>
+              <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
+                <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">{year} {teamData.conference} Standings</h2>
+                <div className="p-2">
+                  <TeamStandings teamData={teamData} year={year} currentTeamId={id} className="text-base" />
+                </div>
+              </div>
+              <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
+                <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Team Rankings</h2>
+                <div className="p-2">
+                  <TeamRankings teamId={id} year={year} className="text-base" />
+                </div>
               </div>
             </div>
-            {/* Middle Column: Upcoming Matchup, Game Log and Newsfeed */}
             <div className="flex flex-col gap-6" style={{ flexBasis: '58%', minWidth: '58%', boxSizing: 'border-box' }}>
-              {/* Upcoming Matchup */}
               <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
                 <MatchupProjection teamId={id} year={year} />
               </div>
-              {/* Middle Container: Season Game Log */}
               <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
                 <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Game Log</h2>
-                <div className="p-0">
+                <div className="p-2">
                   <TeamGameLog teamData={teamData} year={year} className="text-base" />
                 </div>
               </div>
-              {/* Newsfeed Container */}
               <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
-                <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Featured Contributors</h2>
-                <div className="p-0">
-                  <TeamNewsfeed teamData={teamData} year={year} className="text-base" />
+                <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Headline Grades</h2>
+                <div className="p-2">
+                  <HeadlineGrades percentileGrades={percentileGrades} className="text-base" />
                 </div>
               </div>
             </div>
-            {/* Right Column: Stat Leaders and Top Performers */}
             <div className="flex flex-col gap-6" style={{ flexBasis: '20%', minWidth: '20%', boxSizing: 'border-box' }}>
-              {/* Top Performers Container */}
               <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
                 <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Key Performers</h2>
-                <div className="p-0">
+                <div className="p-2">
                   <TeamTopPerformers teamData={teamData} year={year} className="text-base" />
                 </div>
               </div>
-              {/* Right Container: Stat Leaders */}
               <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
                 <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Team Feed</h2>
-                <div className="p-0">
+                <div className="p-2">
                   <TeamFeed teamData={teamData} year={year} className="text-base" />
                 </div>
               </div>
