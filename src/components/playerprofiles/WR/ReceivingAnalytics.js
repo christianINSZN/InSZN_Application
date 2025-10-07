@@ -12,7 +12,7 @@ export const WeeklyGradesContext = createContext({});
 function ReceivingAnalytics() {
   const { playerId } = useParams();
   const location = useLocation();
-  const year = location.state?.year || 2024;
+  const year = location.state?.year || 2025;
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedContainer, setSelectedContainer] = useState(null);
   const [selectedGrade, setSelectedGrade] = useState(null);

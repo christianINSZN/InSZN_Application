@@ -24,7 +24,7 @@ function FieldViewInterface() {
   const [selectedDistance, setSelectedDistance] = useState('deep');
   const [depthData, setDepthData] = useState(null);
   const [colLabels, setColLabels] = useState(['Left', 'Center', 'Right']);
-  const year = location.state?.year || 2024;
+  const year = location.state?.year || 2025;
   const subscriptionPlan = user?.publicMetadata?.subscriptionPlan;
     const isSubscribed = subscriptionPlan === 'pro' || subscriptionPlan === 'premium' || !subscriptionPlan;
   const isMobile = window.innerWidth < 640;

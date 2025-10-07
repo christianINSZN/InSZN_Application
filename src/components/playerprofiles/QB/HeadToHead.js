@@ -12,7 +12,7 @@ function HeadToHeadQB() {
   const { playerId } = useParams();
   const location = useLocation();
   const { user } = useClerk();
-  const year = location.state?.year || '2024';
+  const year = location.state?.year || '2025';
   const [playerData, setPlayerData] = useState(null);
   const [basicData, setBasicData] = useState(null);
   const [teamGames, setTeamGames] = useState([]);

@@ -23,7 +23,7 @@ function OverviewC() {
   const [error, setError] = useState(null);
 
   // Get year from navigation state, default to 2024 if not provided
-  const year = location.state?.year || 2024;
+  const year = location.state?.year || 2025;
 
   useEffect(() => {
     const fetchPlayerData = async () => {

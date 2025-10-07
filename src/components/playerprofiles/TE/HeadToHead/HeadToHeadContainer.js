@@ -5,7 +5,7 @@ import Select from 'react-select';
 const HeadToHeadContainer = ({ className = "text-sm sm:text-base", onPlayerDataChange, year }) => {
   const { playerId: urlPlayerId } = useParams();
   const location = useLocation();
-  const defaultYear = year || location.state?.year || localStorage.getItem('selectedYear') || '2024';
+  const defaultYear = year || location.state?.year || localStorage.getItem('selectedYear') || '2025';
   const [player1, setPlayer1] = useState(null);
   const [player2, setPlayer2] = useState(null);
   const [year1, setYear1] = useState(defaultYear);
