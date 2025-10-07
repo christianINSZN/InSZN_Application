@@ -118,7 +118,6 @@ const TeamLanding = () => {
               </div>
             </div>
             <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
-              <h2 className="flex items-center justify-center text-base bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 rounded">Headline Grades</h2>
               <div className="p-2">
                 <HeadlineGrades percentileGrades={percentileGrades} className="text-sm" />
               </div>
@@ -181,14 +180,14 @@ const TeamLanding = () => {
             <div className="flex flex-col gap-6" style={{ flexBasis: '20%', minWidth: '20%', boxSizing: 'border-box' }}>
               <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
                 <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">{year} {teamData.conference} Standings</h2>
-                <div className="p-2">
+                <div className="p-0">
                   <TeamStandings teamData={teamData} year={year} currentTeamId={id} className="text-base" />
                 </div>
               </div>
               <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
-                <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Team Rankings</h2>
-                <div className="p-2">
-                  <TeamRankings teamId={id} year={year} className="text-base" />
+                <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Team Feed</h2>
+                <div className="p-0">
+                  <TeamFeed teamData={teamData} year={year} className="text-base" />
                 </div>
               </div>
             </div>
@@ -198,13 +197,12 @@ const TeamLanding = () => {
               </div>
               <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
                 <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Game Log</h2>
-                <div className="p-2">
+                <div className="p-0">
                   <TeamGameLog teamData={teamData} year={year} className="text-base" />
                 </div>
               </div>
               <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
-                <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Headline Grades</h2>
-                <div className="p-2">
+                <div className="p-0">
                   <HeadlineGrades percentileGrades={percentileGrades} className="text-base" />
                 </div>
               </div>
@@ -212,14 +210,14 @@ const TeamLanding = () => {
             <div className="flex flex-col gap-6" style={{ flexBasis: '20%', minWidth: '20%', boxSizing: 'border-box' }}>
               <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
                 <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Key Performers</h2>
-                <div className="p-2">
+                <div className="p-0">
                   <TeamTopPerformers teamData={teamData} year={year} className="text-base" />
                 </div>
               </div>
               <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
-                <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Team Feed</h2>
-                <div className="p-2">
-                  <TeamFeed teamData={teamData} year={year} className="text-base" />
+                <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Team Rankings</h2>
+                <div className="p-0">
+                  <TeamRankings teamId={id} year={year} className="text-base" />
                 </div>
               </div>
             </div>
