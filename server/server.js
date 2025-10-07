@@ -1312,6 +1312,24 @@ app.get('/api/teams_roster/:id/:year', (req, res) => {
     });
 });
 
+app.get('/api/team_percentiles/:teamID/:year', (req, res) => {
+  const { teamID, year } = req.params;
+  db.get(
+    'SELECT * FROM Teams_Grades_Season WHERE teamID = ? AND year = ?',
+    [teamID, year],
+    (err, row) => {
+      if (err) {
+        console.error('Database query error:', err.message);
+        res.status(500).send('Internal server error');
+      } else if (!row) {
+        res.status(404).send('No advanced grades found for team');
+      } else {
+        res.json(row);
+      }
+    }
+  );
+});
+
 // Tweets endpoint
 app.get('/api/teams_feeds/:id', async (req, res) => {
     const { id } = req.params;
@@ -1377,6 +1395,24 @@ app.get('/api/teams_feeds/:id', async (req, res) => {
         console.error('Error fetching tweets:', err.message);
         res.status(err.response?.status === 404 ? 404 : 500).json({ error: 'Failed to fetch tweets' });
     }
+});
+
+app.get('/api/team_percentiles//:year', (req, res) => {
+  const { playerId, year } = req.params;
+  db.get(
+    'SELECT * FROM Players_Full_Percentiles_QB WHERE playerId = ? AND year = ?',
+    [playerId, year],
+    (err, row) => {
+      if (err) {
+        console.error('Database query error:', err.message);
+        res.status(500).send('Internal server error');
+      } else if (!row) {
+        res.status(404).send('No advanced grades found for player');
+      } else {
+        res.json(row);
+      }
+    }
+  );
 });
 
 app.listen(port, () => {

@@ -5,6 +5,7 @@ import TeamGameLog from './teams_components/TeamGameLog';
 import TeamFeed from './teams_components/TeamFeed';
 import TeamTopPerformers from './teams_components/TeamTopPerformers';
 import TeamNewsfeed from './teams_components/TeamNewsFeed';
+import MatchupProjection from './teams_components/TeamNextMatchup'; // Corrected import
 
 const TeamLanding = () => {
   const { id, year = '2025' } = useParams();
@@ -45,7 +46,6 @@ const TeamLanding = () => {
 
   const { school, abbreviation, mascot, logo_main, color, alternateColor } = teamData;
   console.log('Logo_main:', logo_main);
-
   const isOverviewActive = location.pathname === `/teams/${id}/${year}`;
   const isRosterActive = location.pathname === `/teams/${id}/${year}/roster`;
   const isStatsActive = location.pathname === `/teams/${id}/${year}/stats`;
@@ -96,30 +96,18 @@ const TeamLanding = () => {
                   Roster
                 </Link>
               </li>
-              {/* <li>
-                <Link
-                  to={`/teams/${id}/${year}/stats`}
-                  className={`text-[#235347] hover:text-[#235347] pb-0.5 border-b-2 text-xs px-1 ${isStatsActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
-                >
-                  Stats
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to={`/teams/${id}/${year}/schedule`}
-                  className={`text-[#235347] hover:text-[#235347] pb-0.5 border-b-2 text-xs px-1 ${isScheduleActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
-                >
-                  Schedule
-                </Link>
-              </li> */}
             </ul>
           </div>
           {/* Main Containers: Single-Column Layout */}
           <div className="flex flex-col gap-4" style={{ boxSizing: 'border-box' }}>
+            {/* Upcoming Matchup */}
+            <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
+              <MatchupProjection teamId={id} year={year} />
+            </div>
             {/* Conference Standings */}
             <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
               <h2 className="flex items-center justify-center text-base bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 rounded">{year} {teamData.conference} Standings</h2>
-              <div className="p-0">
+              <div className="p-2">
                 <TeamStandings teamData={teamData} year={year} currentTeamId={id} className="text-sm" />
               </div>
             </div>
@@ -200,22 +188,6 @@ const TeamLanding = () => {
                   Roster
                 </Link>
               </li>
-              {/* <li>
-                <Link
-                  to={`/teams/${id}/${year}/stats`}
-                  className={`text-[#235347] hover:text-[#235347] pb-2 border-b-2 text-base px-0 ${isStatsActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
-                >
-                  Stats
-                </Link>
-              </li> */}
-              {/* <li>
-                <Link
-                  to={`/teams/${id}/${year}/schedule`}
-                  className={`text-[#235347] hover:text-[#235347] pb-2 border-b-2 text-base px-0 ${isScheduleActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
-                >
-                  Schedule
-                </Link>
-              </li> */}
             </ul>
           </div>
           {/* Main Containers: Three-Column Layout */}
@@ -227,8 +199,12 @@ const TeamLanding = () => {
                 <TeamStandings teamData={teamData} year={year} currentTeamId={id} className="text-base" />
               </div>
             </div>
-            {/* Middle Column: Game Log and Newsfeed */}
+            {/* Middle Column: Upcoming Matchup, Game Log and Newsfeed */}
             <div className="flex flex-col gap-6" style={{ flexBasis: '58%', minWidth: '58%', boxSizing: 'border-box' }}>
+              {/* Upcoming Matchup */}
+              <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
+                <MatchupProjection teamId={id} year={year} />
+              </div>
               {/* Middle Container: Season Game Log */}
               <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
                 <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Game Log</h2>
