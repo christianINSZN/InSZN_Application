@@ -15,7 +15,7 @@ DB_FILE = Path("/Users/christianberry/Desktop/Perennial Data/perennial-data-app/
 conn = sqlite3.connect(DB_FILE)
 cursor = conn.cursor()
 
-# Create Teams_Matchup table with additional columns from Teams_Games
+# Create Teams_Matchup table with logo columns
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS Teams_Matchup (
     id INTEGER PRIMARY KEY,
@@ -39,30 +39,6 @@ CREATE TABLE IF NOT EXISTS Teams_Matchup (
     homeMoneyline INTEGER,
     awayMoneyline INTEGER,
     year INTEGER,
-    week INTEGER,
-    seasonType TEXT,
-    completed BOOLEAN,
-    attendance INTEGER,
-    venueId INTEGER,
-    homePoints INTEGER,
-    homeLineScores TEXT,
-    homePostgameWinProbability REAL,
-    homePregameElo INTEGER,
-    homePostgameElo INTEGER,
-    awayPoints INTEGER,
-    awayLineScores TEXT,
-    awayPostgameWinProbability REAL,
-    awayPregameElo INTEGER,
-    awayPostgameElo INTEGER,
-    excitementIndex REAL,
-    highlights TEXT,
-    notes TEXT,
-    homeTeamAbrev TEXT,
-    awayTeamAbrev TEXT,
-    draftKingsSpread REAL,
-    draftKingsFormattedSpread TEXT,
-    draftKingsSpreadOpen REAL,
-    draftKingsOverUnderOpen REAL,
     FOREIGN KEY (homeTeamId) REFERENCES Teams(id),
     FOREIGN KEY (awayTeamId) REFERENCES Teams(id)
 )
@@ -72,7 +48,6 @@ CREATE TABLE IF NOT EXISTS Teams_Matchup (
 url = "https://api.collegefootballdata.com/scoreboard"
 headers = {"Authorization": f"Bearer {API_KEY}", "Accept": "application/json"}
 params = {"classification": "fbs", "year": YEAR}
-
 try:
     response = requests.get(url, headers=headers, params=params, timeout=10)
     response.raise_for_status()
@@ -98,24 +73,7 @@ def get_team_logo(team_id):
         print(f"Error fetching logo for team {team_id}: {e}")
         return None
 
-# Fetch additional data from Teams_Games table
-def get_game_data(game_id):
-    try:
-        cursor.execute("""
-            SELECT week, seasonType, completed, attendance, venueId, homePoints, homeLineScores, 
-                   homePostgameWinProbability, homePregameElo, homePostgameElo, awayPoints, 
-                   awayLineScores, awayPostgameWinProbability, awayPregameElo, awayPostgameElo, 
-                   excitementIndex, highlights, notes, homeTeamAbrev, awayTeamAbrev, 
-                   draftKingsSpread, draftKingsFormattedSpread, draftKingsSpreadOpen, 
-                   draftKingsOverUnderOpen
-            FROM Teams_Games WHERE id = ?
-        """, (game_id,))
-        return cursor.fetchone()
-    except sqlite3.Error as e:
-        print(f"Error fetching game data for id {game_id}: {e}")
-        return None
-
-# Populate Teams_Matchup table with logos and Teams_Games data
+# Populate Teams_Matchup table with logos
 for matchup in matchups_data:
     id = matchup.get("id")
     startDate = matchup.get("startDate")
@@ -147,52 +105,15 @@ for matchup in matchups_data:
     homeTeamLogo = get_team_logo(homeTeamId)
     awayTeamLogo = get_team_logo(awayTeamId)
 
-    # Fetch additional data from Teams_Games
-    game_data = get_game_data(id)
-    if game_data:
-        (week, seasonType, completed, attendance, venueId, homePoints, homeLineScores, 
-         homePostgameWinProbability, homePregameElo, homePostgameElo, awayPoints, 
-         awayLineScores, awayPostgameWinProbability, awayPregameElo, awayPostgameElo, 
-         excitementIndex, highlights, notes, homeTeamAbrev, awayTeamAbrev, 
-         draftKingsSpread, draftKingsFormattedSpread, draftKingsSpreadOpen, 
-         draftKingsOverUnderOpen) = game_data
-    else:
-        print(f"No game data found for matchup {id}")
-        week = seasonType = completed = attendance = venueId = homePoints = homeLineScores = None
-        homePostgameWinProbability = homePregameElo = homePostgameElo = None
-        awayPoints = awayLineScores = awayPostgameWinProbability = None
-        awayPregameElo = awayPostgameElo = excitementIndex = highlights = notes = None
-        homeTeamAbrev = awayTeamAbrev = draftKingsSpread = draftKingsFormattedSpread = None
-        draftKingsSpreadOpen = draftKingsOverUnderOpen = None
-
     if homeTeamId and awayTeamId:
         print(f"Processing matchup {id}: {homeTeamName} vs {awayTeamName}, Year: {game_year}, Logos - Home: {homeTeamLogo}, Away: {awayTeamLogo}")
         cursor.execute("""
-            INSERT OR REPLACE INTO Teams_Matchup (
-                id, startDate, startTimeTBD, tv, neutralSite, conferenceGame, status, venueName, 
-                venueCity, venueState, homeTeamId, homeTeamName, homeTeamLogo, awayTeamId, 
-                awayTeamName, awayTeamLogo, spread, overUnder, homeMoneyline, awayMoneyline, 
-                year, week, seasonType, completed, attendance, venueId, homePoints, homeLineScores, 
-                homePostgameWinProbability, homePregameElo, homePostgameElo, awayPoints, 
-                awayLineScores, awayPostgameWinProbability, awayPregameElo, awayPostgameElo, 
-                excitementIndex, highlights, notes, homeTeamAbrev, awayTeamAbrev, 
-                draftKingsSpread, draftKingsFormattedSpread, draftKingsSpreadOpen, 
-                draftKingsOverUnderOpen
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            id, startDate, startTimeTBD, tv, neutralSite, conferenceGame, status, venueName, 
-            venueCity, venueState, homeTeamId, homeTeamName, homeTeamLogo, awayTeamId, 
-            awayTeamName, awayTeamLogo, spread, overUnder, homeMoneyline, awayMoneyline, 
-            game_year, week, seasonType, completed, attendance, venueId, homePoints, 
-            homeLineScores, homePostgameWinProbability, homePregameElo, homePostgameElo, 
-            awayPoints, awayLineScores, awayPostgameWinProbability, awayPregameElo, 
-            awayPostgameElo, excitementIndex, highlights, notes, homeTeamAbrev, 
-            awayTeamAbrev, draftKingsSpread, draftKingsFormattedSpread, 
-            draftKingsSpreadOpen, draftKingsOverUnderOpen
-        ))
+            INSERT OR REPLACE INTO Teams_Matchup (id, startDate, startTimeTBD, tv, neutralSite, conferenceGame, status, venueName, venueCity, venueState, homeTeamId, homeTeamName, homeTeamLogo, awayTeamId, awayTeamName, awayTeamLogo, spread, overUnder, homeMoneyline, awayMoneyline, year)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (id, startDate, startTimeTBD, tv, neutralSite, conferenceGame, status, venueName, venueCity, venueState, homeTeamId, homeTeamName, homeTeamLogo, awayTeamId, awayTeamName, awayTeamLogo, spread, overUnder, homeMoneyline, awayMoneyline, game_year))
     else:
         print(f"Skipping matchup {id} due to missing team IDs: home={homeTeamId}, away={awayTeamId}")
 
 conn.commit()
 conn.close()
-print("Teams_Matchup table population with logos and Teams_Games data completed")
+print("Teams_Matchup table population with logos completed")

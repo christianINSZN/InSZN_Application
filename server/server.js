@@ -1229,6 +1229,58 @@ app.get('/api/players/ppa/:year/top-rbs', (req, res) => {
   );
 });
 
+app.get('/api/players/ppa/:year/top-wrs', (req, res) => {
+  const { year } = req.params;
+  console.log(`Fetching top WRs for year: ${year}`);
+  db.all(
+    `
+    SELECT playerId, year, name, position, team, conference, averagePPA_rush, teamID
+    FROM Players_PPA_WR
+    WHERE year = ? AND position = 'WR' AND min_passing_threshold_hit = 1
+    ORDER BY averagePPA_rush DESC
+    LIMIT 25
+    `,
+    [year],
+    (err, rows) => {
+      if (err) {
+        console.error('Database error:', err.message);
+        return res.status(500).json({ error: err.message });
+      }
+      if (!rows.length) {
+        console.log(`No RBs found for year: ${year}`);
+        return res.status(404).json({ error: 'No RBs found for this year with minimum passing threshold' });
+      }
+      res.json(rows);
+    }
+  );
+});
+
+app.get('/api/players/ppa/:year/top-tes', (req, res) => {
+  const { year } = req.params;
+  console.log(`Fetching top TEs for year: ${year}`);
+  db.all(
+    `
+    SELECT playerId, year, name, position, team, conference, averagePPA_rush, teamID
+    FROM Players_PPA_TE
+    WHERE year = ? AND position = 'TE' AND min_passing_threshold_hit = 1
+    ORDER BY averagePPA_rush DESC
+    LIMIT 25
+    `,
+    [year],
+    (err, rows) => {
+      if (err) {
+        console.error('Database error:', err.message);
+        return res.status(500).json({ error: err.message });
+      }
+      if (!rows.length) {
+        console.log(`No RBs found for year: ${year}`);
+        return res.status(404).json({ error: 'No RBs found for this year with minimum passing threshold' });
+      }
+      res.json(rows);
+    }
+  );
+});
+
 app.get('/api/teams/rankings/:year/:week', (req, res) => {
     const { year, week } = req.params;
     console.log(`Fetching team rankings for year: ${year}, week: ${week}`);
