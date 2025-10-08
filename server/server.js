@@ -1210,7 +1210,7 @@ app.get('/api/players/ppa/:year/top-rbs', (req, res) => {
     `
     SELECT playerId, year, name, position, team, conference, averagePPA_rush, teamID
     FROM Players_PPA_RB
-    WHERE year = ? AND position = 'RB' AND min_passing_threshold_hit = 1
+    WHERE year = ? AND position = 'RB' AND min_passing_threshold_hit = 1 AND conference IS NOT NULL AND conference != ''
     ORDER BY averagePPA_rush DESC
     LIMIT 25
     `,
