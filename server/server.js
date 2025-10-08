@@ -1262,7 +1262,7 @@ app.get('/api/players/ppa/:year/top-tes', (req, res) => {
     `
     SELECT playerId, year, name, position, team, conference, averagePPA_pass, teamID
     FROM Players_PPA_TE
-    WHERE year = ? AND position = 'TE' AND min_passing_threshold_hit = 1
+    WHERE year = ? AND position = 'TE' AND min_passing_threshold_hit = 1 AND conference IS NOT NULL AND conference != ''
     ORDER BY averagePPA_pass DESC
     LIMIT 25
     `,
