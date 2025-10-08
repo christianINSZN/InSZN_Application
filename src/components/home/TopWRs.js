@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useReactTable, getCoreRowModel, createColumnHelper, flexRender } from '@tanstack/react-table';
 import { Link, useNavigate } from 'react-router-dom';
 
-function TopRBs() {
+function TopWRs() {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,7 +14,7 @@ function TopRBs() {
     columnHelper.accessor('name', {
       id: 'Player Name',
       cell: ({ row }) => {
-        const toPath = `/players/rb/${row.original.playerId}`;
+        const toPath = `/players/wr/${row.original.playerId}`;
         return (
           <Link
             to={toPath}
@@ -51,8 +51,8 @@ function TopRBs() {
         );
       },
     }),
-    columnHelper.accessor('averagePPA_rush', {
-      id: 'Rush PPA',
+    columnHelper.accessor('averagePPA_pass', {
+      id: 'Rec. PPA',
       cell: info => (info.getValue() !== null ? info.getValue().toFixed(3) : 'N/A'),
     }),
   ], [navigate, year]);
@@ -62,7 +62,7 @@ function TopRBs() {
     setIsLoading(true);
     setData([]);
 
-    fetch(`${process.env.REACT_APP_API_URL}/api/players/ppa/${year}/top-rbs`, {
+    fetch(`${process.env.REACT_APP_API_URL}/api/players/ppa/${year}/top-wrs`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -116,7 +116,7 @@ function TopRBs() {
   if (isLoading) {
     return (
       <div className="p-0 shadow-xl rounded-lg h-full">
-        <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Top-25 RBs (PPA)</h2>
+        <h2 className="flex items-center justify-center text-md sm:text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-auto sm:h-auto rounded-t-lg">Top-25 WRs (PPA)</h2>
         <p className="text-gray-500 text-center p-4">Loading...</p>
       </div>
     );
@@ -125,7 +125,7 @@ function TopRBs() {
   if (error) {
     return (
       <div className="p-0 shadow-xl rounded-lg h-full">
-        <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Top-25 RBs (PPA)</h2>
+        <h2 className="flex items-center justify-center text-md sm:text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-auto sm:h-auto rounded-t-lg">Top-25 WRs (PPA)</h2>
         <p className="text-red-500 text-center p-4">Error: {error}</p>
       </div>
     );
@@ -134,7 +134,7 @@ function TopRBs() {
   if (!data.length) {
     return (
       <div className="p-0 shadow-xl rounded-lg h-full">
-        <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Top-25 RBs (PPA)</h2>
+        <h2 className="flex items-center justify-center text-md sm:text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-auto sm:h-auto rounded-t-lg">Top-25 WRs (PPA)</h2>
         <p className="text-gray-500 text-center p-4">No data available for {year}.</p>
       </div>
     );
@@ -142,7 +142,7 @@ function TopRBs() {
 
   return (
     <div className="p-0 shadow-xl rounded-lg h-full border-b border-[#235347]">
-      <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Top-25 RBs (PPA)</h2>
+      <h2 className="flex items-center justify-center text-md sm:text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-auto sm:h-auto rounded-t-lg">Top-25 WRs (PPA)</h2>
       <div className="h-[420px] overflow-y-auto border-b border-[#235347]">
         <table className="w-full text-center border-collapse">
           <thead className="sticky top-0 bg-white z-500">
@@ -188,10 +188,10 @@ function TopRBs() {
           </tbody>
         </table>
       </div>
-      <div className="p-1 text-center text-sm">
+      <div className="p-2 text-center text-[8px] sm:text-xs bg-[#235347] rounded-b-lg text-white">
         <Link
           to="https://inszn.co/players"
-          className="text-black hover:text-gray-900 underline underline-offset-2 inline-block cursor-pointer"
+          className="text-white hover:text-gray-300 underline underline-offset-2 inline-block cursor-pointer"
           style={{ display: 'inline-block' }}
         >
           Full Rankings
@@ -201,4 +201,4 @@ function TopRBs() {
   );
 }
 
-export default TopRBs;
+export default TopWRs;
