@@ -1234,10 +1234,10 @@ app.get('/api/players/ppa/:year/top-wrs', (req, res) => {
   console.log(`Fetching top WRs for year: ${year}`);
   db.all(
     `
-    SELECT playerId, year, name, position, team, conference, averagePPA_rush, teamID
+    SELECT playerId, year, name, position, team, conference, averagePPA_pass, teamID
     FROM Players_PPA_WR
     WHERE year = ? AND position = 'WR' AND min_passing_threshold_hit = 1
-    ORDER BY averagePPA_rush DESC
+    ORDER BY averagePPA_pass DESC
     LIMIT 25
     `,
     [year],
@@ -1260,10 +1260,10 @@ app.get('/api/players/ppa/:year/top-tes', (req, res) => {
   console.log(`Fetching top TEs for year: ${year}`);
   db.all(
     `
-    SELECT playerId, year, name, position, team, conference, averagePPA_rush, teamID
+    SELECT playerId, year, name, position, team, conference, averagePPA_pass, teamID
     FROM Players_PPA_TE
     WHERE year = ? AND position = 'TE' AND min_passing_threshold_hit = 1
-    ORDER BY averagePPA_rush DESC
+    ORDER BY averagePPA_pass DESC
     LIMIT 25
     `,
     [year],
