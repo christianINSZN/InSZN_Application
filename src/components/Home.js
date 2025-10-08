@@ -15,7 +15,7 @@ function Home() {
           <TopTeams />
         </div>
       </div>
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:h-[260px] mt-2 sm:mt-4">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:h-[225px] mt-2 sm:mt-4">
         <div className="w-full sm:w-[23%] h-auto sm:h-full">
           <FeaturedVideos />
         </div>
@@ -26,7 +26,7 @@ function Home() {
           <FeaturedPosts />
         </div>
       </div>
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-2  mt-2 sm:mt-4">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 sm:h-full mt-2 sm:mt-4">
         <div className="w-full sm:w-[25%] h-auto sm:h-full">
           <TopQBs />
         </div>
