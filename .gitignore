@@ -1,2 +1,9 @@
 .env
 node_modules
+node_modules/
+*.db
+server/data/db/
+node_modules/
+*.db
+server/data/db/
+.env
