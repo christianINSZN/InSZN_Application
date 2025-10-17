@@ -1,4 +1,6 @@
 .env
 node_modules
 node_modules/
-
+*.db
+server/data/db/
+perennial-data-app/server/.env
