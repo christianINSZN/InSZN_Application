@@ -2,20 +2,16 @@ import sqlite3
 import os
 import csv
 from pathlib import Path
-
 # Database connection
 DB_FILE = Path("/Users/christianberry/Desktop/Perennial Data/perennial-data-app/server/data/db/cfb_database.db")
 conn = sqlite3.connect(DB_FILE)
 cursor = conn.cursor()
-
 # Define constants
 MIN_TOTAL_TOUCHES_THRESHOLD = 20
-
 # Define table for Full Percentiles (RB) Rushing data
 TABLE_NAME = "Players_Full_Percentiles_RB_Rushing"
-
 try:
-    # Drop and recreate table to avoid duplicate column issues
+# Drop and recreate table to avoid duplicate column issues
     cursor.execute(f"DROP TABLE IF EXISTS {TABLE_NAME}")
     cursor.execute(f"""
         CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
@@ -32,12 +28,10 @@ try:
             FOREIGN KEY (teamID) REFERENCES Teams(id)
         )
     """)
-
-    # Fetch existing player data from Players_Basic with PFF ID and teamID for RBs
+# Fetch existing player data from Players_Basic with PFF ID and teamID for RBs
     cursor.execute("SELECT playerId, name, team, player_id_PFF, teamID FROM Players_Basic WHERE position = 'RB'")
     players_basic = {row[3]: {'playerId': row[0], 'name': row[1], 'team': row[2], 'teamID': row[4]} for row in cursor.fetchall() if row[3]}
-
-    # Load PFF data and dynamically build metric columns
+# Load PFF data and dynamically build metric columns
     pff_data = {}
     BASE_DIR = Path("/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/PFF_Data/Rushing/SeasonReports/")
     BASE_METRIC_COLS = set()
@@ -69,7 +63,6 @@ try:
                         for col in metric_cols:
                             if metrics[col] is not None:
                                 pff_data[(player_id, year)][col] = metrics[col]
-
     # Add discovered metric columns to the table (avoid duplicates)
     cursor.execute(f"PRAGMA table_info({TABLE_NAME})")
     existing_cols = {row[1] for row in cursor.fetchall()}
@@ -80,7 +73,6 @@ try:
                 cursor.execute(f"ALTER TABLE {TABLE_NAME} ADD COLUMN percentile_{col} INTEGER")
             except sqlite3.OperationalError as e:
                 print(f"Warning: Could not add column {col} or percentile_{col}: {e}")
-
     # Populate table with initial data (metrics)
     for key, data in pff_data.items():
         values = [data['playerId'], data['year'], data['name'], data['team'], data['teamID'], data.get('total_touches')] + [data.get(col) for col in BASE_METRIC_COLS]
@@ -89,7 +81,6 @@ try:
             VALUES ({', '.join('?' for _ in range(len(values)))})
         """
         cursor.execute(query, values)
-
     # Calculate percentiles using min-max normalization per year, filtering by MIN_TOTAL_TOUCHES_THRESHOLD
     cursor.execute(f"SELECT DISTINCT year FROM {TABLE_NAME}")
     years = [row[0] for row in cursor.fetchall()]
@@ -131,28 +122,92 @@ try:
                     AND year = {year}
                     AND total_touches > {MIN_TOTAL_TOUCHES_THRESHOLD};
                 """)
-
-    # Calculate RBR Score after all percentiles are computed
-    for year in years:
+    # NEW: Calculate RBR using historical z-scores (cross-year comparable)
+    rbr_metrics = ['grades_run', 'yards', 'yards_after_contact', 'avoided_tackles', 'ypa', 'elusive_rating', 'breakaway_percent']
+    historical = {}
+    print("Computing historical stats...")
+    for metric in rbr_metrics:
         cursor.execute(f"""
-UPDATE {TABLE_NAME}
-SET RBR = (
-    0.20 * (COALESCE(percentile_grades_run, 0) / 100.0) +
-    0.20 * (COALESCE(percentile_yards, 0) / 100.0) +
-    0.15 * (COALESCE(percentile_yards_after_contact, 0) / 100.0) +
-    0.15 * (COALESCE(percentile_avoided_tackles, 0) / 100.0) +
-    0.15 * (COALESCE(percentile_ypa, 0) / 100.0) +
-    0.10 * (COALESCE(percentile_elusive_rating, 0) / 100.0) +
-    0.05 * (COALESCE(percentile_breakaway_percent, 0) / 100.0)
-) * 1000
-WHERE year = {year}
-AND total_touches > {MIN_TOTAL_TOUCHES_THRESHOLD}
+            SELECT AVG({metric}), 
+                   (AVG({metric}*{metric}) - POW(AVG({metric}), 2)) * COUNT({metric}) / (COUNT({metric}) - 1)
+            FROM {TABLE_NAME}
+            WHERE total_touches >= {MIN_TOTAL_TOUCHES_THRESHOLD} / 2 AND {metric} IS NOT NULL
         """)
-
+        result = cursor.fetchone()
+        if result:
+            mean = result[0] if result[0] is not None else 0.0
+            variance = result[1] if result[1] is not None else 1.0
+            std = (variance ** 0.5) if variance > 0 else 1.0
+            historical[metric] = {'mean': mean, 'std': std}
+            print(f"{metric}: mean={mean:.2f}, std={std:.2f}")
+        else:
+            print(f"Warning: No data for {metric}; skipping")
+            historical[metric] = {'mean': 0.0, 'std': 1.0}
+    
+    # Weights for each metric
+    weights = {
+        'grades_run': 0.20,
+        'yards': 0.20,
+        'yards_after_contact': 0.15,
+        'avoided_tackles': 0.15,
+        'ypa': 0.15,
+        'elusive_rating': 0.10,
+        'breakaway_percent': 0.05
+    }
+    
+    # Fetch qualified players and compute RBR row-by-row
+    cursor.execute(f"""
+        SELECT playerId, year, name, {', '.join(rbr_metrics)}
+        FROM {TABLE_NAME}
+        WHERE total_touches >= {MIN_TOTAL_TOUCHES_THRESHOLD} / 2
+    """)
+    qualified_rows = cursor.fetchall()
+    print(f"Found {len(qualified_rows)} qualified rows for RBR calculation")
+    
+    updated_count = 0
+    for row in qualified_rows:
+        playerId, year, name, *metric_values = row
+        weighted_z = 0.0
+        for i, metric in enumerate(rbr_metrics):
+            raw_value = metric_values[i]
+            if raw_value is None:
+                z = 0.0
+            else:
+                h = historical[metric]
+                z = (raw_value - h['mean']) / h['std']
+            weighted_z += weights[metric] * z
+        
+        rbr = max(0, min(100, ((weighted_z + 3) / 6.0) * 100))
+        
+        cursor.execute(f"""
+            UPDATE {TABLE_NAME} SET RBR = ? WHERE playerId = ? AND year = ?
+        """, (rbr, playerId, year))
+        
+        if cursor.rowcount > 0:
+            updated_count += 1
+            if updated_count <= 5:
+                print(f"Updated {name} ({year}): RBR={rbr:.1f} (weighted_z={weighted_z:.2f})")
+    
+    print(f"Updated {updated_count} rows with RBR values")
+    
+    # Debug: Check final state
+    cursor.execute(f"SELECT COUNT(*) FROM {TABLE_NAME} WHERE RBR IS NOT NULL")
+    non_null_count = cursor.fetchone()[0]
+    print(f"Total rows with non-NULL RBR: {non_null_count}")
+    if non_null_count > 0:
+        cursor.execute(f"SELECT name, year, RBR FROM {TABLE_NAME} WHERE RBR IS NOT NULL ORDER BY RBR DESC LIMIT 5")
+        top_players = cursor.fetchall()
+        print("Top 5 RBR players:")
+        for row in top_players:
+            print(f"  {row[0]} ({row[1]}): {row[2]:.1f}")
 except sqlite3.Error as e:
     print(f"Database error: {e}")
+    import traceback
+    traceback.print_exc()
 except Exception as e:
     print(f"Unexpected error: {e}")
+    import traceback
+    traceback.print_exc()
 conn.commit()
 conn.close()
 print(f"Proof of concept completed for {TABLE_NAME}")

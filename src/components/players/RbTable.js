@@ -85,7 +85,10 @@ const RbTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
       id: 'RBR', 
       enableSorting: true,
       sortDescFirst: true,
-            cell: info => (info.getValue() !== null ? info.getValue() : 'N/A'),
+      cell: info => {
+          const value = info.getValue();
+          return value !== null ? value.toFixed(1) : 'N/A';
+      },
     }),
   ], [navigate, year]);
 
