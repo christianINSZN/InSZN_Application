@@ -15,7 +15,8 @@ GRADE_CONFIG = {
         "csv_dir": "Rushing/SeasonReports",
         "csv_file": "RushingGrades.csv",
         "stat_column": "grades_run",
-        "extra_columns": ["player_game_count", "fumbles", "yards", "ypa", "touchdowns", "attempts"]
+        "extra_columns": ["player_game_count", "fumbles", "yards", "ypa", "touchdowns", "attempts"],
+        "additional_db_fields": [{"name": "RBR", "table": "Players_Full_Percentiles_RB_Rushing"}]
     },
     "WR": {
         "csv_dir": "Receiving/SeasonReports",
@@ -107,13 +108,17 @@ cursor = conn.cursor()
 new_columns = set()
 for config in GRADE_CONFIG.values():
     new_columns.update(config.get("extra_columns", []))
+    for field in config.get("additional_db_fields", []):
+        new_columns.add(field["name"])
 
 # Check if table exists and alter it to add new columns if needed
 cursor.execute("PRAGMA table_info(Players_Basic_Grades)")
 existing_columns = {row[1] for row in cursor.fetchall()}  # Set of column names
 if new_columns - existing_columns:
+    real_cols = ['completion_percent', 'yards', 'ypa', 'yards_per_reception', 'RBR']  # Add RBR as REAL
     for col in new_columns - existing_columns:
-        cursor.execute(f"ALTER TABLE Players_Basic_Grades ADD COLUMN {col} {('REAL' if col in ['completion_percent', 'yards', 'ypa', 'yards_per_reception'] else 'INTEGER')}")
+        col_type = 'REAL' if col in real_cols else 'INTEGER'
+        cursor.execute(f"ALTER TABLE Players_Basic_Grades ADD COLUMN {col} {col_type}")
 # Ensure school, teamID, and grades_defense are added if not present
 if {'school', 'teamID', 'grades_defense'} - existing_columns:
     if 'school' not in existing_columns:
@@ -149,6 +154,7 @@ CREATE TABLE IF NOT EXISTS Players_Basic_Grades (
     yards_per_reception REAL,
     receptions INTEGER,
     attempts INTEGER,
+    RBR REAL, 
     PRIMARY KEY (playerId, year),
     FOREIGN KEY (playerId, year) REFERENCES Players_Basic(playerId, year)
 )
@@ -201,17 +207,30 @@ def fetch_pff_grades_for_position(year):
                     school = school if school is not None else team.lower()  # Fallback to lowercase team if school is null
                     team_id = team_id if team_id is not None else None  # Keep teamID as is, or None if not set
 
-                    if config["extra_columns"]:
-                        extra_values = [data.get(col) for col in config["extra_columns"]]
+                    extra_values = [data.get(col) for col in config["extra_columns"]]
+
+                    # Fetch additional DB fields if defined
+                    additional_values = []
+                    additional_columns = []
+                    if "additional_db_fields" in config:
+                        for field in config["additional_db_fields"]:
+                            cursor.execute(f"SELECT {field['name']} FROM {field['table']} WHERE playerId = ? AND year = ?", (player_id, year))
+                            result = cursor.fetchone()
+                            additional_values.append(result[0] if result else None)
+                            additional_columns.append(field['name'])
+
+                    if config["extra_columns"] or additional_columns:
                         # Update existing row
-                        update_query = f"UPDATE Players_Basic_Grades SET {config['stat_column']} = ?, school = ?, teamID = ?, {', '.join(f'{col} = ?' for col in config['extra_columns'])} WHERE playerId = ? AND year = ?"
-                        update_params = [grade_value, school, team_id] + extra_values + [player_id, year]
+                        set_clause = f"{config['stat_column']} = ?, school = ?, teamID = ?, {', '.join(f'{col} = ?' for col in config['extra_columns'] + additional_columns)}"
+                        update_query = f"UPDATE Players_Basic_Grades SET {set_clause} WHERE playerId = ? AND year = ?"
+                        update_params = [grade_value, school, team_id] + extra_values + additional_values + [player_id, year]
                         cursor.execute(update_query, update_params)
                         if cursor.rowcount == 0:
                             # Insert if not exists
                             insert_columns = ["playerId", "year", "name", "team", "position", "player_id_PFF", config["stat_column"], "school", "teamID"]
                             insert_columns.extend(config["extra_columns"])
-                            insert_params = [player_id, year, name, team, pos or 'Unknown', player_id_pff, grade_value, school, team_id] + extra_values
+                            insert_columns.extend(additional_columns)
+                            insert_params = [player_id, year, name, team, pos or 'Unknown', player_id_pff, grade_value, school, team_id] + extra_values + additional_values
                             insert_query = f"INSERT INTO Players_Basic_Grades ({', '.join(insert_columns)}) VALUES ({'?,' * (len(insert_columns) - 1)}?)"
                             cursor.execute(insert_query, insert_params)
                     else:
@@ -244,5 +263,5 @@ def main(year):
         conn.close()
 
 if __name__ == "__main__":
-    year = 2025
+    year = 2024
     main(year)
