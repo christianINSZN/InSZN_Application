@@ -131,7 +131,7 @@ try:
             SELECT AVG({metric}), 
                    (AVG({metric}*{metric}) - POW(AVG({metric}), 2)) * COUNT({metric}) / (COUNT({metric}) - 1)
             FROM {TABLE_NAME}
-            WHERE total_touches >= {MIN_TOTAL_TOUCHES_THRESHOLD} / 2 AND {metric} IS NOT NULL
+            WHERE total_touches >= {MIN_TOTAL_TOUCHES_THRESHOLD} AND {metric} IS NOT NULL
         """)
         result = cursor.fetchone()
         if result:
@@ -159,7 +159,7 @@ try:
     cursor.execute(f"""
         SELECT playerId, year, name, {', '.join(rbr_metrics)}
         FROM {TABLE_NAME}
-        WHERE total_touches >= {MIN_TOTAL_TOUCHES_THRESHOLD} / 2
+        WHERE total_touches >= {MIN_TOTAL_TOUCHES_THRESHOLD}
     """)
     qualified_rows = cursor.fetchall()
     print(f"Found {len(qualified_rows)} qualified rows for RBR calculation")
