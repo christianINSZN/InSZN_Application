@@ -124,15 +124,25 @@ try:
                 """)
     # NEW: Calculate RBR using historical z-scores (cross-year comparable)
     rbr_metrics = ['grades_run', 'yards', 'yards_after_contact', 'avoided_tackles', 'ypa', 'elusive_rating', 'breakaway_percent']
+    volume_metrics = ['yards', 'yards_after_contact', 'avoided_tackles']
+    rate_metrics = ['grades_run', 'ypa', 'elusive_rating', 'breakaway_percent']
     historical = {}
     print("Computing historical stats...")
     for metric in rbr_metrics:
-        cursor.execute(f"""
-            SELECT AVG({metric}), 
-                   (AVG({metric}*{metric}) - POW(AVG({metric}), 2)) * COUNT({metric}) / (COUNT({metric}) - 1)
-            FROM {TABLE_NAME}
-            WHERE total_touches >= {MIN_TOTAL_TOUCHES_THRESHOLD} AND {metric} IS NOT NULL
-        """)
+        if metric in volume_metrics:
+            cursor.execute(f"""
+                SELECT AVG({metric}/player_game_count),
+                       (AVG( ({metric}/player_game_count)*({metric}/player_game_count) ) - POW(AVG({metric}/player_game_count), 2)) * COUNT(*) / (COUNT(*) - 1)
+                FROM {TABLE_NAME}
+                WHERE total_touches >= {MIN_TOTAL_TOUCHES_THRESHOLD} AND {metric} IS NOT NULL AND player_game_count > 0
+            """)
+        else:
+            cursor.execute(f"""
+                SELECT AVG({metric}),
+                       (AVG({metric}*{metric}) - POW(AVG({metric}), 2)) * COUNT({metric}) / (COUNT({metric}) - 1)
+                FROM {TABLE_NAME}
+                WHERE total_touches >= {MIN_TOTAL_TOUCHES_THRESHOLD} AND {metric} IS NOT NULL
+            """)
         result = cursor.fetchone()
         if result:
             mean = result[0] if result[0] is not None else 0.0
@@ -157,7 +167,7 @@ try:
     
     # Fetch qualified players and compute RBR row-by-row
     cursor.execute(f"""
-        SELECT playerId, year, name, {', '.join(rbr_metrics)}
+        SELECT playerId, year, name, player_game_count, {', '.join(rbr_metrics)}
         FROM {TABLE_NAME}
         WHERE total_touches >= {MIN_TOTAL_TOUCHES_THRESHOLD}
     """)
@@ -166,7 +176,9 @@ try:
     
     updated_count = 0
     for row in qualified_rows:
-        playerId, year, name, *metric_values = row
+        playerId, year, name, games, *metric_values = row
+        if games is None or games <= 0:
+            continue  # Skip if no games
         weighted_z = 0.0
         for i, metric in enumerate(rbr_metrics):
             raw_value = metric_values[i]
@@ -174,7 +186,11 @@ try:
                 z = 0.0
             else:
                 h = historical[metric]
-                z = (raw_value - h['mean']) / h['std']
+                if metric in volume_metrics:
+                    value = raw_value / games
+                else:
+                    value = raw_value
+                z = (value - h['mean']) / h['std']
             weighted_z += weights[metric] * z
         
         rbr = max(0, min(100, ((weighted_z + 3) / 6.0) * 100))
