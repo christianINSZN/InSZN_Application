@@ -138,8 +138,8 @@ try:
     
     # *** NOW CALCULATE LBR - AFTER DATA EXISTS ***
     print("\n=== CALCULATING LBR ===")
-    lbr_metrics = ['grades_coverage_defense', 'grades_pass_rush_defense', 'stop_percent', 'pass_rush_win_rate', 'tackles', 'interceptions', 'pass_break_ups', 'hurries', 'sacks', 'missed_tackle_rate']
-    volume_metrics = ['tackles', 'interceptions', 'pass_break_ups', 'hurries', 'sacks']
+    lbr_metrics = ['grades_coverage_defense', 'grades_defense', 'grades_run_defense', 'stop_percent', 'pass_rush_win_rate', 'interceptions', 'pass_break_ups', 'hurries', 'sacks', 'missed_tackle_rate']
+    volume_metrics = ['interceptions', 'pass_break_ups', 'hurries', 'sacks']
     historical = {}
     print("Computing historical stats...")
     for metric in lbr_metrics:
@@ -170,13 +170,13 @@ try:
     
     # Weights for LBE metrics (total = 1.0) - Balanced coverage + rush + tackling
     weights = {
-        'grades_coverage_defense': 0.20,        # Coverage grade
-        'grades_pass_rush_defense': 0.20,       # Pass rush grade
+        'grades_coverage_defense': 0.15,        # Coverage grade
+        'grades_defense': 0.20,       # Pass rush grade
+        'grades_run_defense': 0.15,          # Run defense grade
         'stop_percent': 0.15,                   # Run stop %
-        'pass_rush_win_rate': 0.10,             # Pass rush win %
-        'tackles': 0.10,                        # Tackles/game
-        'interceptions': 0.05,                  # INTs/game
-        'pass_break_ups': 0.05,                 # PBUs/game
+        'pass_rush_win_rate': 0.20,             # Pass rush win %
+        'interceptions': 0.15,                  # INTs/game
+        'pass_break_ups': 0.15,                 # PBUs/game
         'hurries': 0.05,                        # Hurries/game
         'sacks': 0.05,                          # Sacks/game
         'missed_tackle_rate': -0.05             # Tackle penalty

@@ -290,5 +290,5 @@ def main(year):
         conn.close()
 
 if __name__ == "__main__":
-    year = 2025
+    year = 2024
     main(year)

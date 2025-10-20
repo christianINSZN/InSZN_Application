@@ -170,13 +170,13 @@ try:
     
     # Weights for DB metrics (total = 1.0)
     weights = {
-        'grades_coverage_defense': 0.25,        # PFF coverage grade
-        'forced_incompletion_rate': 0.20,       # Incompletion %
-        'coverage_percent': 0.15,               # Coverage snaps %
+        'grades_coverage_defense': 0.50,        # PFF coverage grade
+        'forced_incompletion_rate': 0.15,       # Incompletion %
+        'coverage_percent': 0.10,               # Coverage snaps %
         'pass_break_ups': 0.10,                 # PBUs/game
-        'interceptions': 0.10,                  # INTs/game
+        'interceptions': 0.15,                  # INTs/game
         'yards_per_coverage_snap': -0.10,       # Yards allowed penalty
-        'snap_counts_coverage': 0.05,           # Coverage snaps/game
+        'snap_counts_coverage': 0.25,           # Coverage snaps/game
         'missed_tackle_rate': -0.05             # Tackle penalty
     }
     

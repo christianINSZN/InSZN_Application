@@ -138,7 +138,7 @@ try:
     
     # *** NOW CALCULATE DLR - AFTER DATA EXISTS ***
     print("\n=== CALCULATING DLR ===")
-    dlr_metrics = ['grades_pass_rush_defense', 'pass_rush_win_rate', 'total_pressures', 'sacks', 'hurries', 'hits', 'tackles_for_loss', 'stop_percent', 'snap_counts_pass_rush', 'missed_tackle_rate']
+    dlr_metrics = ['grades_defense', 'pass_rush_win_rate', 'total_pressures', 'sacks', 'hurries', 'hits', 'tackles_for_loss', 'stop_percent', 'snap_counts_pass_rush', 'missed_tackle_rate']
     volume_metrics = ['total_pressures', 'sacks', 'hurries', 'hits', 'tackles_for_loss', 'snap_counts_pass_rush']
     historical = {}
     print("Computing historical stats...")
@@ -170,9 +170,9 @@ try:
     
     # Weights for DL metrics (total = 1.0) - Pass rush + run defense focus
     weights = {
-        'grades_pass_rush_defense': 0.25,       # Pass rush grade
-        'pass_rush_win_rate': 0.20,             # Win rate
-        'total_pressures': 0.15,                # Pressures/game
+        'grades_defense': 0.25,       # Pass rush grade
+        'pass_rush_win_rate': 0.10,             # Win rate
+        'total_pressures': 0.05,                # Pressures/game
         'sacks': 0.10,                          # Sacks/game
         'hurries': 0.05,                        # Hurries/game
         'hits': 0.05,                           # Hits/game
