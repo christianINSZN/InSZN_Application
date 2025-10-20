@@ -1,0 +1,36 @@
+player,player_id,position,team_name,player_game_count,coverage_snaps,coverage_snaps_per_reception,coverage_snaps_per_target,franchise_id,interceptions,qb_rating_against,receptions,targets,touchdowns,yards,yards_after_catch,yards_per_coverage_snap
+Leonard Moore,189882,CB,NOTRE DAME,1,4,,4.0,258,0,39.6,0,1,0,0,0,0.0
+Oscar Benson,125282,LB,N DAK ST,1,4,,4.0,250,0,39.6,0,1,0,0,0,0.0
+Dennis Shorter,155535,S,S DAKOTA,1,2,,2.0,291,0,39.6,0,1,0,0,0,0.0
+Neil Daily,155538,LB,MONTANA ST,1,3,,3.0,233,0,39.6,0,1,0,0,0,0.0
+Dru Polidore Jr.,155951,S,MONTANA ST,1,2,,2.0,233,0,39.6,0,1,0,0,0,0.0
+Jaylen Sneed,156972,LB,NOTRE DAME,1,1,,1.0,258,0,39.6,0,1,0,0,0,0.0
+Gary Bryant III,164824,LB,S DAKOTA,1,4,,4.0,291,0,39.6,0,1,0,0,0,0.0
+Malik Muhammad,173165,CB,TEXAS,1,3,,3.0,311,0,39.6,0,1,0,0,0,0.0
+Jordan Hancock,145067,S,OHIO STATE,1,21,21.0,5.3,260,0,39.6,1,4,0,5,8,0.24
+Enock Sibomana,148168,CB,N DAK ST,1,12,12.0,12.0,250,0,79.2,1,1,0,-2,0,-0.17
+Caleb Downs,172375,S,OHIO STATE,1,9,9.0,4.5,260,0,64.6,1,2,0,10,16,1.11
+Zion Tracy,170301,CB,PENN STATE,1,9,9.0,9.0,266,0,118.8,1,1,0,17,0,1.89
+Cam Miller,164178,CB,PENN STATE,1,16,8.0,5.3,266,0,149.3,2,3,1,65,42,4.06
+Tayden Gray,176765,CB,MONTANA ST,1,7,7.0,7.0,233,0,116.7,1,1,0,12,0,1.71
+Darius Givance,162201,S,N DAK ST,1,6,6.0,2.0,250,0,42.4,1,3,0,6,10,1.0
+Logan Kopp,148170,LB,N DAK ST,1,6,6.0,6.0,250,0,112.5,1,1,0,11,1,1.83
+Jaylon Guilbeau,157307,CB,TEXAS,1,26,5.2,5.2,311,0,93.3,5,5,0,32,29,1.23
+Teven McKelvey,141854,S,S DAKOTA,1,15,5.0,5.0,291,0,118.8,3,3,0,47,11,3.13
+A.J. Harris,173534,CB,PENN STATE,1,5,5.0,1.7,266,0,74.3,1,3,0,32,9,6.4
+Jaylin Crumby,174410,S,N DAK ST,1,5,5.0,2.5,250,0,95.8,1,2,0,27,5,5.4
+Miles Jackson,147676,CB,MONTANA ST,1,12,4.0,4.0,233,0,118.8,3,3,0,45,31,3.75
+Jack Kiser,97889,LB,NOTRE DAME,1,4,4.0,4.0,258,0,79.2,1,1,0,0,-7,0.0
+Jaylen Reed,145100,S,PENN STATE,1,13,3.3,3.3,266,0,106.3,4,4,0,38,24,2.92
+Caleb Francl,138302,S,S DAK ST,1,10,3.3,2.5,292,0,77.1,3,4,0,-1,0,-0.1
+Sonny Styles,162876,LB,OHIO STATE,1,13,3.3,2.6,260,0,99.2,4,5,0,39,51,3.0
+Kobe King,145097,LB,PENN STATE,1,3,3.0,3.0,266,0,104.2,1,1,0,9,7,3.0
+Cody Simon,129757,LB,OHIO STATE,1,9,3.0,3.0,260,0,106.9,3,3,0,29,14,3.22
+McCade O'Reilly,147677,LB,MONTANA ST,1,5,2.5,2.5,233,0,104.2,2,2,0,18,12,3.6
+Xavier Watts,122914,S,NOTRE DAME,1,5,2.5,2.5,258,0,118.8,2,2,0,29,29,5.8
+Jaiden Ausberry,171075,LB,NOTRE DAME,1,2,2.0,1.0,258,0,89.6,1,2,0,22,12,11.0
+Daeton Mcgaughy,138311,LB,S DAK ST,1,2,2.0,2.0,292,0,112.5,1,1,0,11,6,5.5
+Chase Van Tol,177228,CB,S DAK ST,1,2,2.0,2.0,292,0,118.8,1,1,0,17,7,8.5
+Anthony Hill Jr.,173158,LB,TEXAS,1,4,2.0,2.0,311,0,118.8,2,2,0,29,1,7.25
+Gavin Holmes,123389,CB,TEXAS,1,1,1.0,1.0,311,0,118.8,1,1,0,18,5,18.0
+Jahdae Barron,123105,CB,TEXAS,1,1,1.0,1.0,311,0,95.8,1,1,0,7,4,7.0

@@ -1,0 +1,313 @@
+import React, { useState, useEffect, useRef, useContext, useCallback, useMemo } from 'react';
+import Chart from 'chart.js/auto';
+import { WeeklyGradesContext } from '../../headtohead_qb';
+import Select from 'react-select';
+
+const ContainerB = ({
+  player1,
+  player2,
+  onCompare,
+  excludedMetrics = ['bats', 'pressure_to_sack_rate', 'sack_percent', 'sacks', 'scrambles', 'spikes', 'thrown_aways'],
+  metricRenames = {
+    'ypa': 'YPA',
+    'btt_rate': 'Big Time Throw Rate',
+    'qb_rating': 'QB Rating',
+    'twp_rate': 'Turnover Worthy Play Rate'
+  }
+}) => {
+  const chartRef = useRef(null);
+  const weeklyGrades = useContext(WeeklyGradesContext) || { player1: {}, player2: {} };
+  const [availableMetrics, setAvailableMetrics] = useState([]);
+  const [selectedMetric, setSelectedMetric] = useState(null);
+  const [teamGames, setTeamGames] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const hasFetchedRef = useRef(false);
+  const isMobile = window.innerWidth < 640;
+
+  const formatMetric = useCallback((metric) => {
+    return metric
+      ? metricRenames[metric] || metric
+          .split('_')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ')
+      : 'Unknown';
+  }, [metricRenames]);
+
+  // Reset state when onCompare changes
+  useEffect(() => {
+    setTeamGames([]);
+    setAvailableMetrics([]);
+    setSelectedMetric(null);
+    hasFetchedRef.current = false;
+  }, [onCompare]);
+
+  // Fetch data only when onCompare is triggered and player1/year are available
+  useEffect(() => {
+    if (!onCompare || !player1?.playerId || !player1?.year || hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        console.log('Fetching data for player1:', player1);
+        const gamesResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/player_games/${player1.year}/${player1.playerId}`);
+        if (!gamesResponse.ok) {
+          console.warn(`Failed to fetch team games for ${player1.playerId}, year ${player1.year}`);
+          setTeamGames([]);
+          return;
+        }
+        const gamesData = await gamesResponse.json();
+        console.log('Team games:', gamesData);
+        setTeamGames(gamesData || []);
+
+        if (gamesData && gamesData.length > 0) {
+          const { week, seasonType } = gamesData[0];
+          const statsResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/player_passing_weekly_all/${player1.playerId}/${player1.year}/${week}/${seasonType}`);
+          if (!statsResponse.ok) {
+            console.warn(`No weekly stats for player ${player1.playerId}, year ${player1.year}, week ${week}, season ${seasonType}`);
+            setAvailableMetrics([{ value: 'attempts', label: 'Attempts' }]);
+            setSelectedMetric({ value: 'attempts', label: 'Attempts' });
+            return;
+          }
+          const statsData = await statsResponse.json();
+          console.log('Player 1 weekly stats:', statsData);
+          const excluded = ['name', 'team', 'playerId', 'year', 'week', 'seasonType', 'opponentID', 'teamID', 'player_id_PFF', 'position', 'player_game_count', 'franchise_id', ...excludedMetrics];
+          const metrics = statsData[0]
+            ? Object.keys(statsData[0])
+                .filter(key => !excluded.includes(key))
+                .map(field => ({
+                  value: field,
+                  label: formatMetric(field),
+                }))
+                .sort((a, b) => a.label.localeCompare(b.label))
+            : [{ value: 'attempts', label: 'Attempts' }];
+          setAvailableMetrics(metrics);
+          setSelectedMetric(metrics.find(m => m.value === 'attempts') || metrics[0] || { value: 'attempts', label: 'Attempts' });
+        } else {
+          console.warn('No team games available, defaulting to attempts');
+          setAvailableMetrics([{ value: 'attempts', label: 'Attempts' }]);
+          setSelectedMetric({ value: 'attempts', label: 'Attempts' });
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setAvailableMetrics([{ value: 'attempts', label: 'Attempts' }]);
+        setSelectedMetric({ value: 'attempts', label: 'Attempts' });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [onCompare, player1?.playerId, player1?.year, formatMetric, excludedMetrics]);
+
+  // Memoize chart data
+  const chartData = useMemo(() => {
+    if (
+      !teamGames.length ||
+      !selectedMetric ||
+      !weeklyGrades?.player1 ||
+      !Object.keys(weeklyGrades.player1).length ||
+      (player2 && (!weeklyGrades?.player2 || !Object.keys(weeklyGrades.player2).length))
+    ) {
+      console.log('Missing data for chart:', {
+        teamGamesLength: teamGames.length,
+        selectedMetric,
+        player1Grades: weeklyGrades?.player1,
+        player2Grades: weeklyGrades?.player2,
+        player2Present: !!player2,
+      });
+      return null;
+    }
+
+    const sortedGames = [...teamGames].sort((a, b) => a.week - b.week);
+    const labels = sortedGames.map(game => `Week ${game.week}`);
+    const datasets = [
+      {
+        label: player1 ? `${player1.name} ${selectedMetric.label}` : 'Player 1',
+        data: sortedGames.map(game => {
+          const key = `${game.week}_${game.seasonType}`;
+          const weekData = weeklyGrades.player1[key] || {};
+          return weekData[selectedMetric.value] !== undefined && weekData[selectedMetric.value] !== null
+            ? weekData[selectedMetric.value]
+            : null;
+        }),
+        borderColor: 'rgba(54, 162, 235, 1)',
+        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+        fill: true,
+        tension: 0.2,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+      },
+      player2 && {
+        label: player2 ? `${player2.name} ${selectedMetric.label}` : 'Player 2',
+        data: sortedGames.map(game => {
+          const key = `${game.week}_${game.seasonType}`;
+          const weekData = weeklyGrades.player2[key] || {};
+          return weekData[selectedMetric.value] !== undefined && weekData[selectedMetric.value] !== null
+            ? weekData[selectedMetric.value]
+            : null;
+        }),
+        borderColor: 'rgba(255, 99, 132, 1)',
+        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+        fill: true,
+        tension: 0.2,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+      },
+    ].filter(Boolean);
+
+    const allData = datasets.flatMap(ds => ds.data.filter(value => value !== null && !isNaN(value)));
+    const minValue = allData.length ? Math.min(...allData) : 0;
+    const maxValue = allData.length ? Math.max(...allData) : 100;
+    const buffer = (maxValue - minValue) * 0.1;
+    const yMin = Math.max(0, minValue - buffer);
+    const yMax = maxValue + buffer;
+
+    return { labels, datasets, yMin, yMax, selectedMetric };
+  }, [teamGames, selectedMetric, weeklyGrades.player1, weeklyGrades.player2, player1, player2]);
+
+  // Render chart
+  useEffect(() => {
+    console.count('Chart useEffect triggered');
+    if (!chartData) {
+      if (chartRef.current) {
+        console.log('Chart destroyed');
+        chartRef.current.destroy();
+        chartRef.current = null;
+      }
+      return;
+    }
+
+    const ctx = document.getElementById('metricChartB')?.getContext('2d');
+    if (!ctx) {
+      console.warn('Canvas not available for metricChartB');
+      return;
+    }
+
+    console.log('Canvas dimensions:', { width: ctx.canvas.width, height: ctx.canvas.height });
+
+    if (chartRef.current) {
+      console.log('Chart destroyed');
+      chartRef.current.destroy();
+    }
+
+    chartRef.current = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: chartData.labels,
+        datasets: chartData.datasets,
+      },
+      options: {
+        scales: {
+          x: {
+            title: { display: false, text: 'Week' },
+            ticks: {
+              autoSkip: false,
+              maxRotation: 45,
+              minRotation: 45,
+              labelOffset: 10,
+              font: {
+                size: isMobile ? 12 : 12,
+                family: isMobile ? 'Arial' : undefined,
+                weight: isMobile ? 'bold' : undefined,
+              },
+              color: isMobile ? '#235347' : undefined,
+            },
+          },
+          y: {
+            title: {
+              display: true,
+              text: chartData.selectedMetric?.label || 'Metric Value',
+              font: {
+                size: isMobile ? 12 : 12,
+                family: isMobile ? 'Arial' : undefined,
+                weight: isMobile ? 'bold' : undefined,
+              },
+              color: isMobile ? '#235347' : undefined,
+            },
+            beginAtZero: true,
+            min: chartData.yMin,
+            max: chartData.yMax,
+            ticks: {
+              stepSize: (chartData.yMax - chartData.yMin) / 5,
+              font: {
+                size: isMobile ? 12 : 12,
+                family: isMobile ? 'Arial' : undefined,
+                weight: isMobile ? 'bold' : undefined,
+              },
+              color: isMobile ? '#235347' : undefined,
+            },
+          },
+        },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              font: {
+                size: isMobile ? 12 : 12,
+                family: isMobile ? 'Arial' : undefined,
+                weight: isMobile ? 'bold' : undefined,
+              },
+              color: isMobile ? '#235347' : undefined,
+            },
+          },
+          tooltip: { mode: 'index', intersect: false },
+        },
+        responsive: true,
+        maintainAspectRatio: false,
+      },
+    });
+
+    console.log('Chart datasets:', chartData);
+
+    return () => {
+      if (chartRef.current) {
+        console.log('Chart destroyed on cleanup');
+        chartRef.current.destroy();
+        chartRef.current = null;
+      }
+    };
+  }, [chartData]);
+
+  return (
+    <div className="bg-white rounded shadow">
+      <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Metric Comparison</h2>
+      {loading && (
+        <div className="flex justify-center mb-2 mt-4">
+          <div className="w-6 h-6 border-4 border-t-blue-500 border-blue-200 rounded-full animate-spin"></div>
+        </div>
+      )}
+      {!loading && (!player1 || !weeklyGrades?.player1 || !Object.keys(weeklyGrades.player1).length || !teamGames.length) && (
+        <div className="text-black text-center">
+          No data available for Player 1: {[
+            !player1 && 'Missing player1',
+            !weeklyGrades?.player1 && 'Missing weeklyGrades.player1',
+            weeklyGrades?.player1 && !Object.keys(weeklyGrades.player1).length && 'Empty weeklyGrades.player1',
+            !teamGames.length && 'Missing teamGames',
+          ]
+            .filter(Boolean)
+            .join(', ')}
+        </div>
+      )}
+      {!loading && player2 && (!weeklyGrades?.player2 || !Object.keys(weeklyGrades.player2).length) && (
+        <div className="text-black text-center">No data available for Player 2: Missing weeklyGrades.player2</div>
+      )}
+      <div className="flex justify-center items-center mb-4 mt-4">
+        <Select
+          value={selectedMetric}
+          onChange={setSelectedMetric}
+          options={availableMetrics}
+          className="w-80"
+          classNamePrefix="react-select"
+          placeholder="Select Metric..."
+          isSearchable={true}
+          isDisabled={!player1 || loading}
+        />
+      </div>
+      <div className="h-80">
+        <canvas id="metricChartB" className="w-full h-full" />
+      </div>
+    </div>
+  );
+};
+
+export default ContainerB;

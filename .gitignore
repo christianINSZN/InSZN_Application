@@ -1,0 +1,5 @@
+.env
+node_modules
+node_modules/
+
+perennial-data-app/server/.env
