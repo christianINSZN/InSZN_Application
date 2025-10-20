@@ -19,12 +19,12 @@ year = config.get("years", [2025])[0]
 script_order = [
 
     # Runbook #
-     "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/teams/populate_teams_games.py", #1.1 (Run twice -- one for last week to populate scores and one for next week)
+    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/teams/populate_teams_games.py", #1.1 (Run twice -- one for last week to populate scores and one for next week)
 
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/teams/populate_teams_games_stats.py", #2.1 (DO NOT RUN HERE, Open Terminal and run with args for year, seasonType, week)
     
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/teams/populate_teams_records.py", #3.1 (Run once after stats populated)
-     "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/teams/populate_teams_next_matchup.py", #3.2 (Run once after stats populated)
+    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/teams/populate_teams_next_matchup.py", #3.2 (Run once after stats populated)
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/teams/populate_teams_stats.py", #3.3 (Run once after stats populated)
 
     # Batch update of all PFF Data # 4.X
