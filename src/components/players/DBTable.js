@@ -241,24 +241,24 @@ const DBTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTe
               <div>
                 <h4 className="font-semibold text-[#235347] mb-2">How It's Calculated</h4>
                 <div className="space-y-2 text-sm">
-                  <div className="flex justify-between"><span>25% Skill</span><span>PFF Coverage Grade</span></div>
-                  <div className="flex justify-between"><span>20% Efficiency</span><span>Forced Incompletion Rate</span></div>
-                  <div className="flex justify-between"><span>15% Usage</span><span>Coverage Snap %</span></div>
-                  <div className="flex justify-between"><span>10% Volume</span><span>PBUs/game</span></div>
-                  <div className="flex justify-between"><span>10% Production</span><span>INTs/game</span></div>
-                  <div className="flex justify-between text-red-600"><span>-10% Penalty</span><span>Yards per Coverage Snap</span></div>
-                  <div className="flex justify-between"><span>5% Volume</span><span>Coverage Snaps/game</span></div>
-                  <div className="flex justify-between text-red-600"><span>-5% Penalty</span><span>Missed Tackle Rate</span></div>
+                  <div className="flex justify-between text-green-800"><span>+ Skill</span><span>PFF Coverage Grade</span></div>
+                  <div className="flex justify-between text-green-800"><span>+ Efficiency</span><span>Forced Incompletion Rate</span></div>
+                  <div className="flex justify-between text-green-800"><span>+ Usage</span><span>Coverage Snap %</span></div>
+                  <div className="flex justify-between text-green-800"><span>+ Broken Plays</span><span>Pass Break-ups</span></div>
+                  <div className="flex justify-between text-green-800"><span>+ Production</span><span>INTs/game</span></div>
+                  <div className="flex justify-between text-green-800"><span>+ Volume</span><span>Coverage Snaps/game</span></div>
+                  <div className="flex justify-between text-red-600"><span>- Lost Yards</span><span>Yards per Coverage Snap</span></div>
                 </div>
               </div>
               
               <div>
-                <h4 className="font-semibold text-[#235347] mb-2">Score Guide</h4>
+                <h4 className="font-semibold text-[#235347] mb-2">Rating Guide</h4>
                 <div className="space-y-1">
-                  <div className="flex justify-between"><span>• 90-100: Elite</span><span>(All-Pro)</span></div>
-                  <div className="flex justify-between"><span>• 75-89: Starter</span><span>(Quality)</span></div>
-                  <div className="flex justify-between"><span>• 50-74: Role Player</span></div>
-                  <div className="flex justify-between"><span>• Below 50: Backup</span></div>
+                  <div className="flex justify-between"><span>• 90-100: All-NCAA</span></div>
+                  <div className="flex justify-between"><span>• 75-89: Elite</span></div>
+                  <div className="flex justify-between"><span>• 50-74: Key Player</span></div>
+                  <div className="flex justify-between"><span>• Below 50: Role Player</span></div>
+                  <div className="flex justify-between"><span>• N/A: Insufficient Snaps</span></div>
                 </div>
               </div>
             </div>
