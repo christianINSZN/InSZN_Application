@@ -8,7 +8,7 @@ DB_FILE = Path("/Users/christianberry/Desktop/Perennial Data/perennial-data-app/
 conn = sqlite3.connect(DB_FILE)
 cursor = conn.cursor()
 # Define constants
-MIN_TARGETS_THRESHOLD = 20
+MIN_TARGETS_THRESHOLD = 6
 TABLE_NAME = "Players_Full_Percentiles_TE_Receiving"
 CSV_FILES_2024 = [
 "2024_ReceivingConcept.csv",
@@ -170,8 +170,8 @@ try:
     
     # *** NOW CALCULATE TER - AFTER DATA EXISTS ***
     print("\n=== CALCULATING TER ===")
-    TER_metrics = ['grades_pass_route', 'yprr', 'yards_after_catch', 'contested_catch_rate', 'drop_rate', 'yards', 'fumbles']
-    volume_metrics = ['yards_after_catch', 'first_downs', 'fumbles']
+    TER_metrics = ['grades_pass_route', 'yprr', 'yards_after_catch', 'contested_catch_rate', 'drop_rate', 'fumbles', 'yards', 'targets']
+    volume_metrics = ['yards_after_catch', 'yards', 'fumbles', 'targets']
     historical = {}
     print("Computing historical stats...")
     for metric in TER_metrics:
@@ -202,12 +202,13 @@ try:
     
     # Weights for each metric (total = 1.0, fumbles = negative)
     weights = {
-        'grades_pass_route': 0.15,      # PFF receiving grade
-        'yprr': 0.05,                   # Yards per route run
-        'yards_after_catch': 0.25,      # YAC volume
-        'contested_catch_rate': 0.20,   # 50/50 ball wins
-        'drop_rate': -0.10,             # Negative: drops hurt
-        'yards': 0.50,            # Chain-moving
+        'grades_pass_route': 0.25,      # PFF receiving grade
+        'yprr': 0.10,                   # Yards per route run
+        'yards_after_catch': 0.20,      # YAC volume
+        'contested_catch_rate': 0.10,   # 50/50 ball wins
+        'drop_rate': -0.05,             # Negative: drops hurt
+        'yards': 0.25,            # Chain-moving
+        'targets': 0.10,
         'fumbles': -0.05                # Fumble penalty
     }
     
