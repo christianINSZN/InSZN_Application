@@ -93,31 +93,41 @@ const TeamRoster = ({ className = "text-sm sm:text-base" }) => {
       ),
       meta: { mobileHidden: false },
     }),
-    columnHelper.accessor('name', {
-      id: 'Player Name',
-      enableSorting: true,
-      cell: ({ row }) => {
-        const position = row.original.position;
-        const toPath = `/players/${position.toLowerCase()}/${row.original.playerId}`;
-        if (['QB', 'WR', 'TE', 'RB'].includes(position)) {
+      columnHelper.accessor('name', {
+        id: 'Player Name',
+        enableSorting: true,
+        cell: ({ row }) => {
+          const position = row.original.position;
+          let toPath;
+          
+          if (['QB', 'WR', 'TE', 'RB', 'C', 'G', 'T', 'S', 'CB', 'DB'].includes(position)) {
+            toPath = `/players/${position.toLowerCase()}/${row.original.playerId}`;
+          } else if (['DL', 'DE'].includes(position)) {
+            toPath = `/players/dl/${row.original.playerId}`;
+          } else if (['LB', 'EDGE'].includes(position)) {
+            toPath = `/players/lbe/${row.original.playerId}`;
+          }
+          
+          if (toPath) {
+            return (
+              <Link
+                to={toPath}
+                className="text-[#235347] hover:text-[#235347]/50 underline underline-offset-2 inline-block cursor-pointer"
+                style={{ display: 'inline-block', padding: '4px 8px' }}
+              >
+                {row.original.name || 'No Name'}
+              </Link>
+            );
+          }
+          
           return (
-            <Link
-              to={toPath}
-              className="text-[#235347] hover:text-[#235347]/50 underline underline-offset-2 inline-block cursor-pointer"
-              style={{ display: 'inline-block', padding: '4px 8px' }}
-            >
+            <span style={{ display: 'inline-block', padding: '4px 8px' }}>
               {row.original.name || 'No Name'}
-            </Link>
+            </span>
           );
-        }
-        return (
-          <span style={{ display: 'inline-block', padding: '4px 8px' }}>
-            {row.original.name || 'No Name'}
-          </span>
-        );
-      },
-      meta: { mobileHidden: false },
-    }),
+        },
+        meta: { mobileHidden: false },
+      }),
     columnHelper.accessor('jersey', {
       id: 'Jersey',
       enableSorting: true,

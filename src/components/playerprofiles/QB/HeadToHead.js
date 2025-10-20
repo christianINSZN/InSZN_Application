@@ -22,7 +22,7 @@ function HeadToHeadQB() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const subscriptionPlan = user?.publicMetadata?.subscriptionPlan;
-    const isSubscribed = subscriptionPlan === 'pro' || subscriptionPlan === 'premium' || !subscriptionPlan;
+    const isSubscribed = subscriptionPlan === 'pro' || subscriptionPlan === 'premium' ;
   const isMobile = window.innerWidth < 640;
 
   useEffect(() => {
@@ -361,7 +361,7 @@ function HeadToHeadQB() {
                 <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 backdrop-filter backdrop-blur-md rounded-lg">
                   <div className="p-4 sm:p-6 bg-white rounded-lg shadow-lg text-center">
                     <p className="text-gray-700 text-sm sm:text-lg font-semibold mb-2">Exclusive Content</p>
-                    <p className="text-gray-500 text-sm sm:text-base mb-4">This content is exclusive to INSZN Pro subscribers.</p>
+                    <p className="text-gray-500 text-sm sm:text-base mb-4">This content is exclusive to INSZN Insider subscribers.</p>
                     <Link
                       to="/subscribe"
                       className="px-3 sm:px-4 py-1 sm:py-2 bg-[#235347] text-white text-sm sm:text-base rounded hover:bg-[#1b3e32]"

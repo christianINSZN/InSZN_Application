@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 API_KEY = os.getenv("API_KEY", "xPVVHT3+7AMkH/gk2Rbnpin03CxVlm6HyGgL2yNiPL1riWLPRUQGS5nE1AXEBMmV")
 YEAR = int(os.getenv("YEAR", 2025))
-WEEK = int(os.getenv("WEEK", 9))
+WEEK = int(os.getenv("WEEK", 10))
 
 # Database connection
 DB_FILE = Path("/Users/christianberry/Desktop/Perennial Data/perennial-data-app/server/data/db/cfb_database.db")
