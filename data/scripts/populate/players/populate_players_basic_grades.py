@@ -10,7 +10,7 @@ GRADE_CONFIG = {
         "csv_file": "PassingGrades.csv",
         "stat_column": "grades_pass",
         "extra_columns": ["player_game_count", "completion_percent", "yards", "ypa", "touchdowns", "interceptions"],
-        "additional_db_fields": [{"name": "QBR", "table": "Players_Full_Percentiles_QB"}]
+        "additional_db_fields": [{"name": "QBR", "table": "Players_Full_Percentiles_QB", "name": "passing_snaps", "table": "Players_Full_Percentiles_QB"}]
 
     },
     "RB": {
@@ -18,14 +18,14 @@ GRADE_CONFIG = {
         "csv_file": "RushingGrades.csv",
         "stat_column": "grades_run",
         "extra_columns": ["player_game_count", "fumbles", "yards", "ypa", "touchdowns", "attempts"],
-        "additional_db_fields": [{"name": "RBR", "table": "Players_Full_Percentiles_RB_Rushing"}]
+        "additional_db_fields": [{"name": "RBR", "table": "Players_Full_Percentiles_RB_Rushing", "name": "run_plays", "table": "Players_Full_Percentiles_RB_Rushing"}]
     },
     "WR": {
         "csv_dir": "Receiving/SeasonReports",
         "csv_file": "ReceivingGrades.csv",
         "stat_column": "grades_pass_route",
         "extra_columns": ["player_game_count", "yards", "touchdowns", "yards_per_reception", "receptions"],
-        "additional_db_fields": [{"name": "WRR", "table": "Players_Full_Percentiles_WR"}]
+        "additional_db_fields": [{"name": "WRR", "table": "Players_Full_Percentiles_WR", "name": "routes", "table": "Players_Full_Percentiles_WR"}]
 
     },
     "TE": {
@@ -33,7 +33,7 @@ GRADE_CONFIG = {
         "csv_file": "ReceivingGrades.csv",
         "stat_column": "grades_pass_route",
         "extra_columns": ["player_game_count", "yards", "touchdowns", "yards_per_reception", "receptions"],
-        "additional_db_fields": [{"name": "TER", "table": "Players_Full_Percentiles_TE_Receiving"}]
+        "additional_db_fields": [{"name": "TER", "table": "Players_Full_Percentiles_TE_Receiving", "name": "routes", "table": "Players_Full_Percentiles_TE_Receiving"}]
 
     },
     "C": {
@@ -41,7 +41,7 @@ GRADE_CONFIG = {
         "csv_file": "BlockingGrades.csv",
         "stat_column": "grades_offense",
         "extra_columns": ["player_game_count", "grades_offense", "snap_counts_offense", "hurries_allowed", "pressures_allowed", "hits_allowed", "sacks_allowed", "pbe"],
-        "additional_db_fields": [{"name": "CR", "table": "Players_Full_Percentiles_C_Blocking"}]
+        "additional_db_fields": [{"name": "CR", "table": "Players_Full_Percentiles_C_Blocking", "name": "snap_counts_block", "table": "Players_Full_Percentiles_C_Blocking"}]
 
     },
     "G": {
@@ -49,14 +49,14 @@ GRADE_CONFIG = {
         "csv_file": "BlockingGrades.csv",
         "stat_column": "grades_offense",
         "extra_columns": ["player_game_count", "grades_offense", "snap_counts_offense", "hurries_allowed", "pressures_allowed", "hits_allowed", "sacks_allowed", "pbe"],
-        "additional_db_fields": [{"name": "GR", "table": "Players_Full_Percentiles_G_Blocking"}]
+        "additional_db_fields": [{"name": "GR", "table": "Players_Full_Percentiles_G_Blocking", "name": "snap_counts_block", "table": "Players_Full_Percentiles_G_Blocking"}]
     },
     "T": {
         "csv_dir": "Blocking/SeasonReports",
         "csv_file": "BlockingGrades.csv",
         "stat_column": "grades_offense",
         "extra_columns": ["player_game_count", "grades_offense", "snap_counts_offense", "hurries_allowed", "pressures_allowed", "hits_allowed", "sacks_allowed", "pbe"],
-        "additional_db_fields": [{"name": "TR", "table": "Players_Full_Percentiles_T_Blocking"}]
+        "additional_db_fields": [{"name": "TR", "table": "Players_Full_Percentiles_T_Blocking", "name": "snap_counts_block", "table": "Players_Full_Percentiles_T_Blocking"}]
 
     },
     "LB": {
@@ -64,7 +64,7 @@ GRADE_CONFIG = {
         "csv_file": "DefenseGrades.csv",
         "stat_column": "grades_defense",
         "extra_columns": ["player_game_count", "grades_defense", "hits", "hurries", "sacks", "snap_counts_defense", "stops", "tackles", "tackles_for_loss", "total_pressures", "grades_coverage_defense"],
-        "additional_db_fields": [{"name": "LBR", "table": "Players_Full_Percentiles_LBE"}]
+        "additional_db_fields": [{"name": "LBR", "table": "Players_Full_Percentiles_LBE", "name": "snap_counts_defense", "table": "Players_Full_Percentiles_LBE"}]
     
     },
     "CB": {
@@ -72,15 +72,15 @@ GRADE_CONFIG = {
         "csv_file": "CoverageGrades.csv",
         "stat_column": "grades_defense",
         "extra_columns": ["player_game_count", "snap_counts_coverage", "grades_coverage_defense", "catch_rate", "pass_break_ups", "tackles", "coverage_percent", "forced_incompletion_rate", "avg_depth_of_target"],
-        "additional_db_fields": [{"name": "CBR", "table": "Players_Full_Percentiles_CB"}]
+        "additional_db_fields": [{"name": "CBR", "table": "Players_Full_Percentiles_CB", "name": "snap_counts_defense", "table": "Players_Full_Percentiles_CB"}]
     
     },
     "S": {
-        "csv_dir": "Defense/SeasonReports",  # Corrected typo from previous
+        "csv_dir": "Defense/SeasonReports",
         "csv_file": "CoverageGrades.csv",
         "stat_column": "grades_defense",
         "extra_columns": ["player_game_count", "snap_counts_coverage", "grades_coverage_defense", "catch_rate", "pass_break_ups", "tackles", "coverage_percent", "forced_incompletion_rate", "avg_depth_of_target"],
-        "additional_db_fields": [{"name": "SR", "table": "Players_Full_Percentiles_s"}]
+        "additional_db_fields": [{"name": "SR", "table": "Players_Full_Percentiles_S", "name": "snap_counts_defense", "table": "Players_Full_Percentiles_S"}]
     
     },
     "DE": {

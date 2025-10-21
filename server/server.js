@@ -1297,6 +1297,26 @@ app.get('/api/teams', (req, res) => {
   });
 });
 
+// Teams Ratings Full Endpoint
+app.get('/api/team_full_ratings/:teamId/:year', (req, res) => {
+  const { teamId, year } = req.params;
+
+  db.get(
+    'SELECT * FROM Teams_Full_Stats_Ratings WHERE teamID = ? AND year = ?',
+    [teamId, year],
+    (err, row) => {
+      if (err) {
+        console.error('Database query error:', err.message);
+        res.status(500).send('Internal server error');
+      } else if (!row) {
+        res.status(404).send('No team ratings and stats found for the specified team and year');
+      } else {
+        res.json(row);
+      }
+    }
+  );
+});
+
 // Grades endpoint
 app.get('/api/teamsGrades/:id/:year/grades', (req, res) => {
     const { id, year } = req.params;
