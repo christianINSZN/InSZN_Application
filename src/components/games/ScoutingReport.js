@@ -9,7 +9,6 @@ const ScoutingReport = ({ matchup, onClose, year }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Function to format record as wins-losses[-ties]
   const formatRecord = (wins, losses, ties) => `${wins}-${losses}${ties > 0 ? `-${ties}` : ''}`;
 
   useEffect(() => {
@@ -19,7 +18,6 @@ const ScoutingReport = ({ matchup, onClose, year }) => {
         setLoading(false);
         return;
       }
-
       setLoading(true);
       setError(null);
       try {
@@ -33,11 +31,8 @@ const ScoutingReport = ({ matchup, onClose, year }) => {
         }
         const data = await response.json();
         console.log('Records data:', data);
-
-        // Find records for away and home teams
         const awayRecord = data.find(record => record.teamId === parseInt(matchup.awayId));
         const homeRecord = data.find(record => record.teamId === parseInt(matchup.homeId));
-
         setAwayTeamRecord(awayRecord || null);
         setHomeTeamRecord(homeRecord || null);
       } catch (err) {
@@ -47,13 +42,12 @@ const ScoutingReport = ({ matchup, onClose, year }) => {
         setLoading(false);
       }
     };
-
     fetchRecords();
   }, [year, matchup?.awayId, matchup?.homeId]);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 sm:p-0 rounded-lg shadow-xl w-full max-w-7xl h-[80vh] overflow-y-auto flex flex-col">
+      <div className="bg-white p-0 sm:p-0 rounded-lg shadow-xl w-full max-w-7xl h-[80vh] overflow-y-auto flex flex-col">
         {/* Green Bar with Logos, Team Names/Records, and Turf Logo */}
         <div className="bg-gray-200 flex justify-between items-center p-2 rounded-t border-b-2 border-[#235347] sticky top-0 z-10">
           <div className="flex items-center">
@@ -98,17 +92,23 @@ const ScoutingReport = ({ matchup, onClose, year }) => {
           {error && (
             <div className="p-2 text-red-500 text-center">Error: {error}</div>
           )}
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr_1fr] gap-6">
+          <div className="flex flex-col md:grid md:grid-cols-[1fr_1.5fr_1fr] gap-6">
+            {/* Head-to-Head Metrics (Top on Mobile) */}
+            <div className="order-first md:order-2">
+              <HeadToHeadReport
+                year={year}
+                awayTeamId={matchup?.awayId}
+                homeTeamId={matchup?.homeId}
+              />
+            </div>
             {/* Left Column: Team A (Away) */}
-            <TeamAReport teamName={matchup?.awayTeamName} year={year} teamId={matchup?.awayId} />
-            {/* Middle Column: Head-to-Head Metrics */}
-            <HeadToHeadReport
-              year={year}
-              awayTeamId={matchup?.awayId}
-              homeTeamId={matchup?.homeId}
-            />
+            <div className="order-2 md:order-1">
+              <TeamAReport teamName={matchup?.awayTeamName} year={year} teamId={matchup?.awayId} />
+            </div>
             {/* Right Column: Team B (Home) */}
-            <TeamBReport teamName={matchup?.homeTeamName} year={year} teamId={matchup?.homeId} />
+            <div className="order-3 md:order-3">
+              <TeamBReport teamName={matchup?.homeTeamName} year={year} teamId={matchup?.homeId} />
+            </div>
           </div>
         </div>
         {/* Close Button */}
