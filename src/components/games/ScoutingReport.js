@@ -114,7 +114,7 @@ const ScoutingReport = ({ matchup, onClose, year }) => {
         {/* Close Button */}
         <div className="flex justify-end mt-4">
           <button
-            className="px-4 py-2 bg-[#235347] text-black rounded hover:bg-[#1b3e32]"
+            className="px-4 py-2 mb-2 bg-[#235347] text-white rounded hover:bg-[#1b3e32]"
             onClick={onClose}
           >
             Close
