@@ -98,7 +98,7 @@ def calculate_weighted_team_ratings():
         team_ratings_df = pd.DataFrame(team_ratings)
 
         # Convert teamID to integer, handling NULLs
-        team_ratings_df['teamID'] = pd.to_numeric(team_ratings_df['teamID'], errors='coerce').astype('Int64')  # Int64 handles NULLs
+        team_ratings_df['teamID'] = pd.to_numeric(team_ratings_df['teamID'], errors='coerce').astype('Int64')
 
         # Save Teams_Season_Ratings
         team_ratings_df.to_sql('Teams_Season_Ratings', engine, if_exists='replace', index=False)
@@ -128,20 +128,28 @@ def calculate_weighted_team_ratings():
             index=['teamID', 'year', 'school', 'conference'],
             columns='statName',
             values='statValue',
-            aggfunc='first'  # Take first value if duplicates
+            aggfunc='first'
         ).reset_index()
 
         # Convert teamID to integer in pivoted DataFrame
         stats_pivot_df['teamID'] = pd.to_numeric(stats_pivot_df['teamID'], errors='coerce').astype('Int64')
 
+        # Calculate per-game stats
+        numeric_stats = [col for col in stats_pivot_df.columns if col not in ['teamID', 'year', 'school', 'conference', 'games']]
+        for stat in numeric_stats:
+            stats_pivot_df[f'{stat}_perGame'] = stats_pivot_df.apply(
+                lambda row: round(row[stat] / row['games'], 2) if pd.notnull(row[stat]) and pd.notnull(row['games']) and row['games'] > 0 else None,
+                axis=1
+            )
+
         # Debug: Check pivoted stats columns
-        print("Pivoted Teams_Stats_Season columns:", stats_pivot_df.columns.tolist())
+        print("Pivoted Teams_Stats_Season columns (with per-game):", stats_pivot_df.columns.tolist())
 
         # Join with Teams_Season_Ratings
         merged_df = pd.merge(
             team_ratings_df,
             stats_pivot_df,
-            how='left',  # Keep all teams from Teams_Season_Ratings
+            how='left',
             on=['teamID', 'year'],
             suffixes=('_ratings', '_stats')
         )

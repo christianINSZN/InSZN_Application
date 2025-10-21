@@ -1,6 +1,6 @@
 import React from 'react';
 
-const TeamAReport = ({ teamName, teamId }) => {
+const TeamAReport = ({ teamName, teamId, year }) => {
   return (
     <div className="border border-gray-300 rounded-lg p-4">
       <h3 className="text-lg font-semibold text-[#235347] mb-2">{teamName || 'Unknown Team'}</h3>

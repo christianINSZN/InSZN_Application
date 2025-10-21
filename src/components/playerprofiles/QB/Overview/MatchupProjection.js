@@ -6,6 +6,7 @@ const MatchupProjection = ({ teamId, year }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showScoutingReport, setShowScoutingReport] = useState(false);
+  
 
   useEffect(() => {
     const fetchMatchup = async () => {
@@ -147,7 +148,7 @@ const MatchupProjection = ({ teamId, year }) => {
         </div>
       </div>
       {showScoutingReport && (
-        <ScoutingReport matchup={matchup} onClose={() => setShowScoutingReport(false)} />
+        <ScoutingReport matchup={matchup} year={year} onClose={() => setShowScoutingReport(false)} />
       )}
     </div>
   );
