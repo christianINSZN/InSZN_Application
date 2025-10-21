@@ -250,6 +250,7 @@ const HeadToHeadReport = ({ year, awayTeamId, homeTeamId }) => {
 
   return (
     <div className="bg-white rounded-lg shadow-xl">
+    <h2 className="flex items-center justify-center text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[30px] rounded mb-2">{awayTeamData?.school || 'Away'} vs. {homeTeamData?.school || 'Home'}</h2>
       <div className={isMobile ? "w-full max-w-md mx-auto" : "w-full max-w-md mx-auto"}>
         {loading && (
           <div className="flex justify-center mb-2">
