@@ -38,6 +38,7 @@ import TeamsComponent from './components/Teams';
 import TeamLanding from './components/teams/TeamLanding';
 import TeamRoster from './components/teams/TeamRoster';
 import TeamsRankings from './components/teams/TeamRankings';
+import GamesLanding from './components/games/GamesLanding';
 import './styles/App.css';
 import { useState } from 'react';
 
@@ -79,6 +80,9 @@ function App() {
           <Route path="/players/lbe/:playerId" element={<OverviewLBE year={defaultYear} />} />  
           <Route path="/teams" element={<TeamsComponent year={defaultYear} />} />
           <Route path="/team_rankings" element={<TeamsRankings year={defaultYear} />} />
+          
+          <Route path="/games" element={<GamesLanding year={defaultYear} />} />
+
           <Route path="/game/:id" element={<GameRecap />} />
           <Route path="/teams/:id/:year" element={<TeamLanding />} />
           <Route path="/teams/:id/:year/roster" element={<TeamRoster />} />

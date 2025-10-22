@@ -1738,6 +1738,19 @@ app.get('/api/team_percentiles/:teamID/:year', (req, res) => {
   );
 });
 
+// Games Endpoints: 
+app.get('/api/teams_games', (req, res) => {
+  db.all('SELECT * FROM Teams_Games', [], (err, rows) => {
+    if (err) {
+      res.status(500).send(err.message);
+    } else if (!rows || rows.length === 0) {
+      res.status(404).send('No games found');
+    } else {
+      res.json(rows);
+    }
+  });
+});
+
 // Tweets endpoint
 app.get('/api/teams_feeds/:id', async (req, res) => {
     const { id } = req.params;

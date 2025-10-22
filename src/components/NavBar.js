@@ -50,10 +50,6 @@ function NavBar() {
     setIsHamburgerOpen(false);
   };
 
-  const handleGamesClick = () => {
-    alert('Games feature is coming soon!');
-  };
-
   return (
     <div className="w-full fixed top-0 left-0 z-10">
       <div
@@ -79,7 +75,7 @@ function NavBar() {
             </button>
           </div>
           {/* Desktop: Main navigation (centered) */}
-          <div className="hidden xl:flex absolute left-1/2 transform fn -translate-x-1/2 items-center justify-center gap-4 xl:gap-6">
+          <div className="hidden xl:flex absolute left-1/2 transform -translate-x-1/2 items-center justify-center gap-4 xl:gap-6">
             <div className="flex items-center">
               <Link to="/players" className="flex items-center space-x-2 text-white hover:bg-[#829994] hover:text-black px-3 py-2 rounded text-base xl:text-lg">
                 <BsFillPersonFill /> <span>Players</span>
@@ -126,13 +122,9 @@ function NavBar() {
               </Link>
             </div>
             <div className="flex items-center">
-              <button
-                onClick={handleGamesClick}
-                title="Coming Soon"
-                className="flex items-center space-x-2 text-white hover:bg-[#829994] hover:text-black px-4 py-2 rounded text-base xl:text-lg"
-              >
+              <Link to="/games" className="flex items-center space-x-2 text-white hover:bg-[#235347]/70 hover:text-white px-4 py-2 rounded text-base xl:text-lg">
                 <MdOutlineJoinFull /> <span>Games</span>
-              </button>
+              </Link>
             </div>
           </div>
           {/* Desktop: Profile or Sign In/Sign Up/Subscribe (right-aligned) */}
@@ -202,6 +194,7 @@ function NavBar() {
                     ref={teamsButtonRef}
                     onClick={(e) => {
                       e.stopPropagation();
+                      console.log('Teams button clicked, isTeamsDropdownOpen:', !isTeamsDropdownOpen);
                       setIsTeamsDropdownOpen(!isTeamsDropdownOpen);
                     }}
                     className="flex items-center space-x-2 text-black hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base w-full text-left"
@@ -216,6 +209,7 @@ function NavBar() {
                           className="block px-4 py-2 text-black hover:bg-[#235347]/70 hover:text-white text-base"
                           onClick={(e) => {
                             e.stopPropagation();
+                            console.log('Navigating to /teams');
                             handleMobileLinkClick();
                           }}
                         >
@@ -228,6 +222,7 @@ function NavBar() {
                           className="block px-4 py-2 text-black hover:bg-[#235347]/70 hover:text-white text-base"
                           onClick={(e) => {
                             e.stopPropagation();
+                            console.log('Navigating to /team_rankings');
                             handleMobileLinkClick();
                           }}
                         >
@@ -247,13 +242,13 @@ function NavBar() {
                   </Link>
                 </li>
                 <li>
-                  <button
-                    onClick={handleGamesClick}
-                    title="Coming Soon"
-                    className="flex items-center space-x-2 text-black hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base w-full text-left"
+                  <Link
+                    to="/games"
+                    className="flex items-center space-x-2 text-black hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base"
+                    onClick={() => handleMobileLinkClick()}
                   >
                     <MdOutlineJoinFull /> <span>Games</span>
-                  </button>
+                  </Link>
                 </li>
                 <li>
                   <Link
@@ -270,6 +265,7 @@ function NavBar() {
                       ref={profileButtonRef}
                       onClick={(e) => {
                         e.stopPropagation();
+                        console.log('Profile button clicked, isProfileDropdownOpen:', !isProfileDropdownOpen);
                         setIsProfileDropdownOpen(!isProfileDropdownOpen);
                       }}
                       className="flex items-center space-x-2 text-black hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base w-full text-left"
