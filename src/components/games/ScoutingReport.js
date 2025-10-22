@@ -47,7 +47,7 @@ const ScoutingReport = ({ matchup, onClose, year }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-1 sm:p-2 rounded-lg shadow-xl w-full max-w-[85vw] sm:max-w-2xl md:max-w-4xl lg:max-w-7xl h-[70vh] sm:h-[80vh] overflow-y-auto flex flex-col">
+      <div className="bg-white p-0 sm:p-0 rounded-lg shadow-xl w-full max-w-[85vw] sm:max-w-2xl md:max-w-4xl lg:max-w-7xl h-[70vh] sm:h-[80vh] overflow-y-auto flex flex-col">
         {/* Green Bar with Logos, Team Names/Records, and INSZN Logo */}
         <div className="bg-gray-200 flex flex-row justify-between items-center p-1 sm:p-2 rounded-t border-b-2 border-[#235347] sticky top-0 z-10">
           <div className="flex items-center">
