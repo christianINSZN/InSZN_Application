@@ -176,12 +176,6 @@ function NavBar() {
                 >
                   <span>Sign In</span>
                 </Link>
-                <Link
-                  to="/subscribe"
-                  className="flex items-center space-x-2 bg-[#235347] text-white hover:bg-[#235347]/70 px-3 py-1 rounded text-xl xl:text-base"
-                  onClick={() => handleMobileLinkClick()}>
-                  <MdOutlineJoinFull /> <span>Subscribe</span>
-                </Link>
               </div>
             )}
           </div>
