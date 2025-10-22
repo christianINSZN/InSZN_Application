@@ -59,9 +59,9 @@ function NavBar() {
           backgroundImage: 'url(/Header_Gradient.png)',
         }}
       >
-        <div className="max-w-7xl mx-auto flex items-center px-4 sm:px-6 h-full relative">
+        <div className="max-w-8xl mx-auto flex items-center px-4 xl:px-6 h-full relative">
           {/* Mobile: Centered Logo and Hamburger */}
-          <div className="sm:hidden flex items-center w-full relative">
+          <div className="xl:hidden flex items-center w-full relative">
             <div className="absolute left-1/2 transform -translate-x-[calc(52px)]">
               <Link to="/" className="flex items-center">
                 <img src="/TurfLogo_RemovedBkg.png" alt="INSZN Logo" className="h-14 w-auto" />
@@ -75,16 +75,16 @@ function NavBar() {
             </button>
           </div>
           {/* Desktop: Main navigation (centered) */}
-          <div className="hidden sm:flex absolute left-1/2 transform -translate-x-1/2 items-center justify-center gap-4 sm:gap-6">
+          <div className="hidden xl:flex absolute left-1/2 transform -translate-x-1/2 items-center justify-center gap-4 xl:gap-6">
             <div className="flex items-center">
-              <Link to="/players" className="flex items-center space-x-2 text-white hover:bg-[#829994] hover:text-black px-3 py-2 rounded text-base sm:text-lg">
+              <Link to="/players" className="flex items-center space-x-2 text-white hover:bg-[#829994] hover:text-black px-3 py-2 rounded text-base xl:text-lg">
                 <BsFillPersonFill /> <span>Players</span>
               </Link>
             </div>
             <div className="relative" ref={teamsDropdownRef}>
               <button
                 onClick={() => setIsTeamsDropdownOpen(!isTeamsDropdownOpen)}
-                className="flex items-center space-x-2 text-white hover:bg-[#829994] hover:text-black px-3 py-2 rounded text-base sm:text-lg"
+                className="flex items-center space-x-2 text-white hover:bg-[#829994] hover:text-black px-3 py-2 rounded text-base xl:text-lg"
               >
                 <RiTeamFill /> <span>Teams</span>
               </button>
@@ -113,28 +113,28 @@ function NavBar() {
             </div>
             <div className="flex items-center">
               <Link to="/" className="flex items-center justify-center px-3 py-2">
-                <img src="/TurfLogo_RemovedBkg.png" alt="INSZN Logo" className="h-10 sm:h-14 w-auto" />
+                <img src="/TurfLogo_RemovedBkg.png" alt="INSZN Logo" className="h-10 xl:h-14 w-auto" />
               </Link>
             </div>
             <div className="flex items-center">
-              <Link to="/h2h" className="flex items-center space-x-2 text-white hover:bg-[#829994] hover:text-black px-3 py-2 rounded text-base sm:text-lg">
+              <Link to="/h2h" className="flex items-center space-x-2 text-white hover:bg-[#829994] hover:text-black px-3 py-2 rounded text-base xl:text-lg">
                 <MdPeople /> <span>H2H</span>
               </Link>
             </div>
             <div className="flex items-center">
-              <Link to="/subscribe" className="flex items-center space-x-2 text-white hover:bg-[#829994] hover:text-black px-3 py-2 rounded text-base sm:text-lg">
+              <Link to="/subscribe" className="flex items-center space-x-2 text-white hover:bg-[#829994] hover:text-black px-3 py-2 rounded text-base xl:text-lg">
                 <MdOutlineJoinFull /> <span>Subscribe</span>
               </Link>
             </div>
           </div>
           {/* Desktop: Profile or Sign In/Sign Up (right-aligned) */}
-          <div className="hidden sm:flex items-center ml-auto">
+          <div className="hidden xl:flex items-center ml-auto">
             {isSignedIn ? (
               <div className="relative" ref={profileDropdownRef}>
                 <button
                   ref={profileButtonRef}
                   onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                  className="flex items-center space-x-2 text-white px-3 py-2 rounded text-base sm:text-lg focus:outline-none"
+                  className="flex items-center space-x-2 text-white px-3 py-2 rounded text-base xl:text-lg focus:outline-none"
                 >
                   <CgProfile className="text-2xl" />
                 </button>
@@ -157,22 +157,28 @@ function NavBar() {
               <div className="flex space-x-4">
                 <Link
                   to="/sign-up"
-                  className="flex items-center space-x-2 bg-[#235347] text-white hover:bg-[#235347]/70 px-3 py-1 rounded text-sm sm:text-base"
+                  className="flex items-center space-x-2 bg-[#235347] text-white hover:bg-[#235347]/70 px-3 py-1 rounded text-xl xl:text-base"
                 >
                   <span>Sign Up</span>
                 </Link>
                 <Link
                   to="/sign-in"
-                  className="flex items-center space-x-2 bg-[#235347] text-white hover:bg-[#235347]/70 px-3 py-1 rounded text-sm sm:text-base"
+                  className="flex items-center space-x-2 bg-[#235347] text-white hover:bg-[#235347]/70 px-3 py-1 rounded text-xl xl:text-base"
                 >
                   <span>Sign In</span>
                 </Link>
+                  <Link
+                    to="/subscribe"
+                    className="flex items-center space-x-2 bg-[#235347] text-white hover:bg-[#235347]/70 px-3 py-1 rounded text-xl xl:text-base"
+                    onClick={() => handleMobileLinkClick()}>
+                    <MdOutlineJoinFull /> <span>Subscribe</span>
+                  </Link>
               </div>
             )}
           </div>
           {/* Mobile: Hamburger Dropdown */}
           {isHamburgerOpen && (
-            <div ref={hamburgerRef} className="sm:hidden absolute top-[64px] left-0 w-full bg-white border-b-2 border-[#235347] shadow-lg z-30">
+            <div ref={hamburgerRef} className="xl:hidden absolute top-[64px] left-0 w-full bg-white border-b-2 border-[#235347] shadow-lg z-30">
               <ul className="flex flex-col items-start p-4 space-y-2">
                 <li>
                   <Link
@@ -294,6 +300,7 @@ function NavBar() {
                       >
                         <span>Sign In</span>
                       </Link>
+                      
                     </li>
                   </>
                 )}
