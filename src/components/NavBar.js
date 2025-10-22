@@ -84,7 +84,7 @@ function NavBar() {
             <div className="relative" ref={teamsDropdownRef}>
               <button
                 onClick={() => setIsTeamsDropdownOpen(!isTeamsDropdownOpen)}
-                className="flex items-center space-x-2 text-white hover:bg-[#829994] hover:text-black px-3 py-2 rounded text-base xl:text-lg"
+                className="flex items-center space-x-2 text-white hover:bg-[#829994] hover:text-black px-2 py-2 rounded text-base xl:text-lg"
               >
                 <RiTeamFill /> <span>Teams</span>
               </button>
@@ -117,33 +117,30 @@ function NavBar() {
               </Link>
             </div>
             <div className="flex items-center">
-              <Link to="/h2h" className="flex items-center space-x-2 text-white hover:bg-[#829994] hover:text-black px-3 py-2 rounded text-base xl:text-lg">
+              <Link to="/h2h" className="flex items-center space-x-2 text-white hover:bg-[#829994] hover:text-black px-4 py-2 rounded text-base xl:text-lg">
                 <MdPeople /> <span>H2H</span>
               </Link>
             </div>
             <div className="flex items-center">
-              <Link to="/subscribe" className="flex items-center space-x-2 text-white hover:bg-[#829994] hover:text-black px-3 py-2 rounded text-base xl:text-lg">
-                <MdOutlineJoinFull /> <span>Subscribe</span>
+              <Link to="/games" className="flex items-center space-x-2 text-white hover:bg-[#235347]/70 hover:text-white px-4 py-2 rounded text-base xl:text-lg">
+                <MdOutlineJoinFull /> <span>Games</span>
               </Link>
             </div>
           </div>
           {/* Desktop: Profile or Sign In/Sign Up/Subscribe (right-aligned) */}
           <div className="hidden lg:flex items-center ml-auto space-x-4">
-            {/* Subscribe button - always visible on desktop */}
             <Link
               to="/subscribe"
-              className="flex items-center space-x-2 bg-[#235347] text-white hover:bg-[#235347]/70 px-3 py-1 rounded text-xl xl:text-base"
+              className="flex items-center space-x-2 bg-[#235347] text-white hover:bg-[#235347]/70 px-3 py-1 rounded text-sm sm:text-base"
             >
               <span>Subscribe</span>
             </Link>
-            
-            {/* Profile or Sign In/Sign Up */}
             {isSignedIn ? (
               <div className="relative" ref={profileDropdownRef}>
                 <button
                   ref={profileButtonRef}
                   onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                  className="flex items-center space-x-2 text-white px-3 py-2 rounded text-base xl:text-lg focus:outline-none"
+                  className="flex items-center space-x-2 text-white px-3 py-2 rounded text-base sm:text-lg focus:outline-none"
                 >
                   <CgProfile className="text-2xl" />
                 </button>
@@ -246,11 +243,20 @@ function NavBar() {
                 </li>
                 <li>
                   <Link
+                    to="/games"
+                    className="flex items-center space-x-2 text-black hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base"
+                    onClick={() => handleMobileLinkClick()}
+                  >
+                    <MdOutlineJoinFull /> <span>Games</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     to="/subscribe"
                     className="flex items-center space-x-2 text-black hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base"
                     onClick={() => handleMobileLinkClick()}
                   >
-                    <MdOutlineJoinFull /> <span>Subscribe</span>
+                    <span>Subscribe</span>
                   </Link>
                 </li>
                 {isSignedIn ? (
@@ -303,7 +309,6 @@ function NavBar() {
                       >
                         <span>Sign In</span>
                       </Link>
-                      
                     </li>
                   </>
                 )}
