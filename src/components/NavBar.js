@@ -122,7 +122,7 @@ function NavBar() {
               </Link>
             </div>
             <div className="flex items-center">
-              <Link to="/games" className="flex items-center space-x-2 text-white hover:bg-[#235347]/70 hover:text-white px-4 py-2 rounded text-base xl:text-lg">
+              <Link to="/games" className="flex items-center space-x-2 text-white hover:bg-[#829994] hover:text-black px-4 py-2 rounded text-base xl:text-lg">
                 <MdOutlineJoinFull /> <span>Games</span>
               </Link>
             </div>
