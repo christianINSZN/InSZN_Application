@@ -127,20 +127,23 @@ function NavBar() {
               </Link>
             </div>
           </div>
-          {/* Desktop: Profile or Sign In/Sign Up (right-aligned) */}
-          <div className="hidden xl:flex items-center ml-auto">
+          {/* Desktop: Profile or Sign In/Sign Up/Subscribe (right-aligned) */}
+          <div className="hidden lg:flex items-center ml-auto space-x-4">
+            {/* Subscribe button - always visible on desktop */}
+            <Link
+              to="/subscribe"
+              className="flex items-center space-x-2 bg-[#235347] text-white hover:bg-[#235347]/70 px-3 py-1 rounded text-sm sm:text-base"
+            >
+              <span>Subscribe</span>
+            </Link>
+            
+            {/* Profile or Sign In/Sign Up */}
             {isSignedIn ? (
               <div className="relative" ref={profileDropdownRef}>
-                 <Link
-                  to="/subscribe"
-                  className="flex items-center space-x-2 bg-[#235347] text-white hover:bg-[#235347]/70 px-3 py-1 rounded text-xl xl:text-base"
-                  onClick={() => handleMobileLinkClick()}>
-                  <MdOutlineJoinFull /> <span>Subscribe</span>
-                </Link>
                 <button
                   ref={profileButtonRef}
                   onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                  className="flex items-center space-x-2 text-white px-3 py-2 rounded text-base xl:text-lg focus:outline-none"
+                  className="flex items-center space-x-2 text-white px-3 py-2 rounded text-base sm:text-lg focus:outline-none"
                 >
                   <CgProfile className="text-2xl" />
                 </button>
@@ -159,7 +162,6 @@ function NavBar() {
                   </ul>
                 )}
               </div>
-              
             ) : (
               <div className="flex space-x-4">
                 <Link
