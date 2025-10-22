@@ -47,52 +47,52 @@ const ScoutingReport = ({ matchup, onClose, year }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-0 sm:p-0 rounded-lg shadow-xl w-full max-w-7xl h-[80vh] overflow-y-auto flex flex-col">
-        {/* Green Bar with Logos, Team Names/Records, and Turf Logo */}
-        <div className="bg-gray-200 flex justify-between items-center p-2 rounded-t border-b-2 border-[#235347] sticky top-0 z-10">
+      <div className="bg-white p-1 sm:p-2 rounded-lg shadow-xl w-full max-w-[85vw] sm:max-w-2xl md:max-w-4xl lg:max-w-7xl h-[70vh] sm:h-[80vh] overflow-y-auto flex flex-col">
+        {/* Green Bar with Logos, Team Names/Records, and INSZN Logo */}
+        <div className="bg-gray-200 flex flex-row justify-between items-center p-1 sm:p-2 rounded-t border-b-2 border-[#235347] sticky top-0 z-10">
           <div className="flex items-center">
             {matchup?.awayTeamLogo && (
-              <img src={matchup.awayTeamLogo} alt={`${matchup.awayTeamName} logo`} className="w-20 h-20" />
+              <img src={matchup.awayTeamLogo} alt={`${matchup.awayTeamName} logo`} className="w-12 sm:w-16 h-12 sm:h-16" />
             )}
-            <div className="ml-2 text-black">
-              <div className="text-xl font-bold">{matchup?.awayTeamName || 'Away Team'}</div>
+            <div className="ml-1 sm:ml-2 text-black">
+              <div className="text-sm sm:text-lg font-bold">{matchup?.awayTeamName || 'Away Team'}</div>
               {awayTeamRecord && (
-                <div className="text-xs">
+                <div className="text-xs sm:text-sm">
                   OVR: {formatRecord(awayTeamRecord.total_wins, awayTeamRecord.total_losses, awayTeamRecord.total_ties)} | {awayTeamRecord.conference}: {formatRecord(awayTeamRecord.conferenceGames_wins, awayTeamRecord.conferenceGames_losses, awayTeamRecord.conferenceGames_ties)}
                 </div>
               )}
             </div>
           </div>
-          <div className="flex flex-col items-center flex-1">
+          <div className="hidden md:block flex items-center">
             <img
-              src="/TurfLogo_RemovedBkg.png"
-              alt="Turf Logo"
-              className="w-36 h-auto mt-0"
+              src="/TurfLogo_RemovedBkg.png" // INSZN logo path
+              alt="INSZN Logo"
+              className="w-24 sm:w-36 h-auto mt-0 mx-1 sm:mx-2"
             />
           </div>
-          <div className="flex items-center">
-            <div className="mr-2 text-black text-right">
-              <div className="text-xl font-bold">{matchup?.homeTeamName || 'Home Team'}</div>
+          <div className="flex items-center flex-row-reverse">
+            {matchup?.homeTeamLogo && (
+              <img src={matchup.homeTeamLogo} alt={`${matchup.homeTeamName} logo`} className="w-12 sm:w-16 h-12 sm:h-16" />
+            )}
+            <div className="mr-1 sm:mr-2 text-black text-right">
+              <div className="text-sm sm:text-lg font-bold">{matchup?.homeTeamName || 'Home Team'}</div>
               {homeTeamRecord && (
-                <div className="text-xs">
+                <div className="text-xs sm:text-sm">
                   OVR: {formatRecord(homeTeamRecord.total_wins, homeTeamRecord.total_losses, homeTeamRecord.total_ties)} | {homeTeamRecord.conference}: {formatRecord(homeTeamRecord.conferenceGames_wins, homeTeamRecord.conferenceGames_losses, homeTeamRecord.conferenceGames_ties)}
                 </div>
               )}
             </div>
-            {matchup?.homeTeamLogo && (
-              <img src={matchup.homeTeamLogo} alt={`${matchup.homeTeamName} logo`} className="w-20 h-20" />
-            )}
           </div>
         </div>
         {/* Main Content */}
-        <div className="flex-1 mt-4">
+        <div className="flex-1 mt-1 sm:mt-2">
           {loading && (
-            <div className="p-2 text-gray-500 text-center">Loading records...</div>
+            <div className="p-1 sm:p-2 text-gray-500 text-center">Loading records...</div>
           )}
           {error && (
-            <div className="p-2 text-red-500 text-center">Error: {error}</div>
+            <div className="p-1 sm:p-2 text-red-500 text-center">Error: {error}</div>
           )}
-          <div className="flex flex-col md:grid md:grid-cols-[1fr_1.5fr_1fr] gap-6">
+          <div className="flex flex-col md:grid md:grid-cols-[1fr_1.5fr_1fr] gap-2 sm:gap-4">
             {/* Head-to-Head Metrics (Top on Mobile) */}
             <div className="order-first md:order-2">
               <HeadToHeadReport
@@ -112,9 +112,9 @@ const ScoutingReport = ({ matchup, onClose, year }) => {
           </div>
         </div>
         {/* Close Button */}
-        <div className="flex justify-end mt-4">
+        <div className="flex justify-end mt-1 sm:mt-2">
           <button
-            className="px-4 py-2 mb-2 bg-[#235347] text-white rounded hover:bg-[#1b3e32]"
+            className="px-2 sm:px-3 py-1 sm:py-2 mb-1 sm:mb-2 bg-[#235347] text-white rounded hover:bg-[#1b3e32]"
             onClick={onClose}
           >
             Close
