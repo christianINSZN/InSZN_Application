@@ -132,7 +132,7 @@ function NavBar() {
             {/* Subscribe button - always visible on desktop */}
             <Link
               to="/subscribe"
-              className="flex items-center space-x-2 bg-[#235347] text-white hover:bg-[#235347]/70 px-3 py-1 rounded text-sm sm:text-base"
+              className="flex items-center space-x-2 bg-[#235347] text-white hover:bg-[#235347]/70 px-3 py-1 rounded text-xl xl:text-base"
             >
               <span>Subscribe</span>
             </Link>
@@ -143,7 +143,7 @@ function NavBar() {
                 <button
                   ref={profileButtonRef}
                   onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                  className="flex items-center space-x-2 text-white px-3 py-2 rounded text-base sm:text-lg focus:outline-none"
+                  className="flex items-center space-x-2 text-white px-3 py-2 rounded text-base xl:text-lg focus:outline-none"
                 >
                   <CgProfile className="text-2xl" />
                 </button>
