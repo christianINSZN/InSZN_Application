@@ -91,6 +91,8 @@ def attach_pff_ids(team, year):
         "auburn": "AUBURN",
         "uab": "UAB",
         "south alabama": "S ALABAMA",
+        "missouri state": "MO STATE",
+        "delaware": "DELAWARE",
         "arkansas": "ARKANSAS",
         "arizona state": "ARIZONA ST",
         "arizona": "ARIZONA",

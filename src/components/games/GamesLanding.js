@@ -137,7 +137,7 @@ function GamesComponent({ year = '2025' }) {
             onChange={(e) => navigate(`/games/${e.target.value}`)}
             className="w-full p-2 border border-gray-300 rounded text-black text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-[#235347]"
           >
-            <option value="2024">2024</option>
+            {/* <option value="2024">2024</option> */}
             <option value="2025">2025</option>
           </select>
         </div>
