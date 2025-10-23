@@ -61,7 +61,7 @@ const SubscriptionForm = () => {
       features: [
         'For teams, coaches, and athletic departments',
         'Full access to internal data-modeling tools and datasets',
-        'Fully customizable data solutions tailored to your program\'s needs',
+        'Fully customizable data solutions tailored to your programs needs',
         'Inquire for additional details',
       ],
       bannerImage: '/INSZN_Elite.png',
