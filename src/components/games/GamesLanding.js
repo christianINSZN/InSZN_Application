@@ -234,8 +234,24 @@ function GamesComponent({ year = '2025' }) {
               </div>
               <div className="flex justify-between items-center h-full">
                 <div className="text-sm sm:text-base text-left">
-                  <div>{awayWins ? <span className="font-bold">{game.awayTeam}</span> : game.awayTeam}</div>
-                  <div>{homeWins ? <span className="font-bold">{game.homeTeam}</span> : game.homeTeam}</div>
+                  <div className="flex items-center">
+                    {game.awayTeamLogo && <img src={game.awayTeamLogo} alt={`${game.awayTeam} logo`} className="w-6 h-6 sm:w-5 h-5 mr-1 sm:mr-2" />}
+                    <Link
+                      to={`/teams/${game.awayId}/${year}`}
+                      className={`inline ${awayWins ? 'font-bold' : ''}`}
+                    >
+                      {game.awayTeam}
+                    </Link>
+                  </div>
+                  <div className="flex items-center">
+                    {game.homeTeamLogo && <img src={game.homeTeamLogo} alt={`${game.homeTeam} logo`} className="w-6 h-6 sm:w-5 h-5 mr-1 sm:mr-2" />}
+                    <Link
+                      to={`/teams/${game.homeId}/${year}`}
+                      className={`inline ${homeWins ? 'font-bold' : ''}`}
+                    >
+                      {game.homeTeam}
+                    </Link>
+                  </div>
                 </div>
                 <div className="text-sm sm:text-base text-right">
                   <div>{awayWins ? <span className="font-bold">{game.awayPoints ?? '-'}</span> : game.awayPoints ?? '-'}</div>
