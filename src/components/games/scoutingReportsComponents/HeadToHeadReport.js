@@ -273,6 +273,22 @@ const HeadToHeadReport = ({ year, awayTeamId, homeTeamId }) => {
                   </li>
                   <li>
                     <button
+                      className={`text-[#235347] hover:text-[#235347] pb-1 sm:pb-2 text-xs sm:text-base border-b-2 ${activeTab === 'HomeDefAwayOff' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+                      onClick={() => setActiveTab('HomeDefAwayOff')}
+                    >
+                      {awayTeamData?.school || 'Away'} Off. vs {homeTeamData?.school || 'Home'} Def.
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      className={`text-[#235347] hover:text-[#235347] pb-1 sm:pb-2 text-xs sm:text-base border-b-2 ${activeTab === 'HomeOffAwayDef' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+                      onClick={() => setActiveTab('HomeOffAwayDef')}
+                    >
+                      {awayTeamData?.school || 'Away'} Def. vs {homeTeamData?.school || 'Home'} Off.
+                    </button>
+                  </li>
+                  <li>
+                    <button
                       className={`text-[#235347] hover:text-[#235347] pb-1 sm:pb-2 text-xs sm:text-base border-b-2 ${activeTab === 'Grades' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
                       onClick={() => setActiveTab('Grades')}
                     >
@@ -293,22 +309,6 @@ const HeadToHeadReport = ({ year, awayTeamId, homeTeamId }) => {
                       onClick={() => setActiveTab('Defense')}
                     >
                       Defense
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      className={`text-[#235347] hover:text-[#235347] pb-1 sm:pb-2 text-xs sm:text-base border-b-2 ${activeTab === 'HomeDefAwayOff' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
-                      onClick={() => setActiveTab('HomeDefAwayOff')}
-                    >
-                      {awayTeamData?.school || 'Away'} Off. vs {homeTeamData?.school || 'Home'} Def.
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      className={`text-[#235347] hover:text-[#235347] pb-1 sm:pb-2 text-xs sm:text-base border-b-2 ${activeTab === 'HomeOffAwayDef' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
-                      onClick={() => setActiveTab('HomeOffAwayDef')}
-                    >
-                      {awayTeamData?.school || 'Away'} Def. vs {homeTeamData?.school || 'Home'} Off.
                     </button>
                   </li>
                   {/* <li>
