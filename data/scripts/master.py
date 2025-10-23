@@ -87,7 +87,7 @@ script_order = [
 
     # Batch update of all grades
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/players/populate_players_basic_grades.py", #no need for all teams
-     "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/teams/populate_teams_season_grades.py"
+    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/teams/populate_teams_season_grades.py"
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/teamsGrades/populate_teams_ratings.py", #no need for all teams
 
     

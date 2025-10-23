@@ -1818,24 +1818,3 @@ app.get('/api/teams_feeds/:id', async (req, res) => {
     }
 });
 
-app.get('/api/team_percentiles//:year', (req, res) => {
-  const { playerId, year } = req.params;
-  db.get(
-    'SELECT * FROM Players_Full_Percentiles_QB WHERE playerId = ? AND year = ?',
-    [playerId, year],
-    (err, row) => {
-      if (err) {
-        console.error('Database query error:', err.message);
-        res.status(500).send('Internal server error');
-      } else if (!row) {
-        res.status(404).send('No advanced grades found for player');
-      } else {
-        res.json(row);
-      }
-    }
-  );
-});
-
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});

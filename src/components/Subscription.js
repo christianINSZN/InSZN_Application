@@ -59,9 +59,9 @@ const SubscriptionForm = () => {
       name: 'Elite',
       price: 'Contact for Pricing',
       features: [
-        'Everything included in INSZN Pro',
-        'Full white label solutions for your media, product, or analytical needs',
-        'End-to-end support for hosting your own subscription plans or platform add-ons',
+        'For teams, coaches, and athletic departments',
+        'Full access to internal data-modeling tools and datasets',
+        'Fully customizable data solutions tailored to your program\'s needs',
         'Inquire for additional details',
       ],
       bannerImage: '/INSZN_Elite.png',
