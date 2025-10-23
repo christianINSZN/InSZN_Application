@@ -10,120 +10,148 @@ GRADE_CONFIG = {
         "csv_file": "PassingGrades.csv",
         "stat_column": "grades_pass",
         "extra_columns": ["player_game_count", "completion_percent", "yards", "ypa", "touchdowns", "interceptions"],
-        "additional_db_fields": [{"name": "QBR", "table": "Players_Full_Percentiles_QB", "name": "passing_snaps", "table": "Players_Full_Percentiles_QB"}]
-
+        "additional_db_fields": [
+            {"name": "QBR", "table": "Players_Full_Percentiles_QB"},
+            {"name": "passing_snaps", "table": "Players_Full_Percentiles_QB"}
+        ]
     },
     "RB": {
         "csv_dir": "Rushing/SeasonReports",
         "csv_file": "RushingGrades.csv",
         "stat_column": "grades_run",
         "extra_columns": ["player_game_count", "fumbles", "yards", "ypa", "touchdowns", "attempts"],
-        "additional_db_fields": [{"name": "RBR", "table": "Players_Full_Percentiles_RB_Rushing", "name": "run_plays", "table": "Players_Full_Percentiles_RB_Rushing"}]
+        "additional_db_fields": [
+            {"name": "RBR", "table": "Players_Full_Percentiles_RB_Rushing"},
+            {"name": "run_plays", "table": "Players_Full_Percentiles_RB_Rushing"}
+        ]
     },
     "WR": {
         "csv_dir": "Receiving/SeasonReports",
         "csv_file": "ReceivingGrades.csv",
         "stat_column": "grades_pass_route",
         "extra_columns": ["player_game_count", "yards", "touchdowns", "yards_per_reception", "receptions"],
-        "additional_db_fields": [{"name": "WRR", "table": "Players_Full_Percentiles_WR", "name": "routes", "table": "Players_Full_Percentiles_WR"}]
-
+        "additional_db_fields": [
+            {"name": "WRR", "table": "Players_Full_Percentiles_WR"},
+            {"name": "routes", "table": "Players_Full_Percentiles_WR"}
+        ]
     },
     "TE": {
         "csv_dir": "Receiving/SeasonReports",
         "csv_file": "ReceivingGrades.csv",
         "stat_column": "grades_pass_route",
         "extra_columns": ["player_game_count", "yards", "touchdowns", "yards_per_reception", "receptions"],
-        "additional_db_fields": [{"name": "TER", "table": "Players_Full_Percentiles_TE_Receiving", "name": "routes", "table": "Players_Full_Percentiles_TE_Receiving"}]
-
+        "additional_db_fields": [
+            {"name": "TER", "table": "Players_Full_Percentiles_TE_Receiving"},
+            {"name": "routes", "table": "Players_Full_Percentiles_TE_Receiving"}
+        ]
     },
     "C": {
         "csv_dir": "Blocking/SeasonReports",
         "csv_file": "BlockingGrades.csv",
         "stat_column": "grades_offense",
         "extra_columns": ["player_game_count", "grades_offense", "snap_counts_offense", "hurries_allowed", "pressures_allowed", "hits_allowed", "sacks_allowed", "pbe"],
-        "additional_db_fields": [{"name": "CR", "table": "Players_Full_Percentiles_C_Blocking", "name": "snap_counts_block", "table": "Players_Full_Percentiles_C_Blocking"}]
-
+        "additional_db_fields": [
+            {"name": "CR", "table": "Players_Full_Percentiles_C_Blocking"},
+            {"name": "snap_counts_block", "table": "Players_Full_Percentiles_C_Blocking"}
+        ]
     },
     "G": {
         "csv_dir": "Blocking/SeasonReports",
         "csv_file": "BlockingGrades.csv",
         "stat_column": "grades_offense",
         "extra_columns": ["player_game_count", "grades_offense", "snap_counts_offense", "hurries_allowed", "pressures_allowed", "hits_allowed", "sacks_allowed", "pbe"],
-        "additional_db_fields": [{"name": "GR", "table": "Players_Full_Percentiles_G_Blocking", "name": "snap_counts_block", "table": "Players_Full_Percentiles_G_Blocking"}]
+        "additional_db_fields": [
+            {"name": "GR", "table": "Players_Full_Percentiles_G_Blocking"},
+            {"name": "snap_counts_block", "table": "Players_Full_Percentiles_G_Blocking"}
+        ]
     },
     "T": {
         "csv_dir": "Blocking/SeasonReports",
         "csv_file": "BlockingGrades.csv",
         "stat_column": "grades_offense",
         "extra_columns": ["player_game_count", "grades_offense", "snap_counts_offense", "hurries_allowed", "pressures_allowed", "hits_allowed", "sacks_allowed", "pbe"],
-        "additional_db_fields": [{"name": "TR", "table": "Players_Full_Percentiles_T_Blocking", "name": "snap_counts_block", "table": "Players_Full_Percentiles_T_Blocking"}]
-
+        "additional_db_fields": [
+            {"name": "TR", "table": "Players_Full_Percentiles_T_Blocking"},
+            {"name": "snap_counts_block", "table": "Players_Full_Percentiles_T_Blocking"}
+        ]
     },
     "LB": {
         "csv_dir": "Defense/SeasonReports",
         "csv_file": "DefenseGrades.csv",
         "stat_column": "grades_defense",
         "extra_columns": ["player_game_count", "grades_defense", "hits", "hurries", "sacks", "snap_counts_defense", "stops", "tackles", "tackles_for_loss", "total_pressures", "grades_coverage_defense"],
-        "additional_db_fields": [{"name": "LBR", "table": "Players_Full_Percentiles_LBE", "name": "snap_counts_defense", "table": "Players_Full_Percentiles_LBE"}]
-    
+        "additional_db_fields": [
+            {"name": "LBR", "table": "Players_Full_Percentiles_LBE"},
+            {"name": "snap_counts_defense", "table": "Players_Full_Percentiles_LBE"}
+        ]
     },
     "CB": {
         "csv_dir": "Defense/SeasonReports",
         "csv_file": "CoverageGrades.csv",
         "stat_column": "grades_defense",
         "extra_columns": ["player_game_count", "snap_counts_coverage", "grades_coverage_defense", "catch_rate", "pass_break_ups", "tackles", "coverage_percent", "forced_incompletion_rate", "avg_depth_of_target"],
-        "additional_db_fields": [{"name": "CBR", "table": "Players_Full_Percentiles_CB", "name": "snap_counts_defense", "table": "Players_Full_Percentiles_CB"}]
-    
+        "additional_db_fields": [
+            {"name": "CBR", "table": "Players_Full_Percentiles_CB"},
+            {"name": "snap_counts_defense", "table": "Players_Full_Percentiles_CB"}
+        ]
     },
     "S": {
         "csv_dir": "Defense/SeasonReports",
         "csv_file": "CoverageGrades.csv",
         "stat_column": "grades_defense",
         "extra_columns": ["player_game_count", "snap_counts_coverage", "grades_coverage_defense", "catch_rate", "pass_break_ups", "tackles", "coverage_percent", "forced_incompletion_rate", "avg_depth_of_target"],
-        "additional_db_fields": [{"name": "SR", "table": "Players_Full_Percentiles_S", "name": "snap_counts_defense", "table": "Players_Full_Percentiles_S"}]
-    
+        "additional_db_fields": [
+            {"name": "SR", "table": "Players_Full_Percentiles_S"},
+            {"name": "snap_counts_defense", "table": "Players_Full_Percentiles_S"}
+        ]
     },
     "DE": {
         "csv_dir": "Defense/SeasonReports",
         "csv_file": "DefenseGrades.csv",
         "stat_column": "grades_defense",
         "extra_columns": ["player_game_count", "grades_defense", "hits", "hurries", "sacks", "snap_counts_defense", "stops", "tackles", "tackles_for_loss", "total_pressures"],
-        "additional_db_fields": [{"name": "DLR", "table": "Players_Full_Percentiles_DL"}]
-    
+        "additional_db_fields": [
+            {"name": "DLR", "table": "Players_Full_Percentiles_DL"}
+        ]
     },
     "DT": {
         "csv_dir": "Defense/SeasonReports",
         "csv_file": "DefenseGrades.csv",
         "stat_column": "grades_defense",
         "extra_columns": ["player_game_count", "grades_defense", "hits", "hurries", "sacks", "snap_counts_defense", "stops", "tackles", "tackles_for_loss", "total_pressures"],
-        "additional_db_fields": [{"name": "DLR", "table": "Players_Full_Percentiles_DL"}]
-    
+        "additional_db_fields": [
+            {"name": "DLR", "table": "Players_Full_Percentiles_DL"}
+        ]
     },
     "DL": {
         "csv_dir": "Defense/SeasonReports",
         "csv_file": "DefenseGrades.csv",
         "stat_column": "grades_defense",
-        "extra_columns": ["player_game_count", "grades_defense", "hits", "hurries", "sacks", "snap_counts_defense", "stops", "tackles", "tackles_for_loss", "total_pressures" ],
-        "additional_db_fields": [{"name": "DLR", "table": "Players_Full_Percentiles_DL"}]
-    
+        "extra_columns": ["player_game_count", "grades_defense", "hits", "hurries", "sacks", "snap_counts_defense", "stops", "tackles", "tackles_for_loss", "total_pressures"],
+        "additional_db_fields": [
+            {"name": "DLR", "table": "Players_Full_Percentiles_DL"}
+        ]
     },
     "EDGE": {
         "csv_dir": "Defense/SeasonReports",
         "csv_file": "DefenseGrades.csv",
         "stat_column": "grades_defense",
         "extra_columns": ["player_game_count", "grades_defense", "hits", "hurries", "sacks", "snap_counts_defense", "stops", "tackles", "tackles_for_loss", "total_pressures", "grades_coverage_defense"],
-        "additional_db_fields": [{"name": "LBR", "table": "Players_Full_Percentiles_LBE"}]
-    
+        "additional_db_fields": [
+            {"name": "LBR", "table": "Players_Full_Percentiles_LBE"},
+            {"name": "snap_counts_defense", "table": "Players_Full_Percentiles_LBE"}
+        ]
     },
     "DB": {
         "csv_dir": "Defense/SeasonReports",
         "csv_file": "CoverageGrades.csv",
         "stat_column": "grades_defense",
         "extra_columns": ["player_game_count", "snap_counts_coverage", "grades_coverage_defense", "catch_rate", "pass_break_ups", "tackles", "coverage_percent", "forced_incompletion_rate", "avg_depth_of_target"],
-        "additional_db_fields": [{"name": "DBR", "table": "Players_Full_Percentiles_DB"}]
-    
+        "additional_db_fields": [
+            {"name": "DBR", "table": "Players_Full_Percentiles_DB"},
+            {"name": "snap_counts_defense", "table": "Players_Full_Percentiles_DB"}
+        ]
     }
-
 }
 
 # Database connection with absolute path
@@ -146,6 +174,7 @@ if new_columns - existing_columns:
     for col in new_columns - existing_columns:
         col_type = 'REAL' if col in real_cols else 'INTEGER'
         cursor.execute(f"ALTER TABLE Players_Basic_Grades ADD COLUMN {col} {col_type}")
+
 # Ensure school, teamID, and grades_defense are added if not present
 if {'school', 'teamID', 'grades_defense'} - existing_columns:
     if 'school' not in existing_columns:
@@ -168,7 +197,7 @@ CREATE TABLE IF NOT EXISTS Players_Basic_Grades (
     grades_run REAL,
     grades_pass_route REAL,
     grades_offense REAL,
-    grades_defense REAL,  -- New column for defensive grades
+    grades_defense REAL,
     school TEXT,
     teamID INTEGER,
     player_game_count INTEGER,
@@ -181,7 +210,7 @@ CREATE TABLE IF NOT EXISTS Players_Basic_Grades (
     yards_per_reception REAL,
     receptions INTEGER,
     attempts INTEGER,
-    RBR REAL, 
+    RBR REAL,
     PRIMARY KEY (playerId, year),
     FOREIGN KEY (playerId, year) REFERENCES Players_Basic(playerId, year)
 )
@@ -192,14 +221,12 @@ def fetch_pff_grades_for_position(year):
     # Fetch all players from Players_Basic
     cursor.execute("SELECT playerId, year, name, team, position, player_id_PFF, school, teamID FROM Players_Basic WHERE year = ?", (year,))
     players_basic = {row[5]: row for row in cursor.fetchall()}  # Map player_id_PFF to (playerId, year, name, team, pos, pff_id, school, teamID)
-
     for position in GRADE_CONFIG.keys():
         config = GRADE_CONFIG.get(position)
         csv_path = Path(f"/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/PFF_Data/{config['csv_dir']}/{year}_{config['csv_file']}")
         if not csv_path.exists():
             print(f"CSV not found for {position}: {csv_path}")
             continue
-
         with open(csv_path, 'r', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile)
             required_columns = {"player_id", config["stat_column"]}
@@ -208,7 +235,6 @@ def fetch_pff_grades_for_position(year):
             if not required_columns.issubset(reader.fieldnames):
                 print(f"Invalid CSV format for {position} in {csv_path}: missing required columns")
                 continue
-
             pff_data = {}
             for row in reader:
                 player_id_pff = row["player_id"]
@@ -218,14 +244,12 @@ def fetch_pff_grades_for_position(year):
                         pff_data[player_id_pff] = {"grade": float(stat_value)}
                     else:
                         pff_data[player_id_pff] = {"grade": None}  # Allow NULL for invalid values
-
                     for col in config["extra_columns"]:
                         value = row.get(col, "").strip()
                         if value and value.replace(".", "").replace("-", "").replace("+", "").isdigit():
                             pff_data[player_id_pff][col] = float(value) if "." in value else int(value)
                         else:
                             pff_data[player_id_pff][col] = None  # Allow NULL for invalid values
-
             # Update or insert data
             for player_id_pff, (player_id, year, name, team, pos, _, school, team_id) in players_basic.items():
                 if player_id_pff in pff_data and pos == position:  # Match position from Players_Basic
@@ -233,9 +257,7 @@ def fetch_pff_grades_for_position(year):
                     grade_value = data.get("grade")
                     school = school if school is not None else team.lower()  # Fallback to lowercase team if school is null
                     team_id = team_id if team_id is not None else None  # Keep teamID as is, or None if not set
-
                     extra_values = [data.get(col) for col in config["extra_columns"]]
-
                     # Fetch additional DB fields if defined
                     additional_values = []
                     additional_columns = []
@@ -245,7 +267,6 @@ def fetch_pff_grades_for_position(year):
                             result = cursor.fetchone()
                             additional_values.append(result[0] if result else None)
                             additional_columns.append(field['name'])
-
                     if config["extra_columns"] or additional_columns:
                         # Update existing row
                         set_clause = f"{config['stat_column']} = ?, school = ?, teamID = ?, {', '.join(f'{col} = ?' for col in config['extra_columns'] + additional_columns)}"
@@ -270,9 +291,9 @@ def fetch_pff_grades_for_position(year):
                             # Insert if not exists
                             cursor.execute(
                                 f"""
-                                INSERT INTO Players_Basic_Grades (playerId, year, name, team, position, player_id_PFF, {config['stat_column']}, school, teamID)
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                                """,
+                                    INSERT INTO Players_Basic_Grades (playerId, year, name, team, position, player_id_PFF, {config['stat_column']}, school, teamID)
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                    """,
                                 (player_id, year, name, team, pos or 'Unknown', player_id_pff, grade_value, school, team_id)
                             )
 
