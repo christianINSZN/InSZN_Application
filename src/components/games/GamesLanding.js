@@ -8,7 +8,7 @@ const conferences = [
   'Pac-12', 'SEC', 'Sun Belt'
 ];
 
-const filterTabs = ['All',  ...conferences];
+const filterTabs = ['All', ...conferences];
 
 const weeks = Array.from({ length: 15 }, (_, i) => i + 1);
 
@@ -197,6 +197,7 @@ function GamesComponent({ year = '2025' }) {
         {filteredGames.map((game, index) => {
           const homeWins = game.homePoints !== null && game.awayPoints !== null && game.homePoints > game.awayPoints;
           const awayWins = game.awayPoints !== null && game.homePoints !== null && game.awayPoints > game.homePoints;
+          const isFBSMatchup = conferences.includes(game.homeConference) && conferences.includes(game.awayConference);
 
           return (
             <div key={game.id || index} className="p-2 sm:p-4 shadow-xl rounded-lg bg-white border border-gray-200 h-24 flex flex-col justify-between">
@@ -205,18 +206,20 @@ function GamesComponent({ year = '2025' }) {
                   {new Date(game.startDate).toLocaleDateString()}
                 </div>
                 {game.completed === 0 ? (
-                  <div>
-                    <Link
-                      to="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleScoutingReportClick(game);
-                      }}
-                      className="text-blue-500 hover:text-blue-700 underline text-xs sm:text-sm"
-                    >
-                      Scouting Report
-                    </Link>
-                  </div>
+                  isFBSMatchup ? (
+                    <div>
+                      <Link
+                        to="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleScoutingReportClick(game);
+                        }}
+                        className="text-blue-500 hover:text-blue-700 underline text-xs sm:text-sm"
+                      >
+                        Scouting Report
+                      </Link>
+                    </div>
+                  ) : null
                 ) : (
                   <div>
                     <Link
@@ -235,8 +238,8 @@ function GamesComponent({ year = '2025' }) {
                   <div>{homeWins ? <span className="font-bold">{game.homeTeam}</span> : game.homeTeam}</div>
                 </div>
                 <div className="text-sm sm:text-base text-right">
-                  <div>{awayWins ? <span className="font-bold">{game.awayPoints ?? 'TBD'}</span> : game.awayPoints ?? 'TBD'}</div>
-                  <div>{homeWins ? <span className="font-bold">{game.homePoints ?? 'TBD'}</span> : game.homePoints ?? 'TBD'}</div>
+                  <div>{awayWins ? <span className="font-bold">{game.awayPoints ?? '-'}</span> : game.awayPoints ?? '-'}</div>
+                  <div>{homeWins ? <span className="font-bold">{game.homePoints ?? '-'}</span> : game.homePoints ?? '-'}</div>
                 </div>
               </div>
             </div>

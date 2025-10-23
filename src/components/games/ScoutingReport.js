@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import TeamAReport from './scoutingReportsComponents/TeamAReport';
 import HeadToHeadReport from './scoutingReportsComponents/HeadToHeadReport';
 import TeamBReport from './scoutingReportsComponents/TeamBReport';
@@ -8,6 +8,7 @@ const ScoutingReport = ({ matchup, onClose, year }) => {
   const [homeTeamRecord, setHomeTeamRecord] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const modalRef = useRef(null);
 
   const formatRecord = (wins, losses, ties) => `${wins}-${losses}${ties > 0 ? `-${ties}` : ''}`;
 
@@ -45,9 +46,15 @@ const ScoutingReport = ({ matchup, onClose, year }) => {
     fetchRecords();
   }, [year, matchup?.awayId, matchup?.homeId]);
 
+  const handleOverlayClick = (e) => {
+    if (modalRef.current && !modalRef.current.contains(e.target)) {
+      onClose();
+    }
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-0 sm:p-0 rounded-lg shadow-xl w-full max-w-[85vw] sm:max-w-2xl md:max-w-4xl lg:max-w-7xl h-[70vh] sm:h-[80vh] overflow-y-auto flex flex-col">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={handleOverlayClick}>
+      <div ref={modalRef} className="bg-white p-1 sm:p-2 rounded-lg shadow-xl w-full max-w-[85vw] sm:max-w-2xl md:max-w-4xl lg:max-w-7xl h-[70vh] sm:h-[80vh] overflow-y-auto flex flex-col">
         {/* Green Bar with Logos, Team Names/Records, and INSZN Logo */}
         <div className="bg-gray-200 flex flex-row justify-between items-center p-1 sm:p-2 rounded-t border-b-2 border-[#235347] sticky top-0 z-10">
           <div className="flex items-center">
@@ -110,15 +117,6 @@ const ScoutingReport = ({ matchup, onClose, year }) => {
               <TeamBReport teamName={matchup?.homeTeamName} year={year} teamId={matchup?.homeId} />
             </div>
           </div>
-        </div>
-        {/* Close Button */}
-        <div className="flex justify-end mt-1 sm:mt-2">
-          <button
-            className="px-2 sm:px-3 py-1 sm:py-2 mb-1 sm:mb-2 bg-[#235347] text-white rounded hover:bg-[#1b3e32]"
-            onClick={onClose}
-          >
-            Close
-          </button>
         </div>
       </div>
     </div>
