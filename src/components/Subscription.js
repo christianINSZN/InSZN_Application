@@ -45,6 +45,8 @@ const SubscriptionForm = () => {
         'For media organizations, content creators, and producers',
         'Access to specific player-level and positional weekly scouting reports and recaps',
         'Bespoke and fully customizable analytic interfaces',
+        'Inquire for additional details',
+
       ],
       bannerImage: '/INSZN_Pro.png',
       bannerWidthPercent: 48,
