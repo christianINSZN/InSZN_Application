@@ -14,17 +14,13 @@ const SubscriptionForm = () => {
   const [step, setStep] = useState('plans'); // 'plans', 'payment'
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [hoveredPlan, setHoveredPlan] = useState(null);
   const paymentRef = useRef(null);
   const isMobile = window.innerWidth < 640;
 
-  // --- UPDATED mapping per your note:
-  // You said: "I have named the insider price as 'pro' and the pro price as 'premium'."
-  // So: price_1SIG... (Insider) -> 'pro' ; price_pro (Pro) -> 'premium'
   const currentPlan = user?.publicMetadata?.subscriptionPlan || null;
   const planIdToKey = {
-    'price_1SIGOHF6OYpAGuKxF2bIISDL': 'pro',      // Insider price is called "pro" in your metadata
-    'price_pro': 'premium',                      // Pro price is called "premium" in your metadata
+    'price_1SIGOHF6OYpAGuKxF2bIISDL': 'pro',
+    'price_pro': 'premium',
     'price_elite': 'elite',
   };
 
@@ -44,12 +40,11 @@ const SubscriptionForm = () => {
     {
       id: 'price_pro',
       name: 'Pro',
-      price: '$25/month',
+      price: 'Contact for Pricing',
       features: [
-        'Everything included in INSZN Insider',
+        'For media organizations, content creators, and producers',
         'Access to specific player-level and positional weekly scouting reports and recaps',
-        'Bespoke and fully customizable weekly reports sent directly to your inbox (at the national, conference, team, or player-level)',
-        'Request new platform features',
+        'Bespoke and fully customizable analytic interfaces',
       ],
       bannerImage: '/INSZN_Pro.png',
       bannerWidthPercent: 48,
@@ -72,7 +67,6 @@ const SubscriptionForm = () => {
   const handlePlanSelect = (planId) => {
     const planKey = planIdToKey[planId];
     const isSamePlan = currentPlan && planKey === currentPlan;
-    // Prevent selecting pro/elite (as you had before) AND prevent selecting the plan they're already on
     if (planId === 'price_pro' || planId === 'price_elite' || isSamePlan) return;
     setSelectedPlan(planId);
     setTimeout(() => {
@@ -87,14 +81,11 @@ const SubscriptionForm = () => {
       setError('Please sign in and select a plan to subscribe.');
       return;
     }
-
-    // Prevent subscribing to the same plan again (extra safety)
     const selectedPlanKey = planIdToKey[selectedPlan];
     if (currentPlan && selectedPlanKey === currentPlan) {
       setError('You are already subscribed to this plan.');
       return;
     }
-
     setLoading(true);
     setError(null);
     try {
@@ -170,7 +161,6 @@ const SubscriptionForm = () => {
             {plans.map((plan) => {
               const planKey = planIdToKey[plan.id];
               const isUserSubscribedToThisPlan = currentPlan && planKey === currentPlan;
-
               return (
                 <div
                   key={plan.id}
@@ -182,8 +172,6 @@ const SubscriptionForm = () => {
                       : 'cursor-pointer hover:border-[#235347] hover:bg-[#235347]/10'
                   } transition-colors ${isMobile ? 'w-full' : 'w-1/3'}`}
                   onClick={() => handlePlanSelect(plan.id)}
-                  onMouseEnter={() => (plan.id === 'price_pro') && setHoveredPlan(plan.id)}
-                  onMouseLeave={() => (plan.id === 'price_pro') && setHoveredPlan(null)}
                 >
                   <img
                     src={plan.bannerImage}
@@ -198,24 +186,15 @@ const SubscriptionForm = () => {
                         <li key={index}>{feature}</li>
                       ))}
                     </ul>
-                    {plan.id === 'price_elite' && (
+                    {(plan.id === 'price_pro' || plan.id === 'price_elite') && (
                       <p className="text-center font-bold text-[12px] sm:text-sm text-gray-700 mt-4">
                         <a href="mailto:data@inszn.co" className="text-[#235347] underline">Contact Us</a>
                       </p>
                     )}
                   </div>
-
-                  {/* Already Subscribed Overlay */}
                   {isUserSubscribedToThisPlan && (
                     <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 border-2 border-[#235347] rounded-lg">
                       <p className="text-[#235347] font-semibold text-[18px] sm:text-sm">Current Subscription</p>
-                    </div>
-                  )}
-
-                  {/* Existing Coming Soon overlay for Pro when hovered */}
-                  {(plan.id === 'price_pro') && hoveredPlan === plan.id && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 border-2 border-[#235347] rounded-lg">
-                      <p className="text-[#235347] font-semibold text-[12px] sm:text-sm">Coming Soon</p>
                     </div>
                   )}
                 </div>
