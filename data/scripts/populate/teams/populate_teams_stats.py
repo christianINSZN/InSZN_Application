@@ -40,16 +40,22 @@ CREATE TABLE IF NOT EXISTS Teams_Stats_Season (
 )
 """)
 
-# Fetch teams from Teams table
-cursor.execute("SELECT id, school FROM Teams")
+# FBS conferences
+FBS_CONFERENCES = [
+    'ACC', 'American Athletic', 'Big 12', 'Big Ten', 'Conference USA',
+    'FBS Independents', 'Mid-American', 'Mountain West', 'Pac-12', 'SEC', 'Sun Belt'
+]
+
+# Fetch teams from Teams table where conference is in FBS_CONFERENCES
+cursor.execute("SELECT id, school, conference FROM Teams WHERE conference IN ({})".format(
+    ','.join('?' for _ in FBS_CONFERENCES)), FBS_CONFERENCES)
 teams = cursor.fetchall()
 
 # Fetch and populate data for each year and team
 BASE_URL = "https://api.collegefootballdata.com/stats/season"
 headers = {"Authorization": f"Bearer {API_KEY}"}
-
 for year in YEARS:
-    for team_id, school in teams:
+    for team_id, school, conference in teams:
         params = {"year": year, "team": school}
         try:
             response = requests.get(BASE_URL, headers=headers, params=params, timeout=10)
@@ -75,5 +81,4 @@ for year in YEARS:
 # Commit and close
 conn.commit()
 conn.close()
-
 print(f"Populated Teams_Stats_Season table for years {', '.join(map(str, YEARS))}")
