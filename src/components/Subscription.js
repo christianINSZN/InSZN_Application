@@ -31,7 +31,7 @@ const SubscriptionForm = () => {
       price: '$10/month',
       features: [
         'Full platform access',
-        'FieldView and Head-to-Head (with LineView and CoverageView upon release)',
+        'Access to the private INSZN Insider forums and discussion groups',
         'Early access to beta features (Scouting Reports, Game Recaps, Weekly Reports)',
       ],
       bannerImage: '/INSZN_Insider_BETA.png',
