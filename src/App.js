@@ -20,7 +20,7 @@ import OverviewTE from './components/playerprofiles/TE/Overview';
 import ReceivingAnalyticsTE from './components/playerprofiles/TE/ReceivingAnalytics';
 import HeadToHeadContainerTE from './components/playerprofiles/TE/HeadToHead';
 import FieldViewInterfaceTE from './components/playerprofiles/TE/FieldView';
-import GameRecap from './components/games/GameRecapMain';
+import GameRecap from './components/games/GameRecap';
 import OverviewCB from './components/playerprofiles/CB/Overview';
 import OverviewDL from './components/playerprofiles/DL/Overview';
 import OverviewC from './components/playerprofiles/C/Overview';

@@ -1,15 +1,14 @@
 import React, { useEffect, useMemo, useState, memo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import ScoutingReport from './ScoutingReport'; // Import the ScoutingReport component
+import ScoutingReport from './ScoutingReport';
+import GameRecap from './GameRecap'; // Import the GameRecap component
 
 const conferences = [
   'ACC', 'American Athletic', 'Big 12', 'Big Ten', 'Conference USA',
   'FBS Independents', 'Mid-American', 'Mountain West',
   'Pac-12', 'SEC', 'Sun Belt'
 ];
-
 const filterTabs = ['All', ...conferences];
-
 const weeks = Array.from({ length: 15 }, (_, i) => i + 1);
 
 function GamesComponent({ year = '2025' }) {
@@ -19,7 +18,9 @@ function GamesComponent({ year = '2025' }) {
   const [activeWeek, setActiveWeek] = useState(9);
   const [activeTab, setActiveTab] = useState('All');
   const [showScoutingReport, setShowScoutingReport] = useState(false);
+  const [showGameRecap, setShowGameRecap] = useState(false); // State for GameRecap modal
   const [selectedMatchup, setSelectedMatchup] = useState(null);
+  const [selectedGameId, setSelectedGameId] = useState(null); // State for game ID
 
   useEffect(() => {
     let isMounted = true;
@@ -114,14 +115,28 @@ function GamesComponent({ year = '2025' }) {
     setShowScoutingReport(true);
   };
 
+  const handleGameRecapClick = (game) => {
+    setSelectedMatchup({
+      awayId: game.awayId,
+      homeId: game.homeId,
+      awayTeamName: game.awayTeam,
+      homeTeamName: game.homeTeam,
+      awayTeamLogo: game.awayTeamLogo,
+      homeTeamLogo: game.homeTeamLogo,
+    });
+    setSelectedGameId(game.id);
+    setShowGameRecap(true);
+  };
+
   const handleCloseScoutingReport = () => {
     setShowScoutingReport(false);
     setSelectedMatchup(null);
   };
 
-  const handleGameRecapClick = (e) => {
-    e.preventDefault();
-    alert('Coming soon, I\'m building that next');
+  const handleCloseGameRecap = () => {
+    setShowGameRecap(false);
+    setSelectedMatchup(null);
+    setSelectedGameId(null);
   };
 
   return (
@@ -137,7 +152,6 @@ function GamesComponent({ year = '2025' }) {
             onChange={(e) => navigate(`/games/${e.target.value}`)}
             className="w-full p-2 border border-gray-300 rounded text-black text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-[#235347]"
           >
-            {/* <option value="2024">2024</option> */}
             <option value="2025">2025</option>
           </select>
         </div>
@@ -198,7 +212,6 @@ function GamesComponent({ year = '2025' }) {
           const homeWins = game.homePoints !== null && game.awayPoints !== null && game.homePoints > game.awayPoints;
           const awayWins = game.awayPoints !== null && game.homePoints !== null && game.awayPoints > game.homePoints;
           const isFBSMatchup = conferences.includes(game.homeConference) && conferences.includes(game.awayConference);
-
           return (
             <div key={game.id || index} className="p-2 sm:p-4 shadow-xl rounded-lg bg-white border border-gray-200 h-24 flex flex-col justify-between">
               <div className="flex justify-between items-center min-h-[1.5rem]">
@@ -224,7 +237,10 @@ function GamesComponent({ year = '2025' }) {
                   <div>
                     <Link
                       to="#"
-                      onClick={handleGameRecapClick}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleGameRecapClick(game);
+                      }}
                       className="text-blue-500 hover:text-blue-700 underline text-xs sm:text-sm"
                     >
                       Game Recap
@@ -267,6 +283,14 @@ function GamesComponent({ year = '2025' }) {
           matchup={selectedMatchup}
           onClose={handleCloseScoutingReport}
           year={year}
+        />
+      )}
+      {showGameRecap && selectedMatchup && selectedGameId && (
+        <GameRecap
+          matchup={selectedMatchup}
+          gameId={selectedGameId}
+          year={year}
+          onClose={handleCloseGameRecap}
         />
       )}
     </div>

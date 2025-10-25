@@ -1751,6 +1751,23 @@ app.get('/api/teams_games', (req, res) => {
   });
 });
 
+app.get('/api/team_game_stats/:gameId', (req, res) => {
+  const { gameId } = req.params;
+  db.all(
+    'SELECT * FROM Teams_Games_Stats WHERE game_id = ?',
+    [gameId],
+    (err, rows) => {
+      if (err) {
+        res.status(500).send(err.message);
+      } else if (!rows || rows.length === 0) {
+        res.status(404).send('No game stats found for the specified game ID');
+      } else {
+        res.json(rows);
+      }
+    }
+  );
+});
+
 // Tweets endpoint
 app.get('/api/teams_feeds/:id', async (req, res) => {
     const { id } = req.params;
