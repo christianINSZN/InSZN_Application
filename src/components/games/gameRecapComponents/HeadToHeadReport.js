@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
 
-const HeadToHeadReport = ({ year, awayTeamId, homeTeamId, gameId }) => {
-  const [awayTeamData, setAwayTeamData] = useState(null);
-  const [homeTeamData, setHomeTeamData] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+const HeadToHeadReport = ({ year, awayTeamId, homeTeamId, gameId, awayStats, homeStats }) => {
   const [activeTab, setActiveTab] = useState('Metrics');
   const [metrics, setMetrics] = useState([
-    { label: 'Points Scored', field: 'pointsScored', awayValue: 0, homeValue: 0 },
+    { label: 'Points Scored', field: 'points', awayValue: 0, homeValue: 0 },
     { label: 'Rush Yards', field: 'rushingYards', awayValue: 0, homeValue: 0 },
     { label: 'Pass Yards', field: 'netPassingYards', awayValue: 0, homeValue: 0 },
     { label: 'Total Yards', field: 'totalYards', awayValue: 0, homeValue: 0 },
@@ -17,6 +13,7 @@ const HeadToHeadReport = ({ year, awayTeamId, homeTeamId, gameId }) => {
     { label: 'First Downs', field: 'firstDowns', awayValue: 0, homeValue: 0 },
     { label: 'Fumbles Lost', field: 'fumblesLost', awayValue: 0, homeValue: 0 },
     { label: 'Interceptions', field: 'interceptions', awayValue: 0, homeValue: 0 },
+    { label: 'Total Penalties', field: 'totalPenalties', awayValue: 0, homeValue: 0 },
     { label: 'Penalty Yards', field: 'penaltyYards', awayValue: 0, homeValue: 0 },
   ]);
   const [offenseMetrics, setOffenseMetrics] = useState([
@@ -66,7 +63,7 @@ const HeadToHeadReport = ({ year, awayTeamId, homeTeamId, gameId }) => {
     { label: 'Rush Yards vs. Def Allowed', homeField: 'rushingYardsOpponent', awayField: 'rushingYards', homeValue: 0, awayValue: 0 },
     { label: 'Rush TDs vs. Def Allowed', homeField: 'rushingTDsOpponent', awayField: 'rushingTDs', homeValue: 0, awayValue: 0 },
     { label: 'Pass Att. vs. Def Allowed', homeField: 'passAttemptsOpponent', awayField: 'passAttempts', homeValue: 0, awayValue: 0 },
-    { label: 'Pass Comp. vs. Def Allowed', homeField: 'passCompletionsOpponent', awayField: 'passCompletions', homeValue: 0, homeValue: 0 },
+    { label: 'Pass Comp. vs. Def Allowed', homeField: 'passCompletionsOpponent', awayField: 'passCompletions', homeValue: 0, awayValue: 0 },
     { label: 'Pass Yards vs. Def Allowed', homeField: 'netPassingYardsOpponent', awayField: 'netPassingYards', homeValue: 0, awayValue: 0 },
     { label: 'Pass TDs vs. Def Allowed', homeField: 'passingTDsOpponent', awayField: 'passingTDs', homeValue: 0, awayValue: 0 },
     { label: 'Total Yards vs. Def Allowed', homeField: 'totalYardsOpponent', awayField: 'totalYards', homeValue: 0, awayValue: 0 },
@@ -80,7 +77,6 @@ const HeadToHeadReport = ({ year, awayTeamId, homeTeamId, gameId }) => {
   const [customMetrics, setCustomMetrics] = useState([]);
   const isMobile = window.innerWidth < 640;
 
-  // Custom styles for react-select
   const selectStyles = {
     control: (provided) => ({
       ...provided,
@@ -104,7 +100,6 @@ const HeadToHeadReport = ({ year, awayTeamId, homeTeamId, gameId }) => {
     }),
   };
 
-  // Format metric labels
   const formatMetric = (metric) => {
     return metric
       .split('_')
@@ -112,7 +107,6 @@ const HeadToHeadReport = ({ year, awayTeamId, homeTeamId, gameId }) => {
       .join(' ');
   };
 
-  // Remove metric from lists
   const removeMetric = (field, type) => {
     if (type === 'metrics') {
       setMetrics(prev => prev.filter(metric => metric.field !== field));
@@ -129,14 +123,13 @@ const HeadToHeadReport = ({ year, awayTeamId, homeTeamId, gameId }) => {
     }
   };
 
-  // Add custom metric
   const addCustomMetric = () => {
     if (selectedCustomMetric && !customMetrics.some(metric => metric.field === selectedCustomMetric.value)) {
       const newMetric = {
         label: formatMetric(selectedCustomMetric.value),
         field: selectedCustomMetric.value,
-        awayValue: awayTeamData?.[selectedCustomMetric.value] || 0,
-        homeValue: homeTeamData?.[selectedCustomMetric.value] || 0,
+        awayValue: awayStats?.[selectedCustomMetric.value] || 0,
+        homeValue: homeStats?.[selectedCustomMetric.value] || 0,
       };
       setCustomMetrics(prev => [...prev, newMetric]);
       setSelectedCustomMetric(null);
@@ -144,98 +137,109 @@ const HeadToHeadReport = ({ year, awayTeamId, homeTeamId, gameId }) => {
   };
 
   useEffect(() => {
-    const fetchTeamData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        // Fetch away team game stats
-        const awayResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/games/recap/${gameId}/${awayTeamId}/stats`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        });
-        if (!awayResponse.ok) {
-          const errorText = await awayResponse.text();
-          console.error('Away team response:', awayResponse.status, errorText);
-          throw new Error(`Away team game stats not found: ${awayResponse.status} ${errorText}`);
-        }
-        const awayData = await awayResponse.json();
-        setAwayTeamData(awayData);
+    if (awayStats && homeStats) {
+      // Parse totalPenaltiesYards for penalties and yards
+      const parsePenalties = (value) => {
+        if (!value || typeof value !== 'string') return { penalties: 0, yards: 0 };
+        const [penalties, yards] = value.split('-').map(Number);
+        return { penalties: penalties || 0, yards: yards || 0 };
+      };
+      const awayPenalties = parsePenalties(awayStats.totalPenaltiesYards);
+      const homePenalties = parsePenalties(homeStats.totalPenaltiesYards);
 
-        // Fetch home team game stats
-        const homeResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/games/recap/${gameId}/${homeTeamId}/stats`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-        });
-        if (!homeResponse.ok) {
-          const errorText = await homeResponse.text();
-          console.error('Home team response:', homeResponse.status, errorText);
-          throw new Error(`Home team game stats not found: ${homeResponse.status} ${errorText}`);
-        }
-        const homeData = await homeResponse.json();
-        setHomeTeamData(homeData);
+      // Parse completionAttempts for completions and attempts
+      const parseCompletions = (value) => {
+        if (!value || typeof value !== 'string') return { completions: 0, attempts: 0 };
+        const [completions, attempts] = value.split('-').map(Number);
+        return { completions: completions || 0, attempts: attempts || 0 };
+      };
+      const awayCompletions = parseCompletions(awayStats.completionAttempts);
+      const homeCompletions = parseCompletions(homeStats.completionAttempts);
 
-        // Update metrics with fetched data
-        setMetrics(prevMetrics => prevMetrics.map(metric => ({
+      // Update metrics with provided stats
+      setMetrics(prevMetrics =>
+        prevMetrics.map(metric => ({
           ...metric,
-          awayValue: awayData[metric.field] || 0,
-          homeValue: homeData[metric.field] || 0,
-        })));
-        setOffenseMetrics(prevMetrics => prevMetrics.map(metric => ({
-          ...metric,
-          awayValue: awayData[metric.field] || 0,
-          homeValue: homeData[metric.field] || 0,
-        })));
-        setDefenseMetrics(prevMetrics => prevMetrics.map(metric => ({
-          ...metric,
-          awayValue: awayData[metric.field] || 0,
-          homeValue: homeData[metric.field] || 0,
-        })));
-        setHomeOffAwayDefMetrics(prevMetrics => prevMetrics.map(metric => ({
-          ...metric,
-          homeValue: homeData[metric.homeField] || 0,
-          awayValue: awayData[metric.awayField] || 0,
-        })));
-        setHomeDefAwayOffMetrics(prevMetrics => prevMetrics.map(metric => ({
-          ...metric,
-          homeValue: homeData[metric.homeField] || 0,
-          awayValue: awayData[metric.awayField] || 0,
-        })));
+          awayValue:
+            metric.field === 'totalPenalties' ? awayPenalties.penalties :
+            metric.field === 'penaltyYards' ? awayPenalties.yards :
+            awayStats[metric.field] || 0,
+          homeValue:
+            metric.field === 'totalPenalties' ? homePenalties.penalties :
+            metric.field === 'penaltyYards' ? homePenalties.yards :
+            homeStats[metric.field] || 0,
+        }))
+      );
 
-        // Set available metrics for custom selection
-        const metrics1 = Object.keys(awayData).filter(key => !['teamID', 'year', 'school', 'conference'].includes(key));
-        const metrics2 = Object.keys(homeData).filter(key => !['teamID', 'year', 'school', 'conference'].includes(key));
-        const allMetrics = [...new Set([...metrics1, ...metrics2])];
-        setAvailableMetrics(allMetrics.map(field => ({
-          value: field,
-          label: formatMetric(field),
-        })));
-      } catch (err) {
-        console.error('Fetch error:', err.message);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+      setOffenseMetrics(prevMetrics =>
+        prevMetrics.map(metric => ({
+          ...metric,
+          awayValue:
+            metric.field === 'passCompletions' ? awayCompletions.completions :
+            metric.field === 'passAttempts' ? awayCompletions.attempts :
+            awayStats[metric.field] || 0,
+          homeValue:
+            metric.field === 'passCompletions' ? homeCompletions.completions :
+            metric.field === 'passAttempts' ? homeCompletions.attempts :
+            homeStats[metric.field] || 0,
+        }))
+      );
 
-    if (year && awayTeamId && homeTeamId && gameId) {
-      fetchTeamData();
-    } else {
-      setError('Missing team IDs, year, or game ID');
-      setLoading(false);
+      setDefenseMetrics(prevMetrics =>
+        prevMetrics.map(metric => ({
+          ...metric,
+          awayValue:
+            metric.field === 'passCompletionsOpponent' ? homeCompletions.completions :
+            metric.field === 'passAttemptsOpponent' ? homeCompletions.attempts :
+            awayStats[metric.field] || homeStats[metric.field.replace('Opponent', '')] || 0,
+          homeValue:
+            metric.field === 'passCompletionsOpponent' ? awayCompletions.completions :
+            metric.field === 'passAttemptsOpponent' ? awayCompletions.attempts :
+            homeStats[metric.field] || awayStats[metric.field.replace('Opponent', '')] || 0,
+        }))
+      );
+
+      setHomeOffAwayDefMetrics(prevMetrics =>
+        prevMetrics.map(metric => ({
+          ...metric,
+          homeValue: homeStats[metric.homeField] || 0,
+          awayValue:
+            metric.awayField === 'passCompletionsOpponent' ? homeCompletions.completions :
+            metric.awayField === 'passAttemptsOpponent' ? homeCompletions.attempts :
+            awayStats[metric.awayField] || homeStats[metric.awayField.replace('Opponent', '')] || 0,
+        }))
+      );
+
+      setHomeDefAwayOffMetrics(prevMetrics =>
+        prevMetrics.map(metric => ({
+          ...metric,
+          homeValue:
+            metric.homeField === 'passCompletionsOpponent' ? awayCompletions.completions :
+            metric.homeField === 'passAttemptsOpponent' ? awayCompletions.attempts :
+            homeStats[metric.homeField] || awayStats[metric.homeField.replace('Opponent', '')] || 0,
+          awayValue: awayStats[metric.awayField] || 0,
+        }))
+      );
+
+      // Set available metrics for custom selection
+      const metrics1 = Object.keys(awayStats).filter(key => !['game_id', 'season', 'week', 'seasonType', 'team_id', 'team', 'conference', 'homeAway'].includes(key));
+      const metrics2 = Object.keys(homeStats).filter(key => !['game_id', 'season', 'week', 'seasonType', 'team_id', 'team', 'conference', 'homeAway'].includes(key));
+      const allMetrics = [...new Set([...metrics1, ...metrics2, 'totalPenalties', 'penaltyYards', 'passCompletions', 'passAttempts'])];
+      setAvailableMetrics(allMetrics.map(field => ({
+        value: field,
+        label: formatMetric(field),
+      })));
     }
-  }, [year, awayTeamId, homeTeamId, gameId]);
+  }, [awayStats, homeStats]);
 
   return (
     <div className="bg-white rounded-lg shadow-xl">
-      <h2 className="flex items-center justify-center text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[30px] rounded mb-2">{awayTeamData?.school || 'Away'} vs. {homeTeamData?.school || 'Home'}</h2>
+      <h2 className="flex items-center justify-center text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[30px] rounded mb-2">{awayStats?.team || 'Away'} vs. {homeStats?.team || 'Home'}</h2>
       <div className={isMobile ? "w-full max-w-md mx-auto" : "w-full max-w-md mx-auto"}>
-        {loading && (
-          <div className="flex justify-center mb-2">
-            <div className="w-6 h-6 border-4 border-t-blue-500 border-blue-200 rounded-full animate-spin"></div>
-          </div>
+        {(!awayStats || !homeStats) && (
+          <div className="p-4 text-red-500 text-center">No game stats available</div>
         )}
-        {error && <div className="p-4 text-red-500 text-center">{error}</div>}
-        {!loading && !error && (
+        {awayStats && homeStats && (
           <>
             <div className="border-b border-gray-300">
               <div className="w-full overflow-x-auto">
@@ -248,12 +252,12 @@ const HeadToHeadReport = ({ year, awayTeamId, homeTeamId, gameId }) => {
                       Headline
                     </button>
                   </li>
-                  <li>
+                  {/* <li>
                     <button
                       className={`text-[#235347] hover:text-[#235347] pb-1 sm:pb-2 text-xs sm:text-base border-b-2 ${activeTab === 'HomeDefAwayOff' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
                       onClick={() => setActiveTab('HomeDefAwayOff')}
                     >
-                      {awayTeamData?.school || 'Away'} Off. vs {homeTeamData?.school || 'Home'} Def.
+                      {awayStats?.team || 'Away'} Off. vs {homeStats?.team || 'Home'} Def.
                     </button>
                   </li>
                   <li>
@@ -261,9 +265,9 @@ const HeadToHeadReport = ({ year, awayTeamId, homeTeamId, gameId }) => {
                       className={`text-[#235347] hover:text-[#235347] pb-1 sm:pb-2 text-xs sm:text-base border-b-2 ${activeTab === 'HomeOffAwayDef' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
                       onClick={() => setActiveTab('HomeOffAwayDef')}
                     >
-                      {awayTeamData?.school || 'Away'} Def. vs {homeTeamData?.school || 'Home'} Off.
+                      {awayStats?.team || 'Away'} Def. vs {homeStats?.team || 'Home'} Off.
                     </button>
-                  </li>
+                  </li> */}
                   <li>
                     <button
                       className={`text-[#235347] hover:text-[#235347] pb-1 sm:pb-2 text-xs sm:text-base border-b-2 ${activeTab === 'Offense' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}

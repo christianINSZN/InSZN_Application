@@ -4,7 +4,7 @@ import TeamAReport from './gameRecapComponents/TeamAReport';
 import TeamBReport from './gameRecapComponents/TeamBReport';
 
 const GameRecap = ({ matchup, gameId, year, onClose = () => {} }) => {
-  const [gameData, setGameData] = useState(null);
+  const [gameStats, setGameStats] = useState(null);
   const [awayTeamRecord, setAwayTeamRecord] = useState(null);
   const [homeTeamRecord, setHomeTeamRecord] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -23,8 +23,8 @@ const GameRecap = ({ matchup, gameId, year, onClose = () => {} }) => {
       setLoading(true);
       setError(null);
       try {
-        const [gameResponse, recordsResponse] = await Promise.all([
-          fetch(`${process.env.REACT_APP_API_URL}/api/games/recap/${gameId}`, {
+        const [statsResponse, recordsResponse] = await Promise.all([
+          fetch(`${process.env.REACT_APP_API_URL}/api/team_game_stats/${gameId}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
           }),
@@ -34,19 +34,19 @@ const GameRecap = ({ matchup, gameId, year, onClose = () => {} }) => {
           }),
         ]);
 
-        if (!gameResponse.ok) {
-          const errorText = await gameResponse.text();
-          throw new Error(`Failed to fetch game data: ${gameResponse.status} - ${errorText}`);
+        if (!statsResponse.ok) {
+          const errorText = await statsResponse.text();
+          throw new Error(`Failed to fetch game stats: ${statsResponse.status} - ${errorText}`);
         }
         if (!recordsResponse.ok) {
           const errorText = await recordsResponse.text();
           throw new Error(`Failed to fetch records: ${recordsResponse.status} - ${errorText}`);
         }
 
-        const gameData = await gameResponse.json();
+        const statsData = await statsResponse.json();
         const recordsData = await recordsResponse.json();
 
-        setGameData(gameData);
+        setGameStats(statsData);
         const awayRecord = recordsData.find(record => record.teamId === parseInt(matchup.awayId));
         const homeRecord = recordsData.find(record => record.teamId === parseInt(matchup.homeId));
         setAwayTeamRecord(awayRecord || null);
@@ -71,11 +71,15 @@ const GameRecap = ({ matchup, gameId, year, onClose = () => {} }) => {
     }
   };
 
+  // Filter stats for away and home teams
+  const awayStats = gameStats?.find(stat => stat.team_id === parseInt(matchup?.awayId)) || null;
+  const homeStats = gameStats?.find(stat => stat.team_id === parseInt(matchup?.homeId)) || null;
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={handleOverlayClick}>
       <div ref={modalRef} className="bg-white p-0 sm:p-0 rounded-lg shadow-xl w-full max-w-[90vw] sm:max-w-2xl md:max-w-4xl lg:max-w-7xl h-[80vh] sm:h-[80vh] overflow-y-auto flex flex-col">
-        {/* Green Bar with Logos, Team Names/Records, and INSZN Logo */}
-        <div className="bg-gray-200 flex flex-row justify-between items-center p-1 sm:p-2 rounded-t border-b-2 border-[#235347] sticky top-0 z-10">
+        {/* Green Bar with Logos, Team Names/Records, Scores, and INSZN Logo */}
+        <div className="bg-gray-200 flex flex-row items-center justify-between p-1 sm:p-2 rounded-t border-b-2 border-[#235347] sticky top-0 z-10">
           <div className="flex items-center">
             {matchup?.awayTeamLogo && (
               <img src={matchup.awayTeamLogo} alt={`${matchup.awayTeamName} logo`} className="w-12 sm:w-16 h-12 sm:h-16" />
@@ -89,6 +93,7 @@ const GameRecap = ({ matchup, gameId, year, onClose = () => {} }) => {
               )}
             </div>
           </div>
+          <span className="text-lg sm:text-xl md:text-4xl font-bold text-black mx-2 sm:mx-4">{awayStats?.points || 0}</span>
           <div className="hidden md:block flex items-center">
             <img
               src="/TurfLogo_RemovedBkg.png"
@@ -96,6 +101,7 @@ const GameRecap = ({ matchup, gameId, year, onClose = () => {} }) => {
               className="w-24 sm:w-36 h-auto mt-0 mx-1 sm:mx-2"
             />
           </div>
+          <span className="text-lg sm:text-xl md:text-4xl font-bold text-black mx-2 sm:mx-4">{homeStats?.points || 0}</span>
           <div className="flex items-center flex-row-reverse">
             {matchup?.homeTeamLogo && (
               <img src={matchup.homeTeamLogo} alt={`${matchup.homeTeamName} logo`} className="w-12 sm:w-16 h-12 sm:h-16" />
@@ -125,15 +131,30 @@ const GameRecap = ({ matchup, gameId, year, onClose = () => {} }) => {
                 year={year}
                 awayTeamId={matchup?.awayId}
                 homeTeamId={matchup?.homeId}
+                gameId={gameId}
+                awayStats={awayStats}
+                homeStats={homeStats}
               />
             </div>
             {/* Left Column: Team A (Away) */}
             <div className="order-2 md:order-1">
-              <TeamAReport teamName={matchup?.awayTeamName} year={year} teamId={matchup?.awayId} />
+              <TeamAReport
+                teamName={matchup?.awayTeamName}
+                year={year}
+                teamId={matchup?.awayId}
+                gameId={gameId}
+                gameStats={awayStats}
+              />
             </div>
             {/* Right Column: Team B (Home) */}
             <div className="order-3 md:order-3">
-              <TeamBReport teamName={matchup?.homeTeamName} year={year} teamId={matchup?.homeId} />
+              <TeamBReport
+                teamName={matchup?.homeTeamName}
+                year={year}
+                teamId={matchup?.homeId}
+                gameId={gameId}
+                gameStats={homeStats}
+              />
             </div>
           </div>
         </div>
