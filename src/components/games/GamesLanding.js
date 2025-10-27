@@ -243,7 +243,7 @@ function GamesComponent({ year = '2025' }) {
                       }}
                       className="text-blue-500 hover:text-blue-700 underline text-xs sm:text-sm"
                     >
-                      Game Recap
+                      Game Summary
                     </Link>
                   </div>
                 )}

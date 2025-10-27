@@ -37,7 +37,7 @@ const TeamAReport = ({ teamName, teamId, year, gameId, gameStats }) => {
       label: 'Points per Scoring Opportunity',
       tooltip: {
         title: 'Points per Scoring Opportunity',
-        definition: 'Average points scored per drive that reaches scoring range.',
+        definition: 'Average points scored per drive that reaches scoring range (40-yard line).',
         example: '3.7 means 3.7 points per opportunity (FG to TD range).',
         why: 'Shows efficiency converting scoring chances to points.'
       }

@@ -237,64 +237,40 @@ const HeadToHeadReport = ({ year, awayTeamId, homeTeamId, gameId, awayStats, hom
       <h2 className="flex items-center justify-center text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[30px] rounded mb-2">{awayStats?.team || 'Away'} vs. {homeStats?.team || 'Home'}</h2>
       <div className={isMobile ? "w-full max-w-md mx-auto" : "w-full max-w-md mx-auto"}>
         {(!awayStats || !homeStats) && (
-          <div className="p-4 text-red-500 text-center">No game stats available</div>
+          <div className="p-4 text-black text-center">Loading Game Stats...</div>
         )}
         {awayStats && homeStats && (
           <>
             <div className="border-b border-gray-300">
-              <div className="w-full overflow-x-auto">
-                <ul className={isMobile ? "flex gap-4 justify-start p-0 whitespace-nowrap" : "flex gap-8 justify-start p-0 whitespace-nowrap"}>
-                  <li>
-                    <button
-                      className={`text-[#235347] hover:text-[#235347] pb-1 sm:pb-2 text-xs sm:text-base border-b-2 ${activeTab === 'Metrics' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
-                      onClick={() => setActiveTab('Metrics')}
-                    >
-                      Headline
-                    </button>
-                  </li>
-                  {/* <li>
-                    <button
-                      className={`text-[#235347] hover:text-[#235347] pb-1 sm:pb-2 text-xs sm:text-base border-b-2 ${activeTab === 'HomeDefAwayOff' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
-                      onClick={() => setActiveTab('HomeDefAwayOff')}
-                    >
-                      {awayStats?.team || 'Away'} Off. vs {homeStats?.team || 'Home'} Def.
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      className={`text-[#235347] hover:text-[#235347] pb-1 sm:pb-2 text-xs sm:text-base border-b-2 ${activeTab === 'HomeOffAwayDef' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
-                      onClick={() => setActiveTab('HomeOffAwayDef')}
-                    >
-                      {awayStats?.team || 'Away'} Def. vs {homeStats?.team || 'Home'} Off.
-                    </button>
-                  </li> */}
-                  <li>
-                    <button
-                      className={`text-[#235347] hover:text-[#235347] pb-1 sm:pb-2 text-xs sm:text-base border-b-2 ${activeTab === 'Offense' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
-                      onClick={() => setActiveTab('Offense')}
-                    >
-                      Offense
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      className={`text-[#235347] hover:text-[#235347] pb-1 sm:pb-2 text-xs sm:text-base border-b-2 ${activeTab === 'Defense' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
-                      onClick={() => setActiveTab('Defense')}
-                    >
-                      Defense
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      className={`text-[#235347] hover:text-[#235347] pb-1 sm:pb-2 text-xs sm:text-base border-b-2 ${activeTab === 'Custom' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
-                      onClick={() => setActiveTab('Custom')}
-                    >
-                      Custom
-                    </button>
-                  </li>
-                </ul>
-              </div>
-            </div>
+  <div className="w-full overflow-x-hidden">
+    <ul className={isMobile ? "flex gap-2 justify-center p-0 whitespace-nowrap" : "flex gap-4 justify-center p-0 whitespace-nowrap"}>
+      <li>
+        <button
+          className={`text-[#235347] hover:text-[#235347] pb-1 text-xs border-b-2 ${activeTab === 'Metrics' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+          onClick={() => setActiveTab('Metrics')}
+        >
+          Headline
+        </button>
+      </li>
+      <li>
+        <button
+          className={`text-[#235347] hover:text-[#235347] pb-1 text-xs border-b-2 ${activeTab === 'Offense' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+          onClick={() => setActiveTab('Offense')}
+        >
+          Offense
+        </button>
+      </li>
+      <li>
+        <button
+          className={`text-[#235347] hover:text-[#235347] pb-1 text-xs border-b-2 ${activeTab === 'Defense' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+          onClick={() => setActiveTab('Defense')}
+        >
+          Defense
+        </button>
+      </li>
+    </ul>
+  </div>
+</div>
             {activeTab === 'Metrics' && (
               <div className={isMobile ? "space-y-1 p-2" : "space-y-1 p-4"}>
                 {metrics.map((metric, index) => {
