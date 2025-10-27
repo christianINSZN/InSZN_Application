@@ -103,6 +103,7 @@ script_order = [
     # Go and update 
     # /Users/christianberry/Desktop/Perennial Data/perennial-data-app/src/components/home/TopTeams.js
     # /Users/christianberry/Desktop/Perennial Data/perennial-data-app/src/components/teams/TeamRankings.js
+    # /Users/christianberry/Desktop/Perennial Data/perennial-data-app/src/components/games/GamesLanding.js
     
 
     # # # Team Concepts Weekly - DEFUNCT
