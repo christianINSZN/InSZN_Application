@@ -22,7 +22,7 @@ script_order = [
 
     # Runbook #
     # Terminal Command Runs - Daily#
-     "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/teams/populate_teams_games.py", #1.1 (Run twice -- one for last week to populate scores and one for next week)
+    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/teams/populate_teams_games.py", #1.1 (Run twice -- one for last week to populate scores and one for next week)
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/teams/populate_teams_games_stats.py", #2.1 (DO NOT RUN HERE, Open Terminal and run with args for year, seasonType, week)
     
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/teams/populate_teams_records.py", #3.1 (Run once after stats populated)
@@ -88,7 +88,7 @@ script_order = [
 
     # Batch update of all grades
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/players/populate_players_basic_grades.py", #no need for all teams
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/teams/populate_teams_season_grades.py"
+    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/teams/populate_teams_season_grades.py",
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/teamsGrades/populate_teams_ratings.py", #no need for all teams
 
     # Homepage Updates
@@ -98,7 +98,7 @@ script_order = [
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/weeklyReports/players_epa_wr.py",
 
     # Homepage Updates  
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/weeklyReports/teams_rankings.py", # Do this in terminal 
+    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/weeklyReports/teams_rankings.py", # Do this in terminal bc update week in script at bottom 
 
     # Go and update 
     # /Users/christianberry/Desktop/Perennial Data/perennial-data-app/src/components/home/TopTeams.js

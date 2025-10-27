@@ -8,7 +8,7 @@ function TopTeams() {
   const [error, setError] = useState(null);
   const [showAllColumns, setShowAllColumns] = useState(false);
   const year = 2025;
-  const week = 9;
+  const week = 10;
   const navigate = useNavigate();
   const isMobile = window.innerWidth < 640;
   const columnHelper = createColumnHelper();
