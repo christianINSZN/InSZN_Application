@@ -41,7 +41,7 @@ const HeadToHeadReport = ({ year, awayTeamId, homeTeamId, gameId, awayStats, hom
     { label: 'Opp. Total Yards', field: 'totalYardsOpponent', awayValue: 0, homeValue: 0 },
     { label: 'Opp. First Downs', field: 'firstDownsOpponent', awayValue: 0, homeValue: 0 },
     { label: 'Opp. 4th Down Conv.', field: 'fourthDownConversionsOpponent', awayValue: 0, homeValue: 0 },
-    { label: 'Fumbles Re', field: 'fumblesLostOpponent', awayValue: 0, homeValue: 0 },
+    { label: 'Fumbles Recovered', field: 'fumblesLostOpponent', awayValue: 0, homeValue: 0 },
     { label: 'Interceptions', field: 'interceptionsOpponent', awayValue: 0, homeValue: 0 },
   ]);
   const [homeOffAwayDefMetrics, setHomeOffAwayDefMetrics] = useState([
