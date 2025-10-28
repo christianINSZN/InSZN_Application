@@ -4,10 +4,11 @@ import { Link } from 'react-router-dom';
 
 const TeamAReport = ({ teamName, teamId, year, gameId, gameStats }) => {
   const [showTooltip, setShowTooltip] = useState(null);
-  const [topQB, setTopQB] = useState(null);
-  const [loadingQB, setLoadingQB] = useState(true);
+  const [topPasser, setTopPasser] = useState(null);
+  const [topRusher, setTopRusher] = useState(null);
+  const [topReceiver, setTopReceiver] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Extract week & seasonType from gameStats
   const week = gameStats?.week;
   const seasonType = gameStats?.seasonType || 'regular';
 
@@ -96,51 +97,80 @@ const TeamAReport = ({ teamName, teamId, year, gameId, gameStats }) => {
   };
 
   // -----------------------------------------------------------------------
-  // Fetch Top QB — Uses SELECT * (your endpoint)
+  // Fetch Top Passer, Rusher, Receiver — Parallel
   // -----------------------------------------------------------------------
   useEffect(() => {
     if (!teamId || !week || !year) {
-      console.warn('Missing required data for QB fetch:', { teamId, week, year });
-      setLoadingQB(false);
+      console.warn('Missing required data for player fetch:', { teamId, week, year });
+      setLoading(false);
       return;
     }
 
-    const fetchTopQB = async () => {
-      const url = `${process.env.REACT_APP_API_URL}/api/team_passing_weekly/${teamId}/${year}/${week}/${seasonType}`;
-      console.log('Fetching QB from:', url);
+    const fetchTopPlayers = async () => {
+      const base = process.env.REACT_APP_API_URL;
+      const urls = {
+        passer: `${base}/api/team_passing_weekly/${teamId}/${year}/${week}/${seasonType}`,
+        rusher: `${base}/api/team_rushing_weekly/${teamId}/${year}/${week}/${seasonType}`,
+        receiver: `${base}/api/team_receiving_weekly/${teamId}/${year}/${week}/${seasonType}`,
+      };
+
+      console.log('Fetching top players from:', urls);
 
       try {
-        setLoadingQB(true);
-        const response = await fetch(url);
-        
-        console.log('QB Response Status:', response.status);
-        const text = await response.text();
-        console.log('QB Response Body (raw):', text);
+        setLoading(true);
 
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
+        const [passRes, rushRes, recRes] = await Promise.all([
+          fetch(urls.passer),
+          fetch(urls.rusher),
+          fetch(urls.receiver),
+        ]);
 
-        let data;
-        try {
-          data = JSON.parse(text);
-        } catch (e) {
-          console.error('JSON parse error:', e);
-          throw new Error('Invalid JSON');
-        }
+        // Helper to parse response
+        const parse = async (res, type) => {
+          console.log(`${type} Status:`, res.status);
+          const text = await res.text();
+          console.log(`${type} Body:`, text);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          try {
+            return JSON.parse(text);
+          } catch (e) {
+            console.error(`${type} JSON error:`, e);
+            return null;
+          }
+        };
 
-        console.log('QB Data Parsed (full row):', data);
-        setTopQB(data);
+        const passer = await parse(passRes, 'Passer');
+        const rusher = await parse(rushRes, 'Rusher');
+        const receiver = await parse(recRes, 'Receiver');
+
+        setTopPasser(passer);
+        setTopRusher(rusher);
+        setTopReceiver(receiver);
       } catch (err) {
-        console.error('QB Fetch Failed:', err.message);
-        setTopQB(null);
+        console.error('Top Players Fetch Failed:', err.message);
       } finally {
-        setLoadingQB(false);
+        setLoading(false);
       }
     };
 
-    fetchTopQB();
+    fetchTopPlayers();
   }, [teamId, year, week, seasonType]);
+
+  // -----------------------------------------------------------------------
+  // Player Link Component
+  // -----------------------------------------------------------------------
+  const PlayerLink = ({ player, position }) => {
+    if (!player?.playerId) return <span className="text-gray-500">N/A</span>;
+    const posPath = position === 'QB' ? 'qb' : position === 'RB' ? 'rb' : 'wr';
+    return (
+      <Link
+        to={`/players/${posPath}/${player.playerId}`}
+        className="font-bold text-[#235347] hover:underline"
+      >
+        {player.player || 'Unknown'}
+      </Link>
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -202,35 +232,46 @@ const TeamAReport = ({ teamName, teamId, year, gameId, gameStats }) => {
         )}
       </div>
 
-      {/* === Key Performers: Top Passer (Name + Yards + Link) === */}
+      {/* === Key Performers: Pass / Rush / Rec === */}
       <div className="border border-gray-300 rounded-lg p-0">
         <h2 className="flex items-center justify-center text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[30px] rounded">
           Key Performers
         </h2>
-        <div className="bg-white rounded-lg shadow-lg p-3">
-          {loadingQB ? (
-            <p className="text-xs text-gray-500">Loading...</p>
-          ) : topQB ? (
-            <div className="flex items-center justify-between text-xs">
-              <div>
-                <Link
-                  to={`/players/qb/${topQB.playerId}`}
-                  className="font-bold text-[#235347] hover:underline"
-                >
-                  {topQB.player || 'Unknown Player'}
-                </Link>
-              </div>
-              <div className="text-right">
-                <div className="font-medium">{topQB.yards ?? 0} Pass Yards</div>
-              </div>
-            </div>
+        <div className="bg-white rounded-lg shadow-lg p-3 space-y-2">
+          {loading ? (
+            <p className="text-xs text-gray-500">Loading players...</p>
           ) : (
-            <div>
-              <p className="text-xs text-red-500">No passing data</p>
-              <p className="text-xs text-gray-500 mt-1">
-                Check console logs
-              </p>
-            </div>
+            <>
+              {/* Top Passer */}
+              <div className="flex items-center justify-between text-xs">
+                <div>
+                  <PlayerLink player={topPasser} position="QB" />
+                </div>
+                <div className="text-right font-medium">
+                  {topPasser?.yards ?? 0} Pass Yards
+                </div>
+              </div>
+
+              {/* Top Rusher */}
+              <div className="flex items-center justify-between text-xs">
+                <div>
+                  <PlayerLink player={topRusher} position="RB" />
+                </div>
+                <div className="text-right font-medium">
+                  {topRusher?.yards ?? 0} Rush Yards
+                </div>
+              </div>
+
+              {/* Top Receiver */}
+              <div className="flex items-center justify-between text-xs">
+                <div>
+                  <PlayerLink player={topReceiver} position="WR" />
+                </div>
+                <div className="text-right font-medium">
+                  {topReceiver?.yards ?? 0} Rec Yards
+                </div>
+              </div>
+            </>
           )}
         </div>
       </div>

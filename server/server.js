@@ -376,28 +376,24 @@ app.get('/api/player_passing_weekly_all/:playerId/:year/:week/:seasonType', (req
   );
 });
 
-// Add this route in your server file
 app.get('/api/team_passing_weekly/:teamId/:year/:week/:seasonType', (req, res) => {
   const { teamId, year, week, seasonType } = req.params;
 
   db.all(`
     SELECT *
-    FROM Players_PassingGrades_Weekly pgw
-    WHERE pgw.teamId = ? 
-      AND pgw.year = ? 
-      AND pgw.week = ? 
-      AND pgw.seasonType = ?
-    ORDER BY pgw.yards DESC
-    LIMIT 10
+    FROM Players_PassingGrades_Weekly
+    WHERE teamId = ? AND year = ? AND week = ? AND seasonType = ?
+    ORDER BY yards DESC
   `, [teamId, year, week, seasonType], (err, rows) => {
     if (err) {
-      console.error('DB error:', err);
-      return res.status(500).send(err.message);
+      console.error('DB Error (Passing):', err);
+      return res.status(500).json({ error: 'Database error' });
     }
     if (!rows.length) {
-      return res.status(404).json({ message: 'No passing data for this team/week' });
+      return res.status(404).json({ message: 'No passing data' });
     }
-    res.json(rows[0]); // Return top QB
+    console.log(`Passing: ${rows.length} QBs found`);
+    res.json(rows); // ALL players
   });
 });
 
@@ -518,6 +514,27 @@ app.get('/api/player_percentiles_RB/:playerId/:year', (req, res) => {
       }
     }
   );
+});
+
+app.get('/api/team_rushing_weekly/:teamId/:year/:week/:seasonType', (req, res) => {
+  const { teamId, year, week, seasonType } = req.params;
+
+  db.all(`
+    SELECT *
+    FROM Players_RushingGrades_Weekly
+    WHERE teamId = ? AND year = ? AND week = ? AND seasonType = ?
+    ORDER BY yards DESC
+  `, [teamId, year, week, seasonType], (err, rows) => {
+    if (err) {
+      console.error('DB Error (Rushing):', err);
+      return res.status(500).json({ error: 'Database error' });
+    }
+    if (!rows.length) {
+      return res.status(404).json({ message: 'No rushing data' });
+    }
+    console.log(`Rushing: ${rows.length} RBs found`);
+    res.json(rows); // ALL players
+  });
 });
 
 app.get('/api/player_rushing_weekly_all/:playerId/:year/:week/:seasonType', (req, res) => {
@@ -706,6 +723,27 @@ app.get('/api/all_player_percentiles_WR/:year', (req, res) => {
       }
     }
   );
+});
+
+app.get('/api/team_receiving_weekly/:teamId/:year/:week/:seasonType', (req, res) => {
+  const { teamId, year, week, seasonType } = req.params;
+
+  db.all(`
+    SELECT *
+    FROM Players_ReceivingGrades_Weekly
+    WHERE teamId = ? AND year = ? AND week = ? AND seasonType = ?
+    ORDER BY yards DESC
+  `, [teamId, year, week, seasonType], (err, rows) => {
+    if (err) {
+      console.error('DB Error (Receiving):', err);
+      return res.status(500).json({ error: 'Database error' });
+    }
+    if (!rows.length) {
+      return res.status(404).json({ message: 'No receiving data' });
+    }
+    console.log(`Receiving: ${rows.length} receivers found`);
+    res.json(rows); // ALL players
+  });
 });
 
 /* TE Specific */
