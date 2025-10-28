@@ -1,7 +1,25 @@
-import React, { useState } from 'react';
+// src/components/games/singleGameRecapComponents/TeamAReport.js
+import React, { useState, useEffect } from 'react';
 
 const TeamAReport = ({ teamName, teamId, year, gameId, gameStats }) => {
   const [showTooltip, setShowTooltip] = useState(null);
+  const [topQB, setTopQB] = useState(null);
+  const [loadingQB, setLoadingQB] = useState(true);
+
+  // Extract week & seasonType from gameStats
+  const week = gameStats?.week;
+  const seasonType = gameStats?.seasonType || 'regular';
+
+  // -----------------------------------------------------------------------
+  // DEBUG: Log all values
+  // -----------------------------------------------------------------------
+  console.log('--- TeamAReport Debug ---');
+  console.log('teamId:', teamId);
+  console.log('year:', year);
+  console.log('week:', week);
+  console.log('seasonType:', seasonType);
+  console.log('gameStats:', gameStats);
+  console.log('--- End Debug ---');
 
   const formatFieldPosition = (value) => {
     if (value === undefined) return 'N/A';
@@ -65,7 +83,7 @@ const TeamAReport = ({ teamName, teamId, year, gameId, gameStats }) => {
   ];
 
   const getMetricValue = (key) => {
-    const value = gameStats[key];
+    const value = gameStats?.[key];
     if (value === undefined || value === null) return 'N/A';
     if (key === 'scoring_opportunities_points_per_opportunity' || key === 'field_position_average_predicted_points') {
       return parseFloat(value).toFixed(2);
@@ -76,14 +94,63 @@ const TeamAReport = ({ teamName, teamId, year, gameId, gameStats }) => {
     return value;
   };
 
+  // -----------------------------------------------------------------------
+  // Fetch Top QB — WITH FULL DEBUG LOGS
+  // -----------------------------------------------------------------------
+  useEffect(() => {
+    if (!teamId || !week || !year) {
+      console.warn('Missing required data for QB fetch:', { teamId, week, year });
+      setLoadingQB(false);
+      return;
+    }
+
+    const fetchTopQB = async () => {
+      const url = `${process.env.REACT_APP_API_URL}/api/team_passing_weekly/${teamId}/${year}/${week}/${seasonType}`;
+      console.log('Fetching QB from:', url);
+
+      try {
+        setLoadingQB(true);
+        const response = await fetch(url);
+        
+        console.log('QB Response Status:', response.status);
+        const text = await response.text();
+        console.log('QB Response Body (raw):', text);
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          console.error('JSON parse error:', e);
+          throw new Error('Invalid JSON');
+        }
+
+        console.log('QB Data Parsed:', data);
+        setTopQB(data);
+      } catch (err) {
+        console.error('QB Fetch Failed:', err.message);
+        setTopQB(null);
+      } finally {
+        setLoadingQB(false);
+      }
+    };
+
+    fetchTopQB();
+  }, [teamId, year, week, seasonType]);
+
   return (
     <div className="space-y-4">
+      {/* === Headline Stats === */}
       <div className="border border-gray-300 rounded-lg p-0">
         <h2 className="flex items-center justify-center text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[30px] rounded">
           {teamName || 'Away Team'} Headline Stats
         </h2>
-        {!gameStats && <div className="text-gray-500">Loading...</div>}
-        {gameStats && (
+        {!gameStats ? (
+          <div className="text-gray-500 p-4">Loading...</div>
+        ) : (
           <div className="bg-white rounded-lg shadow-lg">
             <table className="w-full text-sm text-left text-black">
               <tbody>
@@ -100,12 +167,15 @@ const TeamAReport = ({ teamName, teamId, year, gameId, gameStats }) => {
           </div>
         )}
       </div>
+
+      {/* === Advanced Metrics === */}
       <div className="border border-gray-300 rounded-lg p-0">
         <h2 className="flex items-center justify-center text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[30px] rounded">
           {teamName || 'Away Team'} Advanced Game Metrics
         </h2>
-        {!gameStats && <div className="text-gray-500">Loading...</div>}
-        {gameStats && (
+        {!gameStats ? (
+          <div className="text-gray-500 p-4">Loading...</div>
+        ) : (
           <div className="bg-white rounded-lg shadow-lg">
             <table className="w-full text-sm text-left text-black">
               <tbody>
@@ -130,6 +200,37 @@ const TeamAReport = ({ teamName, teamId, year, gameId, gameStats }) => {
           </div>
         )}
       </div>
+
+      {/* === Key Performers: Top QB === */}
+      <div className="border border-gray-300 rounded-lg p-0">
+        <h2 className="flex items-center justify-center text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[30px] rounded">
+          Key Performers
+        </h2>
+        <div className="bg-white rounded-lg shadow-lg p-3">
+          {loadingQB ? (
+            <p className="text-xs text-gray-500">Loading QB...</p>
+          ) : topQB ? (
+            <div className="flex items-center justify-between text-xs">
+              <div>
+                <span className="font-bold">{topQB.playerName}</span> (QB)
+              </div>
+              <div className="text-right">
+                <div>{topQB.yards} yds</div>
+                <div>{topQB.touchdowns} TD • {topQB.interceptions} INT</div>
+                <div className="text-[#235347] font-medium">Grade: {topQB.grades_pass?.toFixed(1) || 'N/A'}</div>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <p className="text-xs text-red-500">No passing data</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Check console logs for teamId, week, seasonType
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Tooltip Popup */}
       {showTooltip && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4" onClick={() => setShowTooltip(null)}>

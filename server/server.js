@@ -381,20 +381,14 @@ app.get('/api/team_passing_weekly/:teamId/:year/:week/:seasonType', (req, res) =
   const { teamId, year, week, seasonType } = req.params;
 
   db.all(`
-    SELECT 
-      pgw.playerId,
-      pgw.playerName,
-      pgw.yards,
-      pgw.touchdowns,
-      pgw.interceptions,
-      pgw.grades_pass
+    SELECT *
     FROM Players_PassingGrades_Weekly pgw
     WHERE pgw.teamId = ? 
       AND pgw.year = ? 
       AND pgw.week = ? 
       AND pgw.seasonType = ?
     ORDER BY pgw.yards DESC
-    LIMIT 1
+    LIMIT 10
   `, [teamId, year, week, seasonType], (err, rows) => {
     if (err) {
       console.error('DB error:', err);
