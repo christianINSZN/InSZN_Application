@@ -1,5 +1,7 @@
 // src/components/games/singleGameRecapComponents/PredictedPointsAdded.js
 import React, { useState } from 'react';
+import { useClerk } from '@clerk/clerk-react';
+import { Link } from 'react-router-dom';
 
 const PredictedPointsAdded = ({
   awayStats,
@@ -7,11 +9,15 @@ const PredictedPointsAdded = ({
   awayTeamName = 'Away Team',
   homeTeamName = 'Home Team',
 }) => {
+  const { user } = useClerk();
+  const subscriptionPlan = user?.publicMetadata?.subscriptionPlan;
+  const isSubscribed = subscriptionPlan === 'pro' || subscriptionPlan === 'premium';
+
   const [showPPATooltip, setShowPPATooltip] = useState(false);
 
-  // -------------------------------------------------------------------------
-  // 1. Group data
-  // -------------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // 1. Group data (same as before)
+  // -----------------------------------------------------------------------
   const {
     ppaRows,
     successRowsAway,
@@ -127,9 +133,9 @@ const PredictedPointsAdded = ({
   const hasSuccessHome = Object.values(successRowsHome).some((arr) => arr.length > 0);
   const hasExplosivenessHome = explosivenessRowsHome.length > 0;
 
-  // -------------------------------------------------------------------------
-  // 2. Heatmap (only for PPA)
-  // -------------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Heatmap (only for PPA)
+  // -----------------------------------------------------------------------
   const getHeatmapClass = (value) => {
     if (value === 'N/A') return 'text-gray-400';
     const num = parseFloat(value);
@@ -137,9 +143,9 @@ const PredictedPointsAdded = ({
     return num > 0 ? 'text-green-600 font-medium' : 'text-red-600 font-medium';
   };
 
-  // -------------------------------------------------------------------------
-  // 3. Metric Container — now receives teamName
-  // -------------------------------------------------------------------------
+  // -----------------------------------------------------------------------
+  // Metric Container
+  // -----------------------------------------------------------------------
   const MetricContainer = ({ successRows, explosivenessRows, teamName }) => {
     const [showSuccessTooltip, setShowSuccessTooltip] = useState(false);
     const [showExplosivenessTooltip, setShowExplosivenessTooltip] = useState(false);
@@ -153,7 +159,7 @@ const PredictedPointsAdded = ({
         {hasSuccess && (
           <div className="border border-gray-300 rounded-lg p-0">
             <div className="relative flex items-center justify-center bg-[#235347] text-white font-bold h-[30px] rounded-t border-b border-[#235347]">
-              <h2 className="text-md"> {teamName} Success Rate</h2>
+              <h2 className="text-md">{teamName} Success Rate</h2>
               <button
                 onClick={() => setShowSuccessTooltip(!showSuccessTooltip)}
                 className="ml-2 w-4 h-4 bg-white text-[#235347] text-xs rounded-full flex items-center justify-center hover:bg-gray-200"
@@ -374,123 +380,149 @@ const PredictedPointsAdded = ({
     );
   };
 
+  // -----------------------------------------------------------------------
+  // MAIN RENDER: Premium Lock
+  // -----------------------------------------------------------------------
   return (
-    <div className="flex flex-col lg:flex-row gap-4">
-      {/* LEFT: Away */}
-      <div className="w-full lg:w-1/4">
-        <MetricContainer
-          successRows={successRowsAway}
-          explosivenessRows={explosivenessRowsAway}
-          teamName={awayTeamName}
-        />
-      </div>
-
-      {/* CENTER: Predicted Points Added */}
-      <div className="w-full lg:w-1/2">
-        <div className="border border-gray-300 rounded-lg p-0">
-          <div className="relative flex items-center justify-center bg-[#235347] text-white font-bold h-[30px] rounded-t border-b border-[#235347]">
-            <h2 className="text-md">Predicted Points Added</h2>
-            <button
-              onClick={() => setShowPPATooltip(!showPPATooltip)}
-              className="ml-2 w-4 h-4 bg-white text-[#235347] text-xs rounded-full flex items-center justify-center hover:bg-gray-200"
-              title="What is PPA?"
-            >
-              ?
-            </button>
+    <div className="relative">
+      {/* Render full content */}
+      <div className={isSubscribed ? '' : 'filter blur-xs opacity-80'}>
+        <div className="flex flex-col lg:flex-row gap-4">
+          {/* LEFT: Away */}
+          <div className="w-full lg:w-1/4">
+            <MetricContainer
+              successRows={successRowsAway}
+              explosivenessRows={explosivenessRowsAway}
+              teamName={awayTeamName}
+            />
           </div>
 
-          {showPPATooltip && (
-            <div
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
-              onClick={() => setShowPPATooltip(false)}
-            >
-              <div
-                className="bg-white rounded-lg p-6 max-w-md shadow-2xl"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-lg font-bold text-[#235347]">Predicted Points Added (PPA)</h3>
-                  <button
-                    onClick={() => setShowPPATooltip(false)}
-                    className="text-gray-500 hover:text-black text-xl font-bold"
-                  >
-                    ×
-                  </button>
-                </div>
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  A measure of how much each play changes a team’s expected points, based on down, distance, and field position. 
-                  <strong> Positive values</strong> indicate plays that improve scoring chances, while 
-                  <strong> negative values</strong> indicate plays that hurt scoring chances.
-                </p>
-                <p className="text-sm text-gray-700 mt-3 italic">
-                  <strong>Note:</strong> A negative PPA does not mean points were lost on the scoreboard — it simply means the play decreased the team’s likelihood of scoring on that drive.
-                </p>
+          {/* CENTER: Predicted Points Added */}
+          <div className="w-full lg:w-1/2">
+            <div className="border border-gray-300 rounded-lg p-0">
+              <div className="relative flex items-center justify-center bg-[#235347] text-white font-bold h-[30px] rounded-t border-b border-[#235347]">
+                <h2 className="text-md">Predicted Points Added</h2>
+                <button
+                  onClick={() => setShowPPATooltip(!showPPATooltip)}
+                  className="ml-2 w-4 h-4 bg-white text-[#235347] text-xs rounded-full flex items-center justify-center hover:bg-gray-200"
+                  title="What is PPA?"
+                >
+                  ?
+                </button>
               </div>
-            </div>
-          )}
 
-          <div className="bg-white rounded-lg shadow-lg">
-            {/* Mobile */}
-            <div className="block lg:hidden">
-              {hasPPA &&
-                Object.entries(ppaRows).map(([section, rows]) => rows.length > 0 && (
-                  <React.Fragment key={section}>
-                    <div className="bg-gray-300 text-black font-bold text-xs text-center px-4 py-1">
-                      {section.charAt(0).toUpperCase() + section.slice(1)}
+              {showPPATooltip && (
+                <div
+                  className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
+                  onClick={() => setShowPPATooltip(false)}
+                >
+                  <div
+                    className="bg-white rounded-lg p-6 max-w-md shadow-2xl"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="flex justify-between items-center mb-3">
+                      <h3 className="text-lg font-bold text-[#235347]">Predicted Points Added (PPA)</h3>
+                      <button
+                        onClick={() => setShowPPATooltip(false)}
+                        className="text-gray-500 hover:text-black text-xl font-bold"
+                      >
+                        ×
+                      </button>
                     </div>
-                    {rows.map(({ label, away, home, isQ4 }) => (
-                      <div key={label} className={`border-b ${isQ4 ? 'border-b-2 border-[#235347]' : ''}`}>
-                        <div className="flex justify-between px-4 py-2">
-                          <span className="font-bold text-xs">{label}</span>
-                          <span className={`text-xs ${getHeatmapClass(away)}`}>{away}</span>
-                        </div>
-                        <div className="flex justify-between px-4 py-2 bg-gray-50">
-                          <span className="font-bold text-xs">{label}</span>
-                          <span className={`text-xs ${getHeatmapClass(home)}`}>{home}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </React.Fragment>
-                ))}
-            </div>
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                      A measure of how much each play changes a team’s expected points, based on down, distance, and field position.
+                      <strong> Positive values</strong> indicate plays that improve scoring chances, while
+                      <strong> negative values</strong> indicate plays that hurt scoring chances.
+                    </p>
+                    <p className="text-sm text-gray-700 mt-3 italic">
+                      <strong>Note:</strong> A negative PPA does not mean points were lost on the scoreboard — it simply means the play decreased the team’s likelihood of scoring on that drive.
+                    </p>
+                  </div>
+                </div>
+              )}
 
-            {/* Desktop */}
-            <div className="hidden lg:block">
-              <table className="w-full text-sm text-left text-black">
-                <tbody>
+              <div className="bg-white rounded-lg shadow-lg">
+                {/* Mobile */}
+                <div className="block lg:hidden">
                   {hasPPA &&
                     Object.entries(ppaRows).map(([section, rows]) => rows.length > 0 && (
                       <React.Fragment key={section}>
-                        <tr className="bg-gray-300 text-black">
-                          <td colSpan={4} className="py-1 px-4 font-bold text-center text-xs">
-                            {section.charAt(0).toUpperCase() + section.slice(1)}
-                          </td>
-                        </tr>
+                        <div className="bg-gray-300 text-black font-bold text-xs text-center px-4 py-1">
+                          {section.charAt(0).toUpperCase() + section.slice(1)}
+                        </div>
                         {rows.map(({ label, away, home, isQ4 }) => (
-                          <tr key={label} className={`border-b ${isQ4 ? 'border-b-2 border-[#235347]' : ''}`}>
-                            <td className="py-2 px-4 font-bold w-[35%]">{label}</td>
-                            <td className={`py-2 px-4 text-center w-[15%] ${getHeatmapClass(away)}`}>{away}</td>
-                            <td className={`py-2 px-4 text-center w-[15%] ${getHeatmapClass(home)}`}>{home}</td>
-                            <td className="py-2 px-4 font-bold text-right w-[35%]">{label}</td>
-                          </tr>
+                          <div key={label} className={`border-b ${isQ4 ? 'border-b-2 border-[#235347]' : ''}`}>
+                            <div className="flex justify-between px-4 py-2">
+                              <span className="font-bold text-xs">{label}</span>
+                              <span className={`text-xs ${getHeatmapClass(away)}`}>{away}</span>
+                            </div>
+                            <div className="flex justify-between px-4 py-2 bg-gray-50">
+                              <span className="font-bold text-xs">{label}</span>
+                              <span className={`text-xs ${getHeatmapClass(home)}`}>{home}</span>
+                            </div>
+                          </div>
                         ))}
                       </React.Fragment>
                     ))}
-                </tbody>
-              </table>
+                </div>
+
+                {/* Desktop */}
+                <div className="hidden lg:block">
+                  <table className="w-full text-sm text-left text-black">
+                    <tbody>
+                      {hasPPA &&
+                        Object.entries(ppaRows).map(([section, rows]) => rows.length > 0 && (
+                          <React.Fragment key={section}>
+                            <tr className="bg-gray-300 text-black">
+                              <td colSpan={4} className="py-1 px-4 font-bold text-center text-xs">
+                                {section.charAt(0).toUpperCase() + section.slice(1)}
+                              </td>
+                            </tr>
+                            {rows.map(({ label, away, home, isQ4 }) => (
+                              <tr key={label} className={`border-b ${isQ4 ? 'border-b-2 border-[#235347]' : ''}`}>
+                                <td className="py-2 px-4 font-bold w-[35%]">{label}</td>
+                                <td className={`py-2 px-4 text-center w-[15%] ${getHeatmapClass(away)}`}>{away}</td>
+                                <td className={`py-2 px-4 text-center w-[15%] ${getHeatmapClass(home)}`}>{home}</td>
+                                <td className="py-2 px-4 font-bold text-right w-[35%]">{label}</td>
+                              </tr>
+                            ))}
+                          </React.Fragment>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
+          </div>
+
+          {/* RIGHT: Home */}
+          <div className="w-full lg:w-1/4">
+            <MetricContainer
+              successRows={successRowsHome}
+              explosivenessRows={explosivenessRowsHome}
+              teamName={homeTeamName}
+            />
           </div>
         </div>
       </div>
 
-      {/* RIGHT: Home */}
-      <div className="w-full lg:w-1/4">
-        <MetricContainer
-          successRows={successRowsHome}
-          explosivenessRows={explosivenessRowsHome}
-          teamName={homeTeamName}
-        />
-      </div>
+      {/* PREMIUM LOCK OVERLAY */}
+      {!isSubscribed && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 backdrop-filter backdrop-blur-md rounded-lg">
+          <div className="p-4 sm:p-6 bg-white rounded-lg shadow-lg text-center">
+            <p className="text-gray-700 text-base sm:text-lg font-semibold mb-2">Exclusive Content</p>
+            <p className="text-gray-500 text-sm sm:text-base mb-4">
+              This content is exclusive to INSZN Insider subscribers.
+            </p>
+            <Link
+              to="/subscribe"
+              className="px-3 sm:px-4 py-1 sm:py-2 bg-[#235347] text-white text-sm sm:text-base rounded hover:bg-[#1b3e32]"
+            >
+              Subscribe Now
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
