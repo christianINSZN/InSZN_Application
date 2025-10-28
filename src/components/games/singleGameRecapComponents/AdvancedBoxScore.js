@@ -6,9 +6,11 @@ const AdvancedBoxScore = ({ gameId, awayStats, homeStats, awayTeamName, homeTeam
   const [awayPassers, setAwayPassers] = useState([]);
   const [awayRushers, setAwayRushers] = useState([]);
   const [awayReceivers, setAwayReceivers] = useState([]);
+  const [awayBlockers, setAwayBlockers] = useState([]);
   const [homePassers, setHomePassers] = useState([]);
   const [homeRushers, setHomeRushers] = useState([]);
   const [homeReceivers, setHomeReceivers] = useState([]);
+  const [homeBlockers, setHomeBlockers] = useState([]);
   const [playerInfo, setPlayerInfo] = useState({});
   const [loading, setLoading] = useState(true);
 
@@ -26,17 +28,18 @@ const AdvancedBoxScore = ({ gameId, awayStats, homeStats, awayTeamName, homeTeam
       return;
     }
 
-    const fetchTeamPlayers = async (teamId, teamName, setPass, setRush, setRec) => {
+    const fetchTeamPlayers = async (teamId, teamName, setPass, setRush, setRec, setBlock) => {
       const base = process.env.REACT_APP_API_URL;
       const urls = {
         pass: `${base}/api/team_passing_weekly/${teamId}/${year}/${week}/${seasonType}`,
         rush: `${base}/api/team_rushing_weekly/${teamId}/${year}/${week}/${seasonType}`,
         rec: `${base}/api/team_receiving_weekly/${teamId}/${year}/${week}/${seasonType}`,
+        block: `${base}/api/team_blocking_weekly/${teamId}/${year}/${week}/${seasonType}`,
       };
 
       try {
-        const [pRes, rRes, recRes] = await Promise.all([
-          fetch(urls.pass), fetch(urls.rush), fetch(urls.rec)
+        const [pRes, rRes, recRes, bRes] = await Promise.all([
+          fetch(urls.pass), fetch(urls.rush), fetch(urls.rec), fetch(urls.block)
         ]);
 
         const parse = async (res) => {
@@ -48,12 +51,14 @@ const AdvancedBoxScore = ({ gameId, awayStats, homeStats, awayTeamName, homeTeam
         const p = await parse(pRes);
         const r = await parse(rRes);
         const rec = await parse(recRes);
+        const b = await parse(bRes);
 
         setPass(p.slice(0, 5));
         setRush(r.slice(0, 5));
         setRec(rec.slice(0, 5));
+        setBlock(b.slice(0, 5));
 
-        return [...p, ...r, ...rec];
+        return [...p, ...r, ...rec, ...b];
       } catch (err) {
         return [];
       }
@@ -62,8 +67,8 @@ const AdvancedBoxScore = ({ gameId, awayStats, homeStats, awayTeamName, homeTeam
     const fetchAll = async () => {
       setLoading(true);
       const [awayPlayers, homePlayers] = await Promise.all([
-        fetchTeamPlayers(awayTeamId, awayTeamName, setAwayPassers, setAwayRushers, setAwayReceivers),
-        fetchTeamPlayers(homeTeamId, homeTeamName, setHomePassers, setHomeRushers, setHomeReceivers),
+        fetchTeamPlayers(awayTeamId, awayTeamName, setAwayPassers, setAwayRushers, setAwayReceivers, setAwayBlockers),
+        fetchTeamPlayers(homeTeamId, homeTeamName, setHomePassers, setHomeRushers, setHomeReceivers, setHomeBlockers),
       ]);
 
       const playerIds = new Set();
@@ -287,6 +292,59 @@ const AdvancedBoxScore = ({ gameId, awayStats, homeStats, awayTeamName, homeTeam
     </div>
   );
 
+  // -----------------------------------------------------------------------
+  // Blocking Table
+  // -----------------------------------------------------------------------
+  const BlockingTable = ({ teamName, blockers }) => (
+    <div>
+      <h3 className="text-lg font-bold text-[#235347] mb-2">{teamName} Blocking</h3>
+      <div className="bg-gray-50 rounded border overflow-hidden">
+        <table className="w-full text-xs">
+          <thead className="bg-gray-200 text-gray-700">
+            <tr>
+              <th className="py-1 px-2 text-left font-medium">Player</th>
+              <th className="py-1 px-2 text-center">POS</th>
+              <th className="py-1 px-2 text-center">SNAPS</th>
+              <th className="py-1 px-2 text-center">PB%</th>
+              <th className="py-1 px-2 text-center">SACKS</th>
+              <th className="py-1 px-2 text-center">HITS</th>
+              <th className="py-1 px-2 text-center">HURRY</th>
+              <th className="py-1 px-2 text-center">PRESS</th>
+              <th className="py-1 px-2 text-center">PEN</th>
+            </tr>
+          </thead>
+          <tbody>
+            {blockers.length > 0 ? (
+              blockers.map((p, i) => (
+                <tr key={p.playerId || i} className="border-t border-gray-200">
+                  <td className="py-1 px-2">
+                    <PlayerLink player={p} />
+                  </td>
+                  <td className="py-1 px-2 text-center text-gray-600">
+                    {playerInfo[p.playerId]?.position || '—'}
+                  </td>
+                  <td className="py-1 px-2 text-center">{p.snap_counts_offense ?? 0}</td>
+                  <td className="py-1 px-2 text-center">
+                    {p.pass_block_percent ? p.pass_block_percent.toFixed(1) : '—'}
+                  </td>
+                  <td className="py-1 px-2 text-center">{p.sacks_allowed ?? 0}</td>
+                  <td className="py-1 px-2 text-center">{p.hits_allowed ?? 0}</td>
+                  <td className="py-1 px-2 text-center">{p.hurries_allowed ?? 0}</td>
+                  <td className="py-1 px-2 text-center">{p.pressures_allowed ?? 0}</td>
+                  <td className="py-1 px-2 text-center">{p.penalties ?? 0}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={9} className="py-2 text-center text-gray-500">No blocking data</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+
   return (
     <div className="p-2 sm:p-4 bg-white rounded-lg shadow-lg space-y-8">
       <h2 className="text-xl font-bold text-[#235347] text-center mb-6">Advanced Box Score</h2>
@@ -311,6 +369,12 @@ const AdvancedBoxScore = ({ gameId, awayStats, homeStats, awayTeamName, homeTeam
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <ReceivingTable teamName={awayTeamName} receivers={awayReceivers} />
             <ReceivingTable teamName={homeTeamName} receivers={homeReceivers} />
+          </div>
+
+          {/* === BLOCKING === */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <BlockingTable teamName={awayTeamName} blockers={awayBlockers} />
+            <BlockingTable teamName={homeTeamName} blockers={homeBlockers} />
           </div>
         </>
       )}

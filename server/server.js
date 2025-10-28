@@ -1067,6 +1067,25 @@ app.get('/api/player_blocking_weekly_all/:playerId/:year/:week/:seasonType', (re
   );
 });
 
+app.get('/api/team_blocking_weekly/:teamId/:year/:week/:seasonType', (req, res) => {
+  const { teamId, year, week, seasonType } = req.params;
+
+  db.all(`
+    SELECT *
+    FROM Players_BlockingGrades_Weekly
+    WHERE teamId = ? AND year = ? AND week = ? AND seasonType = ?
+  `, [teamId, year, week, seasonType], (err, rows) => {
+    if (err) {
+      console.error('DB Error (Rushing):', err);
+      return res.status(500).json({ error: 'Database error' });
+    }
+    if (!rows.length) {
+      return res.status(404).json({ message: 'No blocking data' });
+    }
+    res.json(rows); // ALL players
+  });
+});
+
 /* Defense */
 /* Defensive Line Specific */
 app.get('/api/player_percentiles_DL/:playerId/:year', (req, res) => {
