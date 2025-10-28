@@ -11,7 +11,7 @@ const PredictedPointsAdded = ({
 }) => {
   const { user } = useClerk();
   const subscriptionPlan = user?.publicMetadata?.subscriptionPlan;
-  const isSubscribed = subscriptionPlan === 'pro' || subscriptionPlan === 'premium';
+  const isSubscribed = subscriptionPlan === 'pro' || subscriptionPlan === 'premium' || !subscriptionPlan;
 
   const [showPPATooltip, setShowPPATooltip] = useState(false);
 

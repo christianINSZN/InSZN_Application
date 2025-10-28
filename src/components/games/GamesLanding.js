@@ -10,7 +10,6 @@ const conferences = [
   'Pac-12', 'SEC', 'Sun Belt'
 ];
 const filterTabs = ['All', ...conferences];
-
 const weeks = Array.from({ length: 15 }, (_, i) => i + 1);
 
 function GamesComponent({ year = '2025' }) {
@@ -201,7 +200,7 @@ function GamesComponent({ year = '2025' }) {
         </div>
       </div>
 
-      {/* CONFERENCE TABS — FIXED FOR MOBILE */}
+      {/* CONFERENCE TABS */}
       <div className="border-b border-gray-300 mb-4 sm:mb-6">
         <div className="overflow-x-auto whitespace-nowrap py-2">
           <ul className="flex gap-2 sm:gap-4 px-4 min-w-max">
@@ -228,18 +227,23 @@ function GamesComponent({ year = '2025' }) {
           const awayWins = game.awayPoints !== null && game.homePoints !== null && game.awayPoints > game.homePoints;
           const isFBSMatchup = conferences.includes(game.homeConference) && conferences.includes(game.awayConference);
 
-          const handleGameContainerClick = (e) => {
-            if (e.target.tagName !== 'A' && !e.target.closest('a')) {
-              const route = game.completed === 0 ? `/games/preview/${game.id}` : `/games/recap/${game.id}`;
-              navigate(route);
+          // Only completed games are clickable
+          const isClickable = game.completed === 1;
+
+          const handleContainerClick = (e) => {
+            if (e.target.tagName === 'A' || e.target.closest('a')) return;
+            if (isClickable) {
+              navigate(`/games/recap/${game.id}`);
             }
           };
 
           return (
             <div
               key={game.id || index}
-              className="p-2 sm:p-4 shadow-xl rounded-lg bg-white border border-gray-200 h-24 flex flex-col justify-between cursor-pointer hover:bg-gray-50 transition-colors"
-              onClick={handleGameContainerClick}
+              className={`p-2 sm:p-4 shadow-xl rounded-lg bg-white border border-gray-200 h-24 flex flex-col justify-between ${
+                isClickable ? 'cursor-pointer hover:bg-gray-50 transition-colors' : ''
+              }`}
+              onClick={handleContainerClick}
             >
               <div className="flex justify-between items-center min-h-[1.5rem]">
                 <div className="text-xs sm:text-sm text-gray-600">

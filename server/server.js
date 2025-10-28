@@ -376,6 +376,37 @@ app.get('/api/player_passing_weekly_all/:playerId/:year/:week/:seasonType', (req
   );
 });
 
+// Add this route in your server file
+app.get('/api/team_passing_weekly/:teamId/:year/:week/:seasonType', (req, res) => {
+  const { teamId, year, week, seasonType } = req.params;
+
+  db.all(`
+    SELECT 
+      pgw.playerId,
+      pgw.playerName,
+      pgw.yards,
+      pgw.touchdowns,
+      pgw.interceptions,
+      pgw.grades_pass
+    FROM Players_PassingGrades_Weekly pgw
+    WHERE pgw.teamId = ? 
+      AND pgw.year = ? 
+      AND pgw.week = ? 
+      AND pgw.seasonType = ?
+    ORDER BY pgw.yards DESC
+    LIMIT 1
+  `, [teamId, year, week, seasonType], (err, rows) => {
+    if (err) {
+      console.error('DB error:', err);
+      return res.status(500).send(err.message);
+    }
+    if (!rows.length) {
+      return res.status(404).json({ message: 'No passing data for this team/week' });
+    }
+    res.json(rows[0]); // Return top QB
+  });
+});
+
 app.get('/api/player_percentiles_QB/:playerId/:year', (req, res) => {
   const { playerId, year } = req.params;
   db.get(
