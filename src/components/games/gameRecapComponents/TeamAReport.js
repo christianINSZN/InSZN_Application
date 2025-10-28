@@ -4,23 +4,21 @@ import { Link } from 'react-router-dom';
 
 const TeamAReport = ({ teamName, teamId, year, gameId, gameStats }) => {
   const [showTooltip, setShowTooltip] = useState(null);
-  const [topPasser, setTopPasser] = useState(null);
-  const [topRusher, setTopRusher] = useState(null);
-  const [topReceiver, setTopReceiver] = useState(null);
+  const [passers, setPassers] = useState([]);
+  const [rushers, setRushers] = useState([]);
+  const [receivers, setReceivers] = useState([]);
+  const [playerInfo, setPlayerInfo] = useState({});
   const [loading, setLoading] = useState(true);
 
   const week = gameStats?.week;
   const seasonType = gameStats?.seasonType || 'regular';
 
   // -----------------------------------------------------------------------
-  // DEBUG: Log all values
+  // DEBUG LOGS
   // -----------------------------------------------------------------------
   console.log('--- TeamAReport Debug ---');
-  console.log('teamId:', teamId);
-  console.log('year:', year);
-  console.log('week:', week);
-  console.log('seasonType:', seasonType);
-  console.log('gameStats:', gameStats);
+  console.log('teamId:', teamId, 'year:', year, 'week:', week, 'seasonType:', seasonType);
+  console.log('gameStats keys:', Object.keys(gameStats || {}));
   console.log('--- End Debug ---');
 
   const formatFieldPosition = (value) => {
@@ -85,89 +83,160 @@ const TeamAReport = ({ teamName, teamId, year, gameId, gameStats }) => {
   ];
 
   const getMetricValue = (key) => {
-    const value = gameStats?.[key];
-    if (value === undefined || value === null) return 'N/A';
-    if (key === 'scoring_opportunities_points_per_opportunity' || key === 'field_position_average_predicted_points') {
-      return parseFloat(value).toFixed(2);
+    const possibleKeys = [
+      key,
+      key.replace(/_/g, ''),
+      key.replace(/opportunities/g, 'opp'),
+      key.replace(/points_per_opportunity/g, 'pp_opp'),
+      key.replace(/average/g, 'avg'),
+      key.replace(/predicted/g, 'pred')
+    ];
+
+    for (const k of possibleKeys) {
+      const value = gameStats?.[k];
+      if (value !== undefined && value !== null) {
+        if (k.includes('points_per_opportunity') || k.includes('predicted_points')) {
+          return parseFloat(value).toFixed(2);
+        }
+        if (k.includes('average_start')) {
+          return formatFieldPosition(value);
+        }
+        return value;
+      }
     }
-    if (key === 'field_position_average_start') {
-      return formatFieldPosition(value);
-    }
-    return value;
+    return 'N/A';
   };
 
   // -----------------------------------------------------------------------
-  // Fetch Top Passer, Rusher, Receiver — Parallel
+  // 1. Fetch ALL Players
   // -----------------------------------------------------------------------
   useEffect(() => {
     if (!teamId || !week || !year) {
-      console.warn('Missing required data for player fetch:', { teamId, week, year });
+      console.warn('Missing data');
       setLoading(false);
       return;
     }
 
-    const fetchTopPlayers = async () => {
+    const fetchAll = async () => {
       const base = process.env.REACT_APP_API_URL;
       const urls = {
-        passer: `${base}/api/team_passing_weekly/${teamId}/${year}/${week}/${seasonType}`,
-        rusher: `${base}/api/team_rushing_weekly/${teamId}/${year}/${week}/${seasonType}`,
-        receiver: `${base}/api/team_receiving_weekly/${teamId}/${year}/${week}/${seasonType}`,
+        pass: `${base}/api/team_passing_weekly/${teamId}/${year}/${week}/${seasonType}`,
+        rush: `${base}/api/team_rushing_weekly/${teamId}/${year}/${week}/${seasonType}`,
+        rec: `${base}/api/team_receiving_weekly/${teamId}/${year}/${week}/${seasonType}`,
       };
 
-      console.log('Fetching top players from:', urls);
+      console.log('Fetching players from:', urls);
 
       try {
         setLoading(true);
-
-        const [passRes, rushRes, recRes] = await Promise.all([
-          fetch(urls.passer),
-          fetch(urls.rusher),
-          fetch(urls.receiver),
+        const [pRes, rRes, recRes] = await Promise.all([
+          fetch(urls.pass), fetch(urls.rush), fetch(urls.rec)
         ]);
 
-        // Helper to parse response
         const parse = async (res, type) => {
-          console.log(`${type} Status:`, res.status);
           const text = await res.text();
-          console.log(`${type} Body:`, text);
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          console.log(`${type} Status:`, res.status, 'Body:', text);
+          if (!res.ok) return [];
           try {
-            return JSON.parse(text);
+            const data = JSON.parse(text);
+            console.log(`${type} Count:`, data.length);
+            return data;
           } catch (e) {
             console.error(`${type} JSON error:`, e);
-            return null;
+            return [];
           }
         };
 
-        const passer = await parse(passRes, 'Passer');
-        const rusher = await parse(rushRes, 'Rusher');
-        const receiver = await parse(recRes, 'Receiver');
+        const p = await parse(pRes, 'Passing');
+        const r = await parse(rRes, 'Rushing');
+        const rec = await parse(recRes, 'Receiving');
 
-        setTopPasser(passer);
-        setTopRusher(rusher);
-        setTopReceiver(receiver);
+        setPassers(p);
+        setRushers(r);
+        setReceivers(rec);
+
+        const playerIds = new Set();
+        [...p, ...r, ...rec].forEach(player => {
+          if (player?.playerId) playerIds.add(player.playerId);
+        });
+
+        if (playerIds.size > 0) {
+          fetchPlayerInfo(Array.from(playerIds));
+        } else {
+          setLoading(false);
+        }
       } catch (err) {
-        console.error('Top Players Fetch Failed:', err.message);
-      } finally {
+        console.error('Fetch error:', err);
         setLoading(false);
       }
     };
 
-    fetchTopPlayers();
+    fetchAll();
   }, [teamId, year, week, seasonType]);
 
   // -----------------------------------------------------------------------
-  // Player Link Component
+  // 2. Fetch Player Info
   // -----------------------------------------------------------------------
-  const PlayerLink = ({ player, position }) => {
+  const fetchPlayerInfo = async (playerIds) => {
+    const base = process.env.REACT_APP_API_URL;
+    const url = `${base}/api/player_headline/${year}`;
+
+    try {
+      const responses = await Promise.all(
+        playerIds.map(id => fetch(`${url}/${id}`))
+      );
+
+      const info = {};
+      for (let i = 0; i < responses.length; i++) {
+        const res = responses[i];
+        const playerId = playerIds[i];
+        const text = await res.text();
+        console.log(`Info ${playerId} Status:`, res.status, 'Body:', text);
+        if (res.ok) {
+          try {
+            const data = JSON.parse(text);
+            const row = data[0];
+            if (row) {
+              info[playerId] = {
+                name: row.name || 'Unknown',
+                position: row.position || 'UNK'
+              };
+            }
+          } catch (e) {
+            console.error(`Info JSON error for ${playerId}:`, e);
+          }
+        }
+      }
+
+      console.log('Fetched player info:', info);
+      setPlayerInfo(info);
+    } catch (err) {
+      console.error('Player info fetch error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Top players
+  const topPasser = passers[0];
+  const topRusher = rushers[0];
+  const topReceiver = receivers[0];
+
+  // -----------------------------------------------------------------------
+  // Player Link
+  // -----------------------------------------------------------------------
+  const PlayerLink = ({ player }) => {
     if (!player?.playerId) return <span className="text-gray-500">N/A</span>;
-    const posPath = position === 'QB' ? 'qb' : position === 'RB' ? 'rb' : 'wr';
+    const info = playerInfo[player.playerId];
+    if (!info) return <span className="text-gray-500">Loading...</span>;
+
+    const posPath = info.position.toLowerCase();
     return (
       <Link
         to={`/players/${posPath}/${player.playerId}`}
         className="font-bold text-[#235347] hover:underline"
       >
-        {player.player || 'Unknown'}
+        {info.name}
       </Link>
     );
   };
@@ -199,7 +268,7 @@ const TeamAReport = ({ teamName, teamId, year, gameId, gameStats }) => {
         )}
       </div>
 
-      {/* === Advanced Metrics === */}
+      {/* === Advanced Game Metrics === */}
       <div className="border border-gray-300 rounded-lg p-0">
         <h2 className="flex items-center justify-center text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[30px] rounded">
           {teamName || 'Away Team'} Advanced Game Metrics
@@ -232,76 +301,59 @@ const TeamAReport = ({ teamName, teamId, year, gameId, gameStats }) => {
         )}
       </div>
 
-      {/* === Key Performers: Pass / Rush / Rec === */}
+      {/* === Key Performers === */}
       <div className="border border-gray-300 rounded-lg p-0">
         <h2 className="flex items-center justify-center text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[30px] rounded">
-          Key Performers
+          {teamName || 'Away Team'} Key Performers
         </h2>
-        <div className="bg-white rounded-lg shadow-lg p-3 space-y-2">
+        <div className="bg-white rounded-lg shadow-lg">
           {loading ? (
-            <p className="text-xs text-gray-500">Loading players...</p>
+            <div className="p-4 text-center text-gray-500 text-sm">Loading players...</div>
           ) : (
-            <>
-              {/* Top Passer */}
-              <div className="flex items-center justify-between text-xs">
-                <div>
-                  <PlayerLink player={topPasser} position="QB" />
-                </div>
-                <div className="text-right font-medium">
-                  {topPasser?.yards ?? 0} Pass Yards
-                </div>
-              </div>
-
-              {/* Top Rusher */}
-              <div className="flex items-center justify-between text-xs">
-                <div>
-                  <PlayerLink player={topRusher} position="RB" />
-                </div>
-                <div className="text-right font-medium">
-                  {topRusher?.yards ?? 0} Rush Yards
-                </div>
-              </div>
-
-              {/* Top Receiver */}
-              <div className="flex items-center justify-between text-xs">
-                <div>
-                  <PlayerLink player={topReceiver} position="WR" />
-                </div>
-                <div className="text-right font-medium">
-                  {topReceiver?.yards ?? 0} Rec Yards
-                </div>
-              </div>
-            </>
+            <table className="w-full text-sm text-left text-black">
+              <tbody>
+                <tr className="border-b">
+                  <td className="py-2 px-4 font-bold">
+                    {topPasser ? <PlayerLink player={topPasser} /> : 'N/A'}
+                  </td>
+                  <td className="py-2 px-4 w-1/3 text-right">
+                    {topPasser?.yards ?? 0} Pass Yds
+                  </td>
+                </tr>
+                <tr className="border-b">
+                  <td className="py-2 px-4 font-bold">
+                    {topRusher ? <PlayerLink player={topRusher} /> : 'N/A'}
+                  </td>
+                  <td className="py-2 px-4 w-1/3 text-right">
+                    {topRusher?.yards ?? 0} Rush Yds
+                  </td>
+                </tr>
+                <tr className="border-b">
+                  <td className="py-2 px-4 font-bold">
+                    {topReceiver ? <PlayerLink player={topReceiver} /> : 'N/A'}
+                  </td>
+                  <td className="py-2 px-4 w-1/3 text-right">
+                    {topReceiver?.yards ?? 0} Rec Yds
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           )}
         </div>
       </div>
 
-      {/* Tooltip Popup */}
+      {/* Tooltip */}
       {showTooltip && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4" onClick={() => setShowTooltip(null)}>
           <div className="bg-white rounded-lg p-6 max-w-lg max-h-[80vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-[#235347]">{showTooltip.title}</h3>
-              <button
-                onClick={() => setShowTooltip(null)}
-                className="text-gray-500 hover:text-black text-xl font-bold"
-              >
-                ×
-              </button>
+              <button onClick={() => setShowTooltip(null)} className="text-gray-500 hover:text-black text-xl font-bold">×</button>
             </div>
             <div className="text-sm text-gray-700 space-y-4">
-              <div>
-                <strong className="text-[#235347] block mb-1">Definition</strong>
-                <p>{showTooltip.definition}</p>
-              </div>
-              <div>
-                <strong className="text-[#235347] block mb-1">Example</strong>
-                <p>{showTooltip.example}</p>
-              </div>
-              <div>
-                <strong className="text-[#235347] block mb-1">Why It Matters</strong>
-                <p>{showTooltip.why}</p>
-              </div>
+              <div><strong className="text-[#235347] block mb-1">Definition</strong><p>{showTooltip.definition}</p></div>
+              <div><strong className="text-[#235347] block mb-1">Example</strong><p>{showTooltip.example}</p></div>
+              <div><strong className="text-[#235347] block mb-1">Why It Matters</strong><p>{showTooltip.why}</p></div>
             </div>
           </div>
         </div>

@@ -1,7 +1,25 @@
-import React, { useState } from 'react';
+// src/components/games/singleGameRecapComponents/TeamBReport.js
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 const TeamBReport = ({ teamName, teamId, year, gameId, gameStats }) => {
   const [showTooltip, setShowTooltip] = useState(null);
+  const [passers, setPassers] = useState([]);
+  const [rushers, setRushers] = useState([]);
+  const [receivers, setReceivers] = useState([]);
+  const [playerInfo, setPlayerInfo] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  const week = gameStats?.week;
+  const seasonType = gameStats?.seasonType || 'regular';
+
+  // -----------------------------------------------------------------------
+  // DEBUG LOGS
+  // -----------------------------------------------------------------------
+  console.log('--- TeamBReport Debug ---');
+  console.log('teamId:', teamId, 'year:', year, 'week:', week, 'seasonType:', seasonType);
+  console.log('gameStats keys:', Object.keys(gameStats || {}));
+  console.log('--- End Debug ---');
 
   const formatFieldPosition = (value) => {
     if (value === undefined) return 'N/A';
@@ -65,25 +83,174 @@ const TeamBReport = ({ teamName, teamId, year, gameId, gameStats }) => {
   ];
 
   const getMetricValue = (key) => {
-    const value = gameStats[key];
-    if (value === undefined || value === null) return 'N/A';
-    if (key === 'scoring_opportunities_points_per_opportunity' || key === 'field_position_average_predicted_points') {
-      return parseFloat(value).toFixed(2);
+    const possibleKeys = [
+      key,
+      key.replace(/_/g, ''),
+      key.replace(/opportunities/g, 'opp'),
+      key.replace(/points_per_opportunity/g, 'pp_opp'),
+      key.replace(/average/g, 'avg'),
+      key.replace(/predicted/g, 'pred')
+    ];
+
+    for (const k of possibleKeys) {
+      const value = gameStats?.[k];
+      if (value !== undefined && value !== null) {
+        if (k.includes('points_per_opportunity') || k.includes('predicted_points')) {
+          return parseFloat(value).toFixed(2);
+        }
+        if (k.includes('average_start')) {
+          return formatFieldPosition(value);
+        }
+        return value;
+      }
     }
-    if (key === 'field_position_average_start') {
-      return formatFieldPosition(value);
+    return 'N/A';
+  };
+
+  // -----------------------------------------------------------------------
+  // 1. Fetch ALL Players
+  // -----------------------------------------------------------------------
+  useEffect(() => {
+    if (!teamId || !week || !year) {
+      console.warn('Missing data');
+      setLoading(false);
+      return;
     }
-    return value;
+
+    const fetchAll = async () => {
+      const base = process.env.REACT_APP_API_URL;
+      const urls = {
+        pass: `${base}/api/team_passing_weekly/${teamId}/${year}/${week}/${seasonType}`,
+        rush: `${base}/api/team_rushing_weekly/${teamId}/${year}/${week}/${seasonType}`,
+        rec: `${base}/api/team_receiving_weekly/${teamId}/${year}/${week}/${seasonType}`,
+      };
+
+      console.log('Fetching players from:', urls);
+
+      try {
+        setLoading(true);
+        const [pRes, rRes, recRes] = await Promise.all([
+          fetch(urls.pass), fetch(urls.rush), fetch(urls.rec)
+        ]);
+
+        const parse = async (res, type) => {
+          const text = await res.text();
+          console.log(`${type} Status:`, res.status, 'Body:', text);
+          if (!res.ok) return [];
+          try {
+            const data = JSON.parse(text);
+            console.log(`${type} Count:`, data.length);
+            return data;
+          } catch (e) {
+            console.error(`${type} JSON error:`, e);
+            return [];
+          }
+        };
+
+        const p = await parse(pRes, 'Passing');
+        const r = await parse(rRes, 'Rushing');
+        const rec = await parse(recRes, 'Receiving');
+
+        setPassers(p);
+        setRushers(r);
+        setReceivers(rec);
+
+        const playerIds = new Set();
+        [...p, ...r, ...rec].forEach(player => {
+          if (player?.playerId) playerIds.add(player.playerId);
+        });
+
+        if (playerIds.size > 0) {
+          fetchPlayerInfo(Array.from(playerIds));
+        } else {
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error('Fetch error:', err);
+        setLoading(false);
+      }
+    };
+
+    fetchAll();
+  }, [teamId, year, week, seasonType]);
+
+  // -----------------------------------------------------------------------
+  // 2. Fetch Player Info
+  // -----------------------------------------------------------------------
+  const fetchPlayerInfo = async (playerIds) => {
+    const base = process.env.REACT_APP_API_URL;
+    const url = `${base}/api/player_headline/${year}`;
+
+    try {
+      const responses = await Promise.all(
+        playerIds.map(id => fetch(`${url}/${id}`))
+      );
+
+      const info = {};
+      for (let i = 0; i < responses.length; i++) {
+        const res = responses[i];
+        const playerId = playerIds[i];
+        const text = await res.text();
+        console.log(`Info ${playerId} Status:`, res.status, 'Body:', text);
+        if (res.ok) {
+          try {
+            const data = JSON.parse(text);
+            const row = data[0];
+            if (row) {
+              info[playerId] = {
+                name: row.name || 'Unknown',
+                position: row.position || 'UNK'
+              };
+            }
+          } catch (e) {
+            console.error(`Info JSON error for ${playerId}:`, e);
+          }
+        }
+      }
+
+      console.log('Fetched player info:', info);
+      setPlayerInfo(info);
+    } catch (err) {
+      console.error('Player info fetch error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Top players
+  const topPasser = passers[0];
+  const topRusher = rushers[0];
+  const topReceiver = receivers[0];
+
+  // -----------------------------------------------------------------------
+  // Player Link
+  // -----------------------------------------------------------------------
+  const PlayerLink = ({ player }) => {
+    if (!player?.playerId) return <span className="text-gray-500">N/A</span>;
+    const info = playerInfo[player.playerId];
+    if (!info) return <span className="text-gray-500">Loading...</span>;
+
+    const posPath = info.position.toLowerCase();
+    return (
+      <Link
+        to={`/players/${posPath}/${player.playerId}`}
+        className="font-bold text-[#235347] hover:underline"
+      >
+        {info.name}
+      </Link>
+    );
   };
 
   return (
     <div className="space-y-4">
+      {/* === Headline Stats === */}
       <div className="border border-gray-300 rounded-lg p-0">
         <h2 className="flex items-center justify-center text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[30px] rounded">
           {teamName || 'Home Team'} Headline Stats
         </h2>
-        {!gameStats && <div className="text-gray-500">Loading...</div>}
-        {gameStats && (
+        {!gameStats ? (
+          <div className="text-gray-500 p-4">Loading...</div>
+        ) : (
           <div className="bg-white rounded-lg shadow-lg">
             <table className="w-full text-sm text-left text-black">
               <tbody>
@@ -100,12 +267,15 @@ const TeamBReport = ({ teamName, teamId, year, gameId, gameStats }) => {
           </div>
         )}
       </div>
+
+      {/* === Advanced Game Metrics === */}
       <div className="border border-gray-300 rounded-lg p-0">
         <h2 className="flex items-center justify-center text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[30px] rounded">
           {teamName || 'Home Team'} Advanced Game Metrics
         </h2>
-        {!gameStats && <div className="text-gray-500">Loading...</div>}
-        {gameStats && (
+        {!gameStats ? (
+          <div className="text-gray-500 p-4">Loading...</div>
+        ) : (
           <div className="bg-white rounded-lg shadow-lg">
             <table className="w-full text-sm text-left text-black">
               <tbody>
@@ -130,32 +300,60 @@ const TeamBReport = ({ teamName, teamId, year, gameId, gameStats }) => {
           </div>
         )}
       </div>
-      {/* Tooltip Popup */}
+
+      {/* === Key Performers === */}
+      <div className="border border-gray-300 rounded-lg p-0">
+        <h2 className="flex items-center justify-center text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[30px] rounded">
+          {teamName || 'Home Team'} Key Performers
+        </h2>
+        <div className="bg-white rounded-lg shadow-lg">
+          {loading ? (
+            <div className="p-4 text-center text-gray-500 text-sm">Loading players...</div>
+          ) : (
+            <table className="w-full text-sm text-left text-black">
+              <tbody>
+                <tr className="border-b">
+                  <td className="py-2 px-4 font-bold">
+                    {topPasser ? <PlayerLink player={topPasser} /> : 'N/A'}
+                  </td>
+                  <td className="py-2 px-4 w-1/3 text-right">
+                    {topPasser?.yards ?? 0} Pass Yds
+                  </td>
+                </tr>
+                <tr className="border-b">
+                  <td className="py-2 px-4 font-bold">
+                    {topRusher ? <PlayerLink player={topRusher} /> : 'N/A'}
+                  </td>
+                  <td className="py-2 px-4 w-1/3 text-right">
+                    {topRusher?.yards ?? 0} Rush Yds
+                  </td>
+                </tr>
+                <tr className="border-b">
+                  <td className="py-2 px-4 font-bold">
+                    {topReceiver ? <PlayerLink player={topReceiver} /> : 'N/A'}
+                  </td>
+                  <td className="py-2 px-4 w-1/3 text-right">
+                    {topReceiver?.yards ?? 0} Rec Yds
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+
+      {/* Tooltip */}
       {showTooltip && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4" onClick={() => setShowTooltip(null)}>
           <div className="bg-white rounded-lg p-6 max-w-lg max-h-[80vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold text-[#235347]">{showTooltip.title}</h3>
-              <button
-                onClick={() => setShowTooltip(null)}
-                className="text-gray-500 hover:text-black text-xl font-bold"
-              >
-                ×
-              </button>
+              <button onClick={() => setShowTooltip(null)} className="text-gray-500 hover:text-black text-xl font-bold">×</button>
             </div>
             <div className="text-sm text-gray-700 space-y-4">
-              <div>
-                <strong className="text-[#235347] block mb-1">Definition</strong>
-                <p>{showTooltip.definition}</p>
-              </div>
-              <div>
-                <strong className="text-[#235347] block mb-1">Example</strong>
-                <p>{showTooltip.example}</p>
-              </div>
-              <div>
-                <strong className="text-[#235347] block mb-1">Why It Matters</strong>
-                <p>{showTooltip.why}</p>
-              </div>
+              <div><strong className="text-[#235347] block mb-1">Definition</strong><p>{showTooltip.definition}</p></div>
+              <div><strong className="text-[#235347] block mb-1">Example</strong><p>{showTooltip.example}</p></div>
+              <div><strong className="text-[#235347] block mb-1">Why It Matters</strong><p>{showTooltip.why}</p></div>
             </div>
           </div>
         </div>

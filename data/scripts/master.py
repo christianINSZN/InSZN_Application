@@ -87,9 +87,9 @@ script_order = [
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/defense/season/populate_full_percentiles_s.py",
 
     # Batch update of all grades
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/players/populate_players_basic_grades.py", #no need for all teams
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/teams/populate_teams_season_grades.py",
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/teamsGrades/populate_teams_ratings.py", #no need for all teams
+    "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/players/populate_players_basic_grades.py", #no need for all teams
+    "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/teams/populate_teams_season_grades.py",
+    "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/teamsGrades/populate_teams_ratings.py", #no need for all teams
 
     # Homepage Updates
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/weeklyReports/players_epa_qb.py",
@@ -128,7 +128,7 @@ script_order = [
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/defense/weekly/populate_team_run_defense_weekly.py",
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/defense/weekly/populate_team_slot_coverage_weekly.py",
 
-    #  "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/players/populate_players_basic.py",
+    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/players/populate_players_basic.py",
 
     #### END ####
 
