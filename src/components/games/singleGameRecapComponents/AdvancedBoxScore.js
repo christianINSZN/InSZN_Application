@@ -20,7 +20,7 @@ const AdvancedBoxScore = ({ gameId, awayStats, homeStats, awayTeamName, homeTeam
   const homeTeamId = homeStats?.team_id;
 
   // -----------------------------------------------------------------------
-  // Fetch Players
+  // Fetch Players (NO LIMIT)
   // -----------------------------------------------------------------------
   useEffect(() => {
     if (!gameId || !week || !year || !awayTeamId || !homeTeamId) {
@@ -53,10 +53,10 @@ const AdvancedBoxScore = ({ gameId, awayStats, homeStats, awayTeamName, homeTeam
         const rec = await parse(recRes);
         const b = await parse(bRes);
 
-        setPass(p.slice(0, 5));
-        setRush(r.slice(0, 5));
-        setRec(rec.slice(0, 5));
-        setBlock(b.slice(0, 5));
+        setPass(p);
+        setRush(r);
+        setRec(rec);
+        setBlock(b);
 
         return [...p, ...r, ...rec, ...b];
       } catch (err) {
@@ -85,7 +85,7 @@ const AdvancedBoxScore = ({ gameId, awayStats, homeStats, awayTeamName, homeTeam
   }, [gameId, year, week, seasonType, awayTeamId, homeTeamId, awayTeamName, homeTeamName]);
 
   // -----------------------------------------------------------------------
-  // Fetch Player Info
+  // Fetch Player Info (name + position) — DROP NULL NAMES
   // -----------------------------------------------------------------------
   const fetchPlayerInfo = async (playerIds) => {
     const base = process.env.REACT_APP_API_URL;
@@ -102,9 +102,9 @@ const AdvancedBoxScore = ({ gameId, awayStats, homeStats, awayTeamName, homeTeam
           try {
             const data = JSON.parse(await res.text());
             const row = data[0];
-            if (row) {
+            if (row && row.name && row.name.trim() !== '') {
               info[playerId] = {
-                name: row.name || 'Unknown',
+                name: row.name,
                 position: row.position || 'UNK'
               };
             }
@@ -119,7 +119,7 @@ const AdvancedBoxScore = ({ gameId, awayStats, homeStats, awayTeamName, homeTeam
   };
 
   // -----------------------------------------------------------------------
-  // Player Link
+  // Player Link (Name from headline)
   // -----------------------------------------------------------------------
   const PlayerLink = ({ player }) => {
     if (!player?.playerId) return <span className="text-gray-500">—</span>;
@@ -134,54 +134,34 @@ const AdvancedBoxScore = ({ gameId, awayStats, homeStats, awayTeamName, homeTeam
   };
 
   // -----------------------------------------------------------------------
-  // Passing Table
+  // Reusable Table
   // -----------------------------------------------------------------------
-  const PassingTable = ({ teamName, passers }) => (
+  const StatTable = ({ title, data, headers, renderRow }) => (
     <div>
-      <h3 className="text-lg font-bold text-[#235347] mb-2">{teamName} Passing</h3>
-      <div className="bg-gray-50 rounded border overflow-hidden">
-        <table className="w-full text-xs">
+      <h3 className="text-lg font-bold text-[#235347] mb-2">{title}</h3>
+      <div className="bg-gray-50 rounded border overflow-x-auto">
+        <table className="w-full text-xs min-w-[600px]">
           <thead className="bg-gray-200 text-gray-700">
             <tr>
-              <th className="py-1 px-2 text-left font-medium">Player</th>
-              <th className="py-1 px-2 text-center">POS</th>
-              <th className="py-1 px-2 text-center">C/A</th>
-              <th className="py-1 px-2 text-center">%</th>
-              <th className="py-1 px-2 text-center">YDS</th>
-              <th className="py-1 px-2 text-center">TD</th>
-              <th className="py-1 px-2 text-center">INT</th>
-              <th className="py-1 px-2 text-center">RATE</th>
-              <th className="py-1 px-2 text-center">SACKS</th>
+              {headers.map((h, i) => (
+                <th key={i} className={`py-1 px-2 text-${h.align || 'center'} font-medium`}>
+                  {h.label}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {passers.length > 0 ? (
-              passers.map((p, i) => (
-                <tr key={p.playerId || i} className="border-t border-gray-200">
-                  <td className="py-1 px-2">
-                    <PlayerLink player={p} />
-                  </td>
-                  <td className="py-1 px-2 text-center text-gray-600">
-                    {playerInfo[p.playerId]?.position || '—'}
-                  </td>
-                  <td className="py-1 px-2 text-center">
-                    {p.completions}/{p.attempts}
-                  </td>
-                  <td className="py-1 px-2 text-center">
-                    {p.completion_percent ? p.completion_percent.toFixed(1) : '—'}
-                  </td>
-                  <td className="py-1 px-2 text-center font-medium">{p.yards ?? 0}</td>
-                  <td className="py-1 px-2 text-center">{p.touchdowns ?? 0}</td>
-                  <td className="py-1 px-2 text-center">{p.interceptions ?? 0}</td>
-                  <td className="py-1 px-2 text-center">
-                    {p.qb_rating ? p.qb_rating.toFixed(1) : '—'}
-                  </td>
-                  <td className="py-1 px-2 text-center">{p.sacks ?? 0}</td>
-                </tr>
-              ))
+            {data.length > 0 ? (
+              data.map((p, i) => {
+                const info = playerInfo[p.playerId];
+                if (!info) return null;
+                return renderRow(p, i);
+              }).filter(Boolean)
             ) : (
               <tr>
-                <td colSpan={9} className="py-2 text-center text-gray-500">No passing data</td>
+                <td colSpan={headers.length} className="py-2 text-center text-gray-500">
+                  No data
+                </td>
               </tr>
             )}
           </tbody>
@@ -191,158 +171,85 @@ const AdvancedBoxScore = ({ gameId, awayStats, homeStats, awayTeamName, homeTeam
   );
 
   // -----------------------------------------------------------------------
-  // Rushing Table
+  // Render Rows
   // -----------------------------------------------------------------------
-  const RushingTable = ({ teamName, rushers }) => (
-    <div>
-      <h3 className="text-lg font-bold text-[#235347] mb-2">{teamName} Rushing</h3>
-      <div className="bg-gray-50 rounded border overflow-hidden">
-        <table className="w-full text-xs">
-          <thead className="bg-gray-200 text-gray-700">
-            <tr>
-              <th className="py-1 px-2 text-left font-medium">Player</th>
-              <th className="py-1 px-2 text-center">POS</th>
-              <th className="py-1 px-2 text-center">ATT</th>
-              <th className="py-1 px-2 text-center">YDS</th>
-              <th className="py-1 px-2 text-center">YAC</th>
-              <th className="py-1 px-2 text-center">TD</th>
-              <th className="py-1 px-2 text-center">LONG</th>
-              <th className="py-1 px-2 text-center">FUM</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rushers.length > 0 ? (
-              rushers.map((p, i) => (
-                <tr key={p.playerId || i} className="border-t border-gray-200">
-                  <td className="py-1 px-2">
-                    <PlayerLink player={p} />
-                  </td>
-                  <td className="py-1 px-2 text-center text-gray-600">
-                    {playerInfo[p.playerId]?.position || '—'}
-                  </td>
-                  <td className="py-1 px-2 text-center">{p.attempts ?? 0}</td>
-                  <td className="py-1 px-2 text-center font-medium">{p.yards ?? 0}</td>
-                  <td className="py-1 px-2 text-center">{p.yards_after_contact ?? 0}</td>
-                  <td className="py-1 px-2 text-center">{p.touchdowns ?? 0}</td>
-                  <td className="py-1 px-2 text-center">{p.longest ?? 0}</td>
-                  <td className="py-1 px-2 text-center">{p.fumbles ?? 0}</td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={8} className="py-2 text-center text-gray-500">No rushing data</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
+  const renderPassingRow = (p, i) => (
+    <tr key={p.playerId || i} className="border-t border-gray-200">
+      <td className="py-1 px-2">
+        <PlayerLink player={p} />
+      </td>
+      <td className="py-1 px-2 text-center text-gray-600">
+        {playerInfo[p.playerId]?.position || '—'}
+      </td>
+      <td className="py-1 px-2 text-center">{p.completions}/{p.attempts}</td>
+      <td className="py-1 px-2 text-center">
+        {p.completion_percent ? p.completion_percent.toFixed(1) : '—'}
+      </td>
+      <td className="py-1 px-2 text-center font-medium">{p.yards ?? 0}</td>
+      <td className="py-1 px-2 text-center">{p.touchdowns ?? 0}</td>
+      <td className="py-1 px-2 text-center">{p.interceptions ?? 0}</td>
+      <td className="py-1 px-2 text-center">
+        {p.qb_rating ? p.qb_rating.toFixed(1) : '—'}
+      </td>
+      <td className="py-1 px-2 text-center">{p.sacks ?? 0}</td>
+    </tr>
   );
 
-  // -----------------------------------------------------------------------
-  // Receiving Table
-  // -----------------------------------------------------------------------
-  const ReceivingTable = ({ teamName, receivers }) => (
-    <div>
-      <h3 className="text-lg font-bold text-[#235347] mb-2">{teamName} Receiving</h3>
-      <div className="bg-gray-50 rounded border overflow-hidden">
-        <table className="w-full text-xs">
-          <thead className="bg-gray-200 text-gray-700">
-            <tr>
-              <th className="py-1 px-2 text-left font-medium">Player</th>
-              <th className="py-1 px-2 text-center">POS</th>
-              <th className="py-1 px-2 text-center">REC</th>
-              <th className="py-1 px-2 text-center">TAR</th>
-              <th className="py-1 px-2 text-center">YDS</th>
-              <th className="py-1 px-2 text-center">Y/R</th>
-              <th className="py-1 px-2 text-center">TD</th>
-              <th className="py-1 px-2 text-center">LONG</th>
-              <th className="py-1 px-2 text-center">DROP</th>
-            </tr>
-          </thead>
-          <tbody>
-            {receivers.length > 0 ? (
-              receivers.map((p, i) => (
-                <tr key={p.playerId || i} className="border-t border-gray-200">
-                  <td className="py-1 px-2">
-                    <PlayerLink player={p} />
-                  </td>
-                  <td className="py-1 px-2 text-center text-gray-600">
-                    {playerInfo[p.playerId]?.position || '—'}
-                  </td>
-                  <td className="py-1 px-2 text-center">{p.receptions ?? 0}</td>
-                  <td className="py-1 px-2 text-center">{p.targets ?? 0}</td>
-                  <td className="py-1 px-2 text-center font-medium">{p.yards ?? 0}</td>
-                  <td className="py-1 px-2 text-center">
-                    {p.yards_per_reception ? p.yards_per_reception.toFixed(1) : '—'}
-                  </td>
-                  <td className="py-1 px-2 text-center">{p.touchdowns ?? 0}</td>
-                  <td className="py-1 px-2 text-center">{p.longest ?? 0}</td>
-                  <td className="py-1 px-2 text-center">{p.drops ?? 0}</td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={9} className="py-2 text-center text-gray-500">No receiving data</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
+  const renderRushingRow = (p, i) => (
+    <tr key={p.playerId || i} className="border-t border-gray-200">
+      <td className="py-1 px-2">
+        <PlayerLink player={p} />
+      </td>
+      <td className="py-1 px-2 text-center text-gray-600">
+        {playerInfo[p.playerId]?.position || '—'}
+      </td>
+      <td className="py-1 px-2 text-center">{p.attempts ?? 0}</td>
+      <td className="py-1 px-2 text-center font-medium">{p.yards ?? 0}</td>
+      <td className="py-1 px-2 text-center">{p.yards_after_contact ?? 0}</td>
+      <td className="py-1 px-2 text-center">{p.touchdowns ?? 0}</td>
+      <td className="py-1 px-2 text-center">{p.longest ?? 0}</td>
+      <td className="py-1 px-2 text-center">{p.fumbles ?? 0}</td>
+    </tr>
   );
 
-  // -----------------------------------------------------------------------
-  // Blocking Table
-  // -----------------------------------------------------------------------
-  const BlockingTable = ({ teamName, blockers }) => (
-    <div>
-      <h3 className="text-lg font-bold text-[#235347] mb-2">{teamName} Blocking</h3>
-      <div className="bg-gray-50 rounded border overflow-hidden">
-        <table className="w-full text-xs">
-          <thead className="bg-gray-200 text-gray-700">
-            <tr>
-              <th className="py-1 px-2 text-left font-medium">Player</th>
-              <th className="py-1 px-2 text-center">POS</th>
-              <th className="py-1 px-2 text-center">SNAPS</th>
-              <th className="py-1 px-2 text-center">PB%</th>
-              <th className="py-1 px-2 text-center">SACKS</th>
-              <th className="py-1 px-2 text-center">HITS</th>
-              <th className="py-1 px-2 text-center">HURRY</th>
-              <th className="py-1 px-2 text-center">PRESS</th>
-              <th className="py-1 px-2 text-center">PEN</th>
-            </tr>
-          </thead>
-          <tbody>
-            {blockers.length > 0 ? (
-              blockers.map((p, i) => (
-                <tr key={p.playerId || i} className="border-t border-gray-200">
-                  <td className="py-1 px-2">
-                    <PlayerLink player={p} />
-                  </td>
-                  <td className="py-1 px-2 text-center text-gray-600">
-                    {playerInfo[p.playerId]?.position || '—'}
-                  </td>
-                  <td className="py-1 px-2 text-center">{p.snap_counts_offense ?? 0}</td>
-                  <td className="py-1 px-2 text-center">
-                    {p.pass_block_percent ? p.pass_block_percent.toFixed(1) : '—'}
-                  </td>
-                  <td className="py-1 px-2 text-center">{p.sacks_allowed ?? 0}</td>
-                  <td className="py-1 px-2 text-center">{p.hits_allowed ?? 0}</td>
-                  <td className="py-1 px-2 text-center">{p.hurries_allowed ?? 0}</td>
-                  <td className="py-1 px-2 text-center">{p.pressures_allowed ?? 0}</td>
-                  <td className="py-1 px-2 text-center">{p.penalties ?? 0}</td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={9} className="py-2 text-center text-gray-500">No blocking data</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
+  const renderReceivingRow = (p, i) => (
+    <tr key={p.playerId || i} className="border-t border-gray-200">
+      <td className="py-1 px-2">
+        <PlayerLink player={p} />
+      </td>
+      <td className="py-1 px-2 text-center text-gray-600">
+        {playerInfo[p.playerId]?.position || '—'}
+      </td>
+      <td className="py-1 px-2 text-center">{p.receptions ?? 0}</td>
+      <td className="py-1 px-2 text-center">{p.targets ?? 0}</td>
+      <td className="py-1 px-2 text-center font-medium">{p.yards ?? 0}</td>
+      <td className="py-1 px-2 text-center">
+        {p.yards_per_reception ? p.yards_per_reception.toFixed(1) : '—'}
+      </td>
+      <td className="py-1 px-2 text-center">{p.touchdowns ?? 0}</td>
+      <td className="py-1 px-2 text-center">{p.longest ?? 0}</td>
+      <td className="py-1 px-2 text-center">{p.drops ?? 0}</td>
+    </tr>
+  );
+
+  const renderBlockingRow = (p, i) => (
+    <tr key={p.playerId || i} className="border-t border-gray-200">
+      <td className="py-1 px-2">
+        <PlayerLink player={p} />
+      </td>
+      <td className="py-1 px-2 text-center text-gray-600">
+        {playerInfo[p.playerId]?.position || '—'}
+      </td>
+      <td className="py-1 px-2 text-center">{p.snap_counts_offense ?? 0}</td>
+      <td className="py-1 px-2 text-center">
+        {p.pass_block_percent ? p.pass_block_percent.toFixed(1) : '—'}
+      </td>
+      <td className="py-1 px-2 text-center">{p.sacks_allowed ?? 0}</td>
+      <td className="py-1 px-2 text-center">{p.hits_allowed ?? 0}</td>
+      <td className="py-1 px-2 text-center">{p.hurries_allowed ?? 0}</td>
+      <td className="py-1 px-2 text-center">{p.pressures_allowed ?? 0}</td>
+      <td className="py-1 px-2 text-center">{p.penalties ?? 0}</td>
+    </tr>
   );
 
   return (
@@ -355,26 +262,144 @@ const AdvancedBoxScore = ({ gameId, awayStats, homeStats, awayTeamName, homeTeam
         <>
           {/* === PASSING === */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <PassingTable teamName={awayTeamName} passers={awayPassers} />
-            <PassingTable teamName={homeTeamName} passers={homePassers} />
+            <StatTable
+              title={`${awayTeamName} Passing`}
+              data={awayPassers}
+              headers={[
+                { label: 'Player', align: 'left' },
+                { label: 'POS' },
+                { label: 'C/A' },
+                { label: '%' },
+                { label: 'YDS' },
+                { label: 'TD' },
+                { label: 'INT' },
+                { label: 'RATE' },
+                { label: 'SACKS' },
+              ]}
+              renderRow={renderPassingRow}
+            />
+            <StatTable
+              title={`${homeTeamName} Passing`}
+              data={homePassers}
+              headers={[
+                { label: 'Player', align: 'left' },
+                { label: 'POS' },
+                { label: 'C/A' },
+                { label: '%' },
+                { label: 'YDS' },
+                { label: 'TD' },
+                { label: 'INT' },
+                { label: 'RATE' },
+                { label: 'SACKS' },
+              ]}
+              renderRow={renderPassingRow}
+            />
           </div>
 
           {/* === RUSHING === */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <RushingTable teamName={awayTeamName} rushers={awayRushers} />
-            <RushingTable teamName={homeTeamName} rushers={homeRushers} />
+            <StatTable
+              title={`${awayTeamName} Rushing`}
+              data={awayRushers}
+              headers={[
+                { label: 'Player', align: 'left' },
+                { label: 'POS' },
+                { label: 'ATT' },
+                { label: 'YDS' },
+                { label: 'YAC' },
+                { label: 'TD' },
+                { label: 'LONG' },
+                { label: 'FUM' },
+              ]}
+              renderRow={renderRushingRow}
+            />
+            <StatTable
+              title={`${homeTeamName} Rushing`}
+              data={homeRushers}
+              headers={[
+                { label: 'Player', align: 'left' },
+                { label: 'POS' },
+                { label: 'ATT' },
+                { label: 'YDS' },
+                { label: 'YAC' },
+                { label: 'TD' },
+                { label: 'LONG' },
+                { label: 'FUM' },
+              ]}
+              renderRow={renderRushingRow}
+            />
           </div>
 
           {/* === RECEIVING === */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <ReceivingTable teamName={awayTeamName} receivers={awayReceivers} />
-            <ReceivingTable teamName={homeTeamName} receivers={homeReceivers} />
+            <StatTable
+              title={`${awayTeamName} Receiving`}
+              data={awayReceivers}
+              headers={[
+                { label: 'Player', align: 'left' },
+                { label: 'POS' },
+                { label: 'REC' },
+                { label: 'TAR' },
+                { label: 'YDS' },
+                { label: 'Y/R' },
+                { label: 'TD' },
+                { label: 'LONG' },
+                { label: 'DROP' },
+              ]}
+              renderRow={renderReceivingRow}
+            />
+            <StatTable
+              title={`${homeTeamName} Receiving`}
+              data={homeReceivers}
+              headers={[
+                { label: 'Player', align: 'left' },
+                { label: 'POS' },
+                { label: 'REC' },
+                { label: 'TAR' },
+                { label: 'YDS' },
+                { label: 'Y/R' },
+                { label: 'TD' },
+                { label: 'LONG' },
+                { label: 'DROP' },
+              ]}
+              renderRow={renderReceivingRow}
+            />
           </div>
 
           {/* === BLOCKING === */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <BlockingTable teamName={awayTeamName} blockers={awayBlockers} />
-            <BlockingTable teamName={homeTeamName} blockers={homeBlockers} />
+            <StatTable
+              title={`${awayTeamName} Blocking`}
+              data={awayBlockers}
+              headers={[
+                { label: 'Player', align: 'left' },
+                { label: 'POS' },
+                { label: 'SNAPS' },
+                { label: 'PB%' },
+                { label: 'SACKS' },
+                { label: 'HITS' },
+                { label: 'HURRY' },
+                { label: 'PRESS' },
+                { label: 'PEN' },
+              ]}
+              renderRow={renderBlockingRow}
+            />
+            <StatTable
+              title={`${homeTeamName} Blocking`}
+              data={homeBlockers}
+              headers={[
+                { label: 'Player', align: 'left' },
+                { label: 'POS' },
+                { label: 'SNAPS' },
+                { label: 'PB%' },
+                { label: 'SACKS' },
+                { label: 'HITS' },
+                { label: 'HURRY' },
+                { label: 'PRESS' },
+                { label: 'PEN' },
+              ]}
+              renderRow={renderBlockingRow}
+            />
           </div>
         </>
       )}

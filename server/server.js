@@ -1354,6 +1354,25 @@ app.get('/api/player_defense_coverage_weekly_all/:playerId/:year/:week/:seasonTy
   );
 });
 
+app.get('/api/team_defense_weekly/:teamId/:year/:week/:seasonType', (req, res) => {
+  const { teamId, year, week, seasonType } = req.params;
+
+  db.all(`
+    SELECT *
+    FROM Players_DefenseGrades_Weekly
+    WHERE teamId = ? AND year = ? AND week = ? AND seasonType = ?
+  `, [teamId, year, week, seasonType], (err, rows) => {
+    if (err) {
+      console.error('DB Error (Rushing):', err);
+      return res.status(500).json({ error: 'Database error' });
+    }
+    if (!rows.length) {
+      return res.status(404).json({ message: 'No defense data' });
+    }
+    res.json(rows); // ALL players
+  });
+});
+
 /* Teams */
 app.get('/api/teams', (req, res) => {
   const { year = getDefaultYear(), id } = req.query; // Add id as a query parameter
