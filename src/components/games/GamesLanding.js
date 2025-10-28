@@ -1,3 +1,4 @@
+// src/components/games/GamesComponent.js
 import React, { useEffect, useMemo, useState, memo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import ScoutingReport from './ScoutingReport';
@@ -9,10 +10,12 @@ const conferences = [
   'Pac-12', 'SEC', 'Sun Belt'
 ];
 const filterTabs = ['All', ...conferences];
+
 const weeks = Array.from({ length: 15 }, (_, i) => i + 1);
 
 function GamesComponent({ year = '2025' }) {
   const navigate = useNavigate();
+
   const [isLoading, setIsLoading] = useState(true);
   const [gamesData, setGamesData] = useState([]);
   const [activeWeek, setActiveWeek] = useState(10);
@@ -24,6 +27,7 @@ function GamesComponent({ year = '2025' }) {
 
   useEffect(() => {
     let isMounted = true;
+
     if (isLoading) {
       fetch(`${process.env.REACT_APP_API_URL}/api/teams_games`, {
         method: 'GET',
@@ -40,6 +44,7 @@ function GamesComponent({ year = '2025' }) {
             try {
               const data = JSON.parse(text);
               console.log('Raw gamesData:', data);
+
               const uniqueGames = [];
               const seenIds = new Set();
               for (const game of data) {
@@ -48,6 +53,7 @@ function GamesComponent({ year = '2025' }) {
                   uniqueGames.push(game);
                 }
               }
+
               const validData = Array.isArray(uniqueGames)
                 ? uniqueGames.filter(
                     game =>
@@ -58,6 +64,7 @@ function GamesComponent({ year = '2025' }) {
                       (game.homeClassification === 'fbs' || game.awayClassification === 'fbs')
                   )
                 : [];
+
               console.log('Filtered validData:', validData);
               setGamesData(validData);
             } catch (e) {
@@ -74,6 +81,7 @@ function GamesComponent({ year = '2025' }) {
           }
         });
     }
+
     return () => {
       isMounted = false;
     };
@@ -90,6 +98,7 @@ function GamesComponent({ year = '2025' }) {
   const filteredGames = gamesData.filter(game => {
     const weekMatch = game.week === activeWeek;
     let conferenceMatch = true;
+
     if (activeTab === 'All') {
       conferenceMatch = true;
     } else if (activeTab === 'Top 25') {
@@ -97,6 +106,7 @@ function GamesComponent({ year = '2025' }) {
     } else {
       conferenceMatch = game.homeConference === activeTab || game.awayConference === activeTab;
     }
+
     return weekMatch && conferenceMatch;
   });
 
@@ -140,6 +150,7 @@ function GamesComponent({ year = '2025' }) {
 
   return (
     <div className="p-2 sm:p-4 shadow-xl rounded-lg mt-0 sm:mt-12">
+      {/* Year + Week Controls */}
       <div className="mb-4 sm:mb-6 mt-3 flex flex-col sm:flex-row items-end gap-4 sm:gap-6 bg-gray-200 p-2 sm:p-4 rounded-lg shadow-xl">
         <div className="w-full">
           <label htmlFor="yearSelect" className="block text-sm sm:text-base font-medium text-gray-700 mb-1">
@@ -154,6 +165,7 @@ function GamesComponent({ year = '2025' }) {
             <option value="2025">2025</option>
           </select>
         </div>
+
         <div className="w-full sm:max-w-[70%]">
           <div className="text-sm sm:text-base font-medium text-gray-700 mb-1">Week</div>
           <div className="block sm:hidden">
@@ -188,9 +200,11 @@ function GamesComponent({ year = '2025' }) {
           </div>
         </div>
       </div>
+
+      {/* CONFERENCE TABS — FIXED FOR MOBILE */}
       <div className="border-b border-gray-300 mb-4 sm:mb-6">
         <div className="overflow-x-auto whitespace-nowrap py-2">
-          <ul className="flex gap-2 sm:gap-4 justify-center p-2 sm:p-4">
+          <ul className="flex gap-2 sm:gap-4 px-4 min-w-max">
             {filterTabs.map(tab => (
               <li key={tab}>
                 <button
@@ -206,6 +220,8 @@ function GamesComponent({ year = '2025' }) {
           </ul>
         </div>
       </div>
+
+      {/* Games Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 p-2 sm:p-4">
         {filteredGames.map((game, index) => {
           const homeWins = game.homePoints !== null && game.awayPoints !== null && game.homePoints > game.awayPoints;
@@ -261,6 +277,7 @@ function GamesComponent({ year = '2025' }) {
                   </div>
                 )}
               </div>
+
               <div className="flex justify-between items-center h-full">
                 <div className="text-sm sm:text-base text-left">
                   <div className="flex items-center">
@@ -293,6 +310,8 @@ function GamesComponent({ year = '2025' }) {
           );
         })}
       </div>
+
+      {/* Modals */}
       {showScoutingReport && selectedMatchup && (
         <ScoutingReport
           matchup={selectedMatchup}
