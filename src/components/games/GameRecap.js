@@ -1,4 +1,6 @@
+// src/components/games/GameRecap.js
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom'; // ← Add this
 import HeadToHeadReport from './gameRecapComponents/HeadToHeadReport';
 import TeamAReport from './gameRecapComponents/TeamAReport';
 import TeamBReport from './gameRecapComponents/TeamBReport';
@@ -47,8 +49,10 @@ const GameRecap = ({ matchup, gameId, year, onClose = () => {} }) => {
         const recordsData = await recordsResponse.json();
 
         setGameStats(statsData);
+
         const awayRecord = recordsData.find(record => record.teamId === parseInt(matchup.awayId));
         const homeRecord = recordsData.find(record => record.teamId === parseInt(matchup.homeId));
+
         setAwayTeamRecord(awayRecord || null);
         setHomeTeamRecord(homeRecord || null);
       } catch (err) {
@@ -58,6 +62,7 @@ const GameRecap = ({ matchup, gameId, year, onClose = () => {} }) => {
         setLoading(false);
       }
     };
+
     fetchGameData();
   }, [year, matchup?.awayId, matchup?.homeId, gameId]);
 
@@ -94,14 +99,24 @@ const GameRecap = ({ matchup, gameId, year, onClose = () => {} }) => {
             </div>
           </div>
           <span className="text-lg sm:text-xl md:text-4xl font-bold text-black mx-2 sm:mx-4">{awayStats?.points || 0}</span>
-          <div className="hidden md:block flex items-center">
+
+          {/* INSZN Logo + Advanced Link */}
+          <div className="hidden md:flex flex-col items-center">
             <img
               src="/TurfLogo_RemovedBkg.png"
               alt="INSZN Logo"
               className="w-24 sm:w-36 h-auto mt-0 mx-1 sm:mx-2"
             />
+            <Link
+              to={`/games/recap/${gameId}`}
+              className="mt-1 text-xs font-medium text-[#235347] hover:text-[#1a3d34] underline"
+            >
+              Advanced Game Summary
+            </Link>
           </div>
+
           <span className="text-lg sm:text-xl md:text-4xl font-bold text-black mx-2 sm:mx-4">{homeStats?.points || 0}</span>
+
           <div className="flex items-center flex-row-reverse">
             {matchup?.homeTeamLogo && (
               <img src={matchup.homeTeamLogo} alt={`${matchup.homeTeamName} logo`} className="w-12 sm:w-16 h-12 sm:h-16" />
@@ -116,6 +131,17 @@ const GameRecap = ({ matchup, gameId, year, onClose = () => {} }) => {
             </div>
           </div>
         </div>
+
+        {/* Mobile: Advanced Link Below Logo */}
+        <div className="md:hidden text-center py-1 bg-gray-100 border-b border-gray-300">
+          <Link
+            to={`/games/recap/${gameId}`}
+            className="text-xs font-medium text-[#235347] hover:text-[#1a3d34] underline"
+          >
+            Advanced Game Summary
+          </Link>
+        </div>
+
         {/* Main Content */}
         <div className="flex-1 mt-1 sm:mt-2">
           {loading && (

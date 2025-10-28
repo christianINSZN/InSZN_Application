@@ -21,6 +21,7 @@ import ReceivingAnalyticsTE from './components/playerprofiles/TE/ReceivingAnalyt
 import HeadToHeadContainerTE from './components/playerprofiles/TE/HeadToHead';
 import FieldViewInterfaceTE from './components/playerprofiles/TE/FieldView';
 import GameRecap from './components/games/GameRecap';
+import ScoutingReport from './components/games/ScoutingReport';
 import OverviewCB from './components/playerprofiles/CB/Overview';
 import OverviewDL from './components/playerprofiles/DL/Overview';
 import OverviewC from './components/playerprofiles/C/Overview';
@@ -39,6 +40,8 @@ import TeamLanding from './components/teams/TeamLanding';
 import TeamRoster from './components/teams/TeamRoster';
 import TeamsRankings from './components/teams/TeamRankings';
 import GamesLanding from './components/games/GamesLanding';
+import SingleGamePreview from './components/games/SingleGamePreview';
+import SingleGameRecap from './components/games/SingleGameRecap';
 import './styles/App.css';
 import { useState } from 'react';
 
@@ -51,8 +54,8 @@ function App() {
       <NavBar isOpen={isOpen} setIsOpen={setIsOpen} />
       <div className="w-full pt-16 p-0 sm:p-4 overflow-auto bg-gray-100">
         <Routes>
-          <Route path="/sign-in/*" element={<SignInPage />} /> {/* Handle all subroutes */}
-          <Route path="/sign-up/*" element={<SignUpPage />} />          
+          <Route path="/sign-in/*" element={<SignInPage />} />
+          <Route path="/sign-up/*" element={<SignUpPage />} />
           <Route path="/" element={<Home />} />
           <Route path="/players" element={<Players year={defaultYear} />} />
           <Route path="/players/qb/:playerId" element={<OverviewQB year={defaultYear} />} />
@@ -77,12 +80,12 @@ function App() {
           <Route path="/players/g/:playerId" element={<OverviewG year={defaultYear} />} />
           <Route path="/players/t/:playerId" element={<OverviewT year={defaultYear} />} />
           <Route path="/players/s/:playerId" element={<OverviewS year={defaultYear} />} />
-          <Route path="/players/lbe/:playerId" element={<OverviewLBE year={defaultYear} />} />  
+          <Route path="/players/lbe/:playerId" element={<OverviewLBE year={defaultYear} />} />
           <Route path="/teams" element={<TeamsComponent year={defaultYear} />} />
           <Route path="/team_rankings" element={<TeamsRankings year={defaultYear} />} />
-          
           <Route path="/games" element={<GamesLanding year={defaultYear} />} />
-
+          <Route path="/games/preview/:id" element={<SingleGamePreview year={defaultYear} />} />
+          <Route path="/games/recap/:id" element={<SingleGameRecap year={defaultYear} />} />
           <Route path="/game/:id" element={<GameRecap />} />
           <Route path="/teams/:id/:year" element={<TeamLanding />} />
           <Route path="/teams/:id/:year/roster" element={<TeamRoster />} />
@@ -94,9 +97,9 @@ function App() {
           <Route path="/subscribe" element={<Subscription />} />
         </Routes>
       </div>
-        <div className="h-16 bg-[#235347] flex items-center justify-center text-white/50 px-4 text-sm sm:text-base">
-          © 2025 Perennial Data Group, LLC. All Rights Reserved.
-        </div>
+      <div className="h-16 bg-[#235347] flex items-center justify-center text-white/50 px-4 text-sm sm:text-base">
+        © 2025 Perennial Data Group, LLC. All Rights Reserved.
+      </div>
     </BrowserRouter>
   );
 }

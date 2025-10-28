@@ -1,8 +1,19 @@
+// src/components/games/singleGameRecapComponents/HeadToHeadReport.js
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
 
-const HeadToHeadReport = ({ year, awayTeamId, homeTeamId, gameId, awayStats, homeStats }) => {
+const HeadToHeadReport = ({
+  year,
+  awayTeamId,
+  homeTeamId,
+  gameId,
+  awayStats,
+  homeStats,
+}) => {
   const [activeTab, setActiveTab] = useState('Metrics');
+  const [gameBoxScore, setGameBoxScore] = useState(null);
+  const [loadingBoxScore, setLoadingBoxScore] = useState(true);
+
   const [metrics, setMetrics] = useState([
     { label: 'Points Scored', field: 'points', awayValue: 0, homeValue: 0 },
     { label: 'Rush Yards', field: 'rushingYards', awayValue: 0, homeValue: 0 },
@@ -16,6 +27,7 @@ const HeadToHeadReport = ({ year, awayTeamId, homeTeamId, gameId, awayStats, hom
     { label: 'Total Penalties', field: 'totalPenalties', awayValue: 0, homeValue: 0 },
     { label: 'Penalty Yards', field: 'penaltyYards', awayValue: 0, homeValue: 0 },
   ]);
+
   const [offenseMetrics, setOffenseMetrics] = useState([
     { label: 'Rush Attempts', field: 'rushingAttempts', awayValue: 0, homeValue: 0 },
     { label: 'Rush Yards', field: 'rushingYards', awayValue: 0, homeValue: 0 },
@@ -30,6 +42,7 @@ const HeadToHeadReport = ({ year, awayTeamId, homeTeamId, gameId, awayStats, hom
     { label: 'Fumbles Lost', field: 'fumblesLost', awayValue: 0, homeValue: 0 },
     { label: 'Interceptions Thrown', field: 'interceptions', awayValue: 0, homeValue: 0 },
   ]);
+
   const [defenseMetrics, setDefenseMetrics] = useState([
     { label: 'Opp. Rush Attempts', field: 'rushingAttemptsOpponent', awayValue: 0, homeValue: 0 },
     { label: 'Opp. Rush Yards', field: 'rushingYardsOpponent', awayValue: 0, homeValue: 0 },
@@ -44,6 +57,7 @@ const HeadToHeadReport = ({ year, awayTeamId, homeTeamId, gameId, awayStats, hom
     { label: 'Fumbles Recovered', field: 'fumblesLostOpponent', awayValue: 0, homeValue: 0 },
     { label: 'Interceptions', field: 'interceptionsOpponent', awayValue: 0, homeValue: 0 },
   ]);
+
   const [homeOffAwayDefMetrics, setHomeOffAwayDefMetrics] = useState([
     { label: 'Allowed Rush Att. vs. Off Produced', homeField: 'rushingAttempts', awayField: 'rushingAttemptsOpponent', homeValue: 0, awayValue: 0 },
     { label: 'Allowed Rush Yards vs. Off Produced', homeField: 'rushingYards', awayField: 'rushingYardsOpponent', homeValue: 0, awayValue: 0 },
@@ -58,6 +72,7 @@ const HeadToHeadReport = ({ year, awayTeamId, homeTeamId, gameId, awayStats, hom
     { label: 'Produced Fumbles vs. Off Allowed', homeField: 'fumblesLost', awayField: 'fumblesLostOpponent', homeValue: 0, awayValue: 0 },
     { label: 'Produced INTs vs. Off Allowed', homeField: 'interceptions', awayField: 'interceptionsOpponent', homeValue: 0, awayValue: 0 },
   ]);
+
   const [homeDefAwayOffMetrics, setHomeDefAwayOffMetrics] = useState([
     { label: 'Rush Att. vs. Def Allowed', homeField: 'rushingAttemptsOpponent', awayField: 'rushingAttempts', homeValue: 0, awayValue: 0 },
     { label: 'Rush Yards vs. Def Allowed', homeField: 'rushingYardsOpponent', awayField: 'rushingYards', homeValue: 0, awayValue: 0 },
@@ -72,9 +87,11 @@ const HeadToHeadReport = ({ year, awayTeamId, homeTeamId, gameId, awayStats, hom
     { label: 'Fumbles vs. Def Produced', homeField: 'fumblesLostOpponent', awayField: 'fumblesLost', homeValue: 0, awayValue: 0 },
     { label: 'INTs vs. Def Produced', homeField: 'interceptionsOpponent', awayField: 'interceptions', homeValue: 0, awayValue: 0 },
   ]);
+
   const [availableMetrics, setAvailableMetrics] = useState([]);
   const [selectedCustomMetric, setSelectedCustomMetric] = useState(null);
   const [customMetrics, setCustomMetrics] = useState([]);
+
   const isMobile = window.innerWidth < 640;
 
   const selectStyles = {
@@ -136,9 +153,59 @@ const HeadToHeadReport = ({ year, awayTeamId, homeTeamId, gameId, awayStats, hom
     }
   };
 
+  // -------------------------------------------------------------------------
+  // Fetch Box Score
+  // -------------------------------------------------------------------------
+  useEffect(() => {
+    const fetchBoxScore = async () => {
+      try {
+        setLoadingBoxScore(true);
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/teams_games`);
+        const games = await response.json();
+
+        const currentGame = games.find(g => g.id === parseInt(gameId));
+        if (currentGame) {
+          const parseLineScores = (lineStr) => {
+            if (!lineStr) return [];
+            try {
+              return JSON.parse(lineStr);
+            } catch {
+              return [];
+            }
+          };
+
+          const homeScores = parseLineScores(currentGame.homeLineScores);
+          const awayScores = parseLineScores(currentGame.awayLineScores);
+
+          const formatQuarter = (score, idx) => {
+            if (idx < 4) return `Q${idx + 1}: ${score}`;
+            return `OT${idx - 3}: ${score}`;
+          };
+
+          setGameBoxScore({
+            homeTeam: currentGame.homeTeam,
+            awayTeam: currentGame.awayTeam,
+            homeFinal: currentGame.homePoints,
+            awayFinal: currentGame.awayPoints,
+            homeQuarters: homeScores.map((s, i) => formatQuarter(s, i)),
+            awayQuarters: awayScores.map((s, i) => formatQuarter(s, i)),
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load box score:', err);
+      } finally {
+        setLoadingBoxScore(false);
+      }
+    };
+
+    if (gameId) fetchBoxScore();
+  }, [gameId]);
+
+  // -------------------------------------------------------------------------
+  // Update Metrics
+  // -------------------------------------------------------------------------
   useEffect(() => {
     if (awayStats && homeStats) {
-      // Parse totalPenaltiesYards for penalties and yards
       const parsePenalties = (value) => {
         if (!value || typeof value !== 'string') return { penalties: 0, yards: 0 };
         const [penalties, yards] = value.split('-').map(Number);
@@ -147,7 +214,6 @@ const HeadToHeadReport = ({ year, awayTeamId, homeTeamId, gameId, awayStats, hom
       const awayPenalties = parsePenalties(awayStats.totalPenaltiesYards);
       const homePenalties = parsePenalties(homeStats.totalPenaltiesYards);
 
-      // Parse completionAttempts for completions and attempts
       const parseCompletions = (value) => {
         if (!value || typeof value !== 'string') return { completions: 0, attempts: 0 };
         const [completions, attempts] = value.split('-').map(Number);
@@ -156,7 +222,6 @@ const HeadToHeadReport = ({ year, awayTeamId, homeTeamId, gameId, awayStats, hom
       const awayCompletions = parseCompletions(awayStats.completionAttempts);
       const homeCompletions = parseCompletions(homeStats.completionAttempts);
 
-      // Update metrics with provided stats
       setMetrics(prevMetrics =>
         prevMetrics.map(metric => ({
           ...metric,
@@ -221,7 +286,6 @@ const HeadToHeadReport = ({ year, awayTeamId, homeTeamId, gameId, awayStats, hom
         }))
       );
 
-      // Set available metrics for custom selection
       const metrics1 = Object.keys(awayStats).filter(key => !['game_id', 'season', 'week', 'seasonType', 'team_id', 'team', 'conference', 'homeAway'].includes(key));
       const metrics2 = Object.keys(homeStats).filter(key => !['game_id', 'season', 'week', 'seasonType', 'team_id', 'team', 'conference', 'homeAway'].includes(key));
       const allMetrics = [...new Set([...metrics1, ...metrics2, 'totalPenalties', 'penaltyYards', 'passCompletions', 'passAttempts'])];
@@ -232,45 +296,118 @@ const HeadToHeadReport = ({ year, awayTeamId, homeTeamId, gameId, awayStats, hom
     }
   }, [awayStats, homeStats]);
 
+  // -------------------------------------------------------------------------
+  // Render Box Score
+  // -------------------------------------------------------------------------
+  const renderBoxScore = () => {
+    if (loadingBoxScore) return <div className="text-center text-xs text-gray-500">Loading score...</div>;
+    if (!gameBoxScore) return null;
+
+    const { homeTeam, awayTeam, homeFinal, awayFinal, homeQuarters, awayQuarters } = gameBoxScore;
+    const maxQuarters = Math.max(homeQuarters.length, awayQuarters.length, 4);
+
+    const headers = ['TEAM'];
+    for (let i = 0; i < maxQuarters; i++) {
+      headers.push(i < 4 ? `Q${i + 1}` : `OT${i - 3}`);
+    }
+    headers.push('Final');
+
+    return (
+      <div className="bg-gray-50 border border-gray-300 rounded-lg mb-3 text-xs overflow-x-auto">
+        <table className="w-full text-center table-auto border-collapse">
+          <thead className="bg-[#235347] text-white font-bold">
+            <tr>
+              {headers.map((h, i) => (
+                <th key={i} className="px-2 py-1 border border-gray-400">
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {/* Away Team Row */}
+            <tr className="font-semibold">
+              <td className="text-left pl-2 border border-gray-400">{awayTeam}</td>
+              {Array.from({ length: maxQuarters }).map((_, i) => (
+                <td key={i} className="border border-gray-400">
+                  {/* Extract number only */}
+                  {awayQuarters[i] ? awayQuarters[i].split(': ')[1] : '-'}
+                </td>
+              ))}
+              <td className="font-bold border border-gray-400">{awayFinal}</td>
+            </tr>
+            {/* Home Team Row */}
+            <tr className="font-semibold">
+              <td className="text-left pl-2 border border-gray-400">{homeTeam}</td>
+              {Array.from({ length: maxQuarters }).map((_, i) => (
+                <td key={i} className="border border-gray-400">
+                  {homeQuarters[i] ? homeQuarters[i].split(': ')[1] : '-'}
+                </td>
+              ))}
+              <td className="font-bold border border-gray-400">{homeFinal}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    );
+  };
   return (
     <div className="bg-white rounded-lg shadow-xl">
-      <h2 className="flex items-center justify-center text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[30px] rounded mb-2">{awayStats?.team || 'Away'} vs. {homeStats?.team || 'Home'}</h2>
+      {/* BOX SCORE */}
+      {renderBoxScore()}
+
+      {/* TITLE */}
+      <h2 className="flex items-center justify-center text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[30px] rounded mb-2">
+        {awayStats?.team || 'Away'} vs. {homeStats?.team || 'Home'}
+      </h2>
+
+      {/* TABS */}
+      <div className="border-b border-gray-300">
+        <div className="w-full overflow-x-hidden">
+          <ul className={isMobile ? "flex gap-2 justify-center p-0 whitespace-nowrap" : "flex gap-4 justify-center p-0 whitespace-nowrap"}>
+            <li>
+              <button
+                className={`text-[#235347] hover:text-[#235347] pb-1 text-xs border-b-2 ${activeTab === 'Metrics' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+                onClick={() => setActiveTab('Metrics')}
+              >
+                Headline
+              </button>
+            </li>
+            <li>
+              <button
+                className={`text-[#235347] hover:text-[#235347] pb-1 text-xs border-b-2 ${activeTab === 'Offense' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+                onClick={() => setActiveTab('Offense')}
+              >
+                Offense
+              </button>
+            </li>
+            <li>
+              <button
+                className={`text-[#235347] hover:text-[#235347] pb-1 text-xs border-b-2 ${activeTab === 'Defense' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+                onClick={() => setActiveTab('Defense')}
+              >
+                Defense
+              </button>
+            </li>
+            {/* <li>
+              <button
+                className={`text-[#235347] hover:text-[#235347] pb-1 text-xs border-b-2 ${activeTab === 'Custom' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+                onClick={() => setActiveTab('Custom')}
+              >
+                Custom
+              </button>
+            </li> */}
+          </ul>
+        </div>
+      </div>
+
+      {/* CONTENT */}
       <div className={isMobile ? "w-full max-w-md mx-auto" : "w-full max-w-md mx-auto"}>
         {(!awayStats || !homeStats) && (
           <div className="p-4 text-black text-center">Loading Game Stats...</div>
         )}
         {awayStats && homeStats && (
           <>
-            <div className="border-b border-gray-300">
-  <div className="w-full overflow-x-hidden">
-    <ul className={isMobile ? "flex gap-2 justify-center p-0 whitespace-nowrap" : "flex gap-4 justify-center p-0 whitespace-nowrap"}>
-      <li>
-        <button
-          className={`text-[#235347] hover:text-[#235347] pb-1 text-xs border-b-2 ${activeTab === 'Metrics' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
-          onClick={() => setActiveTab('Metrics')}
-        >
-          Headline
-        </button>
-      </li>
-      <li>
-        <button
-          className={`text-[#235347] hover:text-[#235347] pb-1 text-xs border-b-2 ${activeTab === 'Offense' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
-          onClick={() => setActiveTab('Offense')}
-        >
-          Offense
-        </button>
-      </li>
-      <li>
-        <button
-          className={`text-[#235347] hover:text-[#235347] pb-1 text-xs border-b-2 ${activeTab === 'Defense' ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
-          onClick={() => setActiveTab('Defense')}
-        >
-          Defense
-        </button>
-      </li>
-    </ul>
-  </div>
-</div>
             {activeTab === 'Metrics' && (
               <div className={isMobile ? "space-y-1 p-2" : "space-y-1 p-4"}>
                 {metrics.map((metric, index) => {
@@ -314,6 +451,7 @@ const HeadToHeadReport = ({ year, awayTeamId, homeTeamId, gameId, awayStats, hom
                 })}
               </div>
             )}
+
             {activeTab === 'Offense' && (
               <div className={isMobile ? "space-y-1 p-2" : "space-y-1 p-4"}>
                 {offenseMetrics.length > 0 ? (
@@ -361,6 +499,7 @@ const HeadToHeadReport = ({ year, awayTeamId, homeTeamId, gameId, awayStats, hom
                 )}
               </div>
             )}
+
             {activeTab === 'Defense' && (
               <div className={isMobile ? "space-y-1 p-2" : "space-y-1 p-4"}>
                 {defenseMetrics.length > 0 ? (
@@ -408,100 +547,7 @@ const HeadToHeadReport = ({ year, awayTeamId, homeTeamId, gameId, awayStats, hom
                 )}
               </div>
             )}
-            {activeTab === 'HomeOffAwayDef' && (
-              <div className={isMobile ? "space-y-1 p-2" : "space-y-1 p-4"}>
-                {homeOffAwayDefMetrics.length > 0 ? (
-                  homeOffAwayDefMetrics.map((metric, index) => {
-                    const maxValue = Math.max(metric.awayValue, metric.homeValue) || 1;
-                    const totalWidth = 100;
-                    const awayWidth = (metric.awayValue / maxValue) * totalWidth;
-                    const homeWidth = (metric.homeValue / maxValue) * totalWidth;
-                    return (
-                      <div key={index} className="flex flex-col items-center">
-                        <div className="flex items-center w-full justify-center">
-                          <span className={isMobile ? "text-gray-700 font-semibold text-xs" : "text-gray-700 font-semibold"}>{metric.label}</span>
-                          <button
-                            onClick={() => removeMetric(metric.homeField, 'homeOffAwayDef')}
-                            className="ml-2 text-gray-500 hover:text-red-700 text-xs"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                        <div className={isMobile ? "w-[100%] flex justify-center relative" : "w-[130%] flex justify-center relative"} style={{ height: isMobile ? '16px' : '24px' }}>
-                          <div className="w-5/6 flex">
-                            <div
-                              className={isMobile ? "bg-blue-800 h-4 rounded-l flex items-center ml-1" : "bg-blue-800 h-6 rounded-l flex items-center ml-1"}
-                              style={{ width: `${awayWidth}%` }}
-                            >
-                              <span className="ml-2 text-white text-xs">{metric.awayValue}</span>
-                            </div>
-                            <div
-                              className={isMobile ? "bg-rose-800 h-4 rounded-r flex items-center justify-end mr-1" : "bg-rose-800 h-6 rounded-r flex items-center justify-end mr-1"}
-                              style={{ width: `${homeWidth}%` }}
-                            >
-                              <span className="mr-2 text-white text-xs">{metric.homeValue}</span>
-                            </div>
-                          </div>
-                          <div
-                            className="absolute w-[1px] bg-black"
-                            style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)', height: isMobile ? '16px' : '24px' }}
-                          ></div>
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <p className="text-gray-500 text-center text-sm sm:text-base">No Home Off v. Away Def Metrics Available</p>
-                )}
-              </div>
-            )}
-            {activeTab === 'HomeDefAwayOff' && (
-              <div className={isMobile ? "space-y-1 p-2" : "space-y-1 p-4"}>
-                {homeDefAwayOffMetrics.length > 0 ? (
-                  homeDefAwayOffMetrics.map((metric, index) => {
-                    const maxValue = Math.max(metric.awayValue, metric.homeValue) || 1;
-                    const totalWidth = 100;
-                    const awayWidth = (metric.awayValue / maxValue) * totalWidth;
-                    const homeWidth = (metric.homeValue / maxValue) * totalWidth;
-                    return (
-                      <div key={index} className="flex flex-col items-center">
-                        <div className="flex items-center w-full justify-center">
-                          <span className={isMobile ? "text-gray-700 font-semibold text-xs" : "text-gray-700 font-semibold"}>{metric.label}</span>
-                          <button
-                            onClick={() => removeMetric(metric.homeField, 'homeDefAwayOff')}
-                            className="ml-2 text-gray-500 hover:text-red-700 text-xs"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                        <div className={isMobile ? "w-[100%] flex justify-center relative" : "w-[130%] flex justify-center relative"} style={{ height: isMobile ? '16px' : '24px' }}>
-                          <div className="w-5/6 flex">
-                            <div
-                              className={isMobile ? "bg-blue-800 h-4 rounded-l flex items-center ml-1" : "bg-blue-800 h-6 rounded-l flex items-center ml-1"}
-                              style={{ width: `${awayWidth}%` }}
-                            >
-                              <span className="ml-2 text-white text-xs">{metric.awayValue}</span>
-                            </div>
-                            <div
-                              className={isMobile ? "bg-rose-800 h-4 rounded-r flex items-center justify-end mr-1" : "bg-rose-800 h-6 rounded-r flex items-center justify-end mr-1"}
-                              style={{ width: `${homeWidth}%` }}
-                            >
-                              <span className="mr-2 text-white text-xs">{metric.homeValue}</span>
-                            </div>
-                          </div>
-                          <div
-                            className="absolute w-[1px] bg-black"
-                            style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)', height: isMobile ? '16px' : '24px' }}
-                          ></div>
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <p className="text-gray-500 text-center text-sm sm:text-base">No Home Def v. Away Off Metrics Available</p>
-                )}
-              </div>
-            )}
+
             {activeTab === 'Custom' && (
               <div className={isMobile ? "space-y-1 p-2" : "space-y-1 p-4"}>
                 <div className="flex justify-center items-center mb-4">

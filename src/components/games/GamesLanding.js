@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState, memo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import ScoutingReport from './ScoutingReport';
-import GameRecap from './GameRecap'; // Import the GameRecap component
+import GameRecap from './GameRecap';
 
 const conferences = [
   'ACC', 'American Athletic', 'Big 12', 'Big Ten', 'Conference USA',
@@ -15,12 +15,12 @@ function GamesComponent({ year = '2025' }) {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [gamesData, setGamesData] = useState([]);
-  const [activeWeek, setActiveWeek] = useState(10); // Update game state here 
+  const [activeWeek, setActiveWeek] = useState(10);
   const [activeTab, setActiveTab] = useState('All');
   const [showScoutingReport, setShowScoutingReport] = useState(false);
-  const [showGameRecap, setShowGameRecap] = useState(false); // State for GameRecap modal
+  const [showGameRecap, setShowGameRecap] = useState(false);
   const [selectedMatchup, setSelectedMatchup] = useState(null);
-  const [selectedGameId, setSelectedGameId] = useState(null); // State for game ID
+  const [selectedGameId, setSelectedGameId] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -40,7 +40,6 @@ function GamesComponent({ year = '2025' }) {
             try {
               const data = JSON.parse(text);
               console.log('Raw gamesData:', data);
-              // Deduplicate games by unique id
               const uniqueGames = [];
               const seenIds = new Set();
               for (const game of data) {
@@ -191,7 +190,7 @@ function GamesComponent({ year = '2025' }) {
       </div>
       <div className="border-b border-gray-300 mb-4 sm:mb-6">
         <div className="overflow-x-auto whitespace-nowrap py-2">
-          <ul className="flex gap-2 sm:gap-4 justify-start sm:justify-center p-2 sm:p-4">
+          <ul className="flex gap-2 sm:gap-4 justify-center p-2 sm:p-4">
             {filterTabs.map(tab => (
               <li key={tab}>
                 <button
@@ -212,8 +211,20 @@ function GamesComponent({ year = '2025' }) {
           const homeWins = game.homePoints !== null && game.awayPoints !== null && game.homePoints > game.awayPoints;
           const awayWins = game.awayPoints !== null && game.homePoints !== null && game.awayPoints > game.homePoints;
           const isFBSMatchup = conferences.includes(game.homeConference) && conferences.includes(game.awayConference);
+
+          const handleGameContainerClick = (e) => {
+            if (e.target.tagName !== 'A' && !e.target.closest('a')) {
+              const route = game.completed === 0 ? `/games/preview/${game.id}` : `/games/recap/${game.id}`;
+              navigate(route);
+            }
+          };
+
           return (
-            <div key={game.id || index} className="p-2 sm:p-4 shadow-xl rounded-lg bg-white border border-gray-200 h-24 flex flex-col justify-between">
+            <div
+              key={game.id || index}
+              className="p-2 sm:p-4 shadow-xl rounded-lg bg-white border border-gray-200 h-24 flex flex-col justify-between cursor-pointer hover:bg-gray-50 transition-colors"
+              onClick={handleGameContainerClick}
+            >
               <div className="flex justify-between items-center min-h-[1.5rem]">
                 <div className="text-xs sm:text-sm text-gray-600">
                   {new Date(game.startDate).toLocaleDateString()}
@@ -225,6 +236,7 @@ function GamesComponent({ year = '2025' }) {
                         to="#"
                         onClick={(e) => {
                           e.preventDefault();
+                          e.stopPropagation();
                           handleScoutingReportClick(game);
                         }}
                         className="text-blue-500 hover:text-blue-700 underline text-xs sm:text-sm"
@@ -239,6 +251,7 @@ function GamesComponent({ year = '2025' }) {
                       to="#"
                       onClick={(e) => {
                         e.preventDefault();
+                        e.stopPropagation();
                         handleGameRecapClick(game);
                       }}
                       className="text-blue-500 hover:text-blue-700 underline text-xs sm:text-sm"
@@ -254,6 +267,7 @@ function GamesComponent({ year = '2025' }) {
                     {game.awayTeamLogo && <img src={game.awayTeamLogo} alt={`${game.awayTeam} logo`} className="w-6 h-6 sm:w-5 h-5 mr-1 sm:mr-2" />}
                     <Link
                       to={`/teams/${game.awayId}/${year}`}
+                      onClick={(e) => e.stopPropagation()}
                       className={`inline ${awayWins ? 'font-bold' : ''}`}
                     >
                       {game.awayTeam}
@@ -263,6 +277,7 @@ function GamesComponent({ year = '2025' }) {
                     {game.homeTeamLogo && <img src={game.homeTeamLogo} alt={`${game.homeTeam} logo`} className="w-6 h-6 sm:w-5 h-5 mr-1 sm:mr-2" />}
                     <Link
                       to={`/teams/${game.homeId}/${year}`}
+                      onClick={(e) => e.stopPropagation()}
                       className={`inline ${homeWins ? 'font-bold' : ''}`}
                     >
                       {game.homeTeam}
