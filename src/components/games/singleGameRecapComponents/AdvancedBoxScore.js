@@ -144,15 +144,15 @@ const AdvancedBoxScore = ({ gameId, awayStats, homeStats, awayTeamName, homeTeam
   };
 
   // -----------------------------------------------------------------------
-  // Reusable Table (Styled like TeamAReport — Shorter Rows + Smaller Font)
+  // Reusable Table (Mobile-Optimized)
   // -----------------------------------------------------------------------
   const StatTable = ({ title, data, headers, renderRow }) => (
     <div className="border border-gray-300 rounded-lg p-0">
       <h2 className="flex items-center justify-center text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[30px] rounded">
         {title}
       </h2>
-      <div className="bg-white rounded-lg shadow-lg">
-        <table className="w-full text-xs text-left text-black">
+      <div className="bg-white rounded-lg shadow-lg overflow-x-auto">
+        <table className="w-full text-xs text-left text-black min-w-[600px]">
           <thead className="bg-gray-200 text-gray-700">
             <tr>
               {headers.map((h, i) => (
@@ -292,7 +292,7 @@ const AdvancedBoxScore = ({ gameId, awayStats, homeStats, awayTeamName, homeTeam
         ) : (
           <div className="space-y-4">
             {/* === PASSING === */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <StatTable
                 title={`${awayTeamName} Passing`}
                 data={awayPassers}
@@ -328,7 +328,7 @@ const AdvancedBoxScore = ({ gameId, awayStats, homeStats, awayTeamName, homeTeam
             </div>
 
             {/* === RUSHING === */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <StatTable
                 title={`${awayTeamName} Rushing`}
                 data={awayRushers}
@@ -362,7 +362,7 @@ const AdvancedBoxScore = ({ gameId, awayStats, homeStats, awayTeamName, homeTeam
             </div>
 
             {/* === RECEIVING === */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <StatTable
                 title={`${awayTeamName} Receiving`}
                 data={awayReceivers}
@@ -398,7 +398,7 @@ const AdvancedBoxScore = ({ gameId, awayStats, homeStats, awayTeamName, homeTeam
             </div>
 
             {/* === BLOCKING === */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <StatTable
                 title={`${awayTeamName} Blocking`}
                 data={awayBlockers}
@@ -434,7 +434,7 @@ const AdvancedBoxScore = ({ gameId, awayStats, homeStats, awayTeamName, homeTeam
             </div>
 
             {/* === DEFENSE === */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <StatTable
                 title={`${awayTeamName} Defense`}
                 data={awayDefenders}
@@ -478,6 +478,9 @@ const AdvancedBoxScore = ({ gameId, awayStats, homeStats, awayTeamName, homeTeam
       {!isSubscribed && (
         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 backdrop-filter backdrop-blur-md rounded-lg">
           <div className="p-4 sm:p-6 bg-white rounded-lg shadow-lg text-center">
+            <svg className="w-12 h-12 mx-auto mb-2 text-[#235347]" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a1 1 0 001 1h3a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6a1 1 0 011-1h3a1 1 0 001-1zm5-2v2h2V7a2 2 0 10-4 0v2h2z" clipRule="evenodd" />
+            </svg>
             <p className="text-gray-700 text-base sm:text-lg font-semibold mb-2">Exclusive Content</p>
             <p className="text-gray-500 text-sm sm:text-base mb-4">
               This content is exclusive to INSZN Insider subscribers.
