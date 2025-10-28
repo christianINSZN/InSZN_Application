@@ -1,3 +1,4 @@
+// src/components/games/SingleGameRecap.js
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import HeadToHeadReport from './gameRecapComponents/HeadToHeadReport';
@@ -6,6 +7,7 @@ import TeamBReport from './gameRecapComponents/TeamBReport';
 import AdvancedOffense from './singleGameRecapComponents/AdvancedOffense';
 import PlayerStats from './singleGameRecapComponents/PlayerStats';
 import PlayByPlay from './singleGameRecapComponents/PlayByPlay';
+import AdvancedBoxScore from './singleGameRecapComponents/AdvancedBoxScore'; // ← NEW
 
 const SingleGameRecap = ({ year = '2025' }) => {
   const { id } = useParams();
@@ -26,7 +28,7 @@ const SingleGameRecap = ({ year = '2025' }) => {
         setLoading(true);
         setError(null);
 
-        // Fetch game metadata from /api/teams_games
+        // Fetch game metadata
         const gameResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/teams_games`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
@@ -37,12 +39,8 @@ const SingleGameRecap = ({ year = '2025' }) => {
         }
         const gamesData = await gameResponse.json();
         const gameData = gamesData.find(game => game.id === parseInt(id));
-        if (!gameData) {
-          throw new Error('Game not found');
-        }
-        if (gameData.completed === 0) {
-          throw new Error('Game is not yet completed');
-        }
+        if (!gameData) throw new Error('Game not found');
+        if (gameData.completed === 0) throw new Error('Game is not yet completed');
 
         setMatchup({
           awayId: gameData.awayId,
@@ -53,7 +51,7 @@ const SingleGameRecap = ({ year = '2025' }) => {
           homeTeamLogo: gameData.homeTeamLogo,
         });
 
-        // Fetch game stats and team records
+        // Fetch stats + records
         const [statsResponse, recordsResponse] = await Promise.all([
           fetch(`${process.env.REACT_APP_API_URL}/api/team_game_stats/${id}`, {
             method: 'GET',
@@ -76,7 +74,9 @@ const SingleGameRecap = ({ year = '2025' }) => {
 
         const statsData = await statsResponse.json();
         const recordsData = await recordsResponse.json();
+
         setGameStats(statsData);
+
         const awayRecord = recordsData.find(record => record.teamId === parseInt(gameData.awayId));
         const homeRecord = recordsData.find(record => record.teamId === parseInt(gameData.homeId));
         setAwayTeamRecord(awayRecord || null);
@@ -88,6 +88,7 @@ const SingleGameRecap = ({ year = '2025' }) => {
         setLoading(false);
       }
     };
+
     fetchGameData();
   }, [id, year]);
 
@@ -97,19 +98,19 @@ const SingleGameRecap = ({ year = '2025' }) => {
   if (loading) {
     return <div className="p-2 sm:p-4 text-black text-lg">Loading game recap...</div>;
   }
-
   if (error || !matchup) {
     return <div className="p-2 sm:p-4 text-red-500 text-lg">Error: {error || 'No game data available'}</div>;
   }
 
   const isOverviewActive = activeTab === 'Overview';
   const isAdvancedOffenseActive = activeTab === 'AdvancedOffense';
+  const isAdvancedBoxScoreActive = activeTab === 'AdvancedBoxScore';
   const isPlayerStatsActive = activeTab === 'PlayerStats';
   const isPlayByPlayActive = activeTab === 'PlayByPlay';
 
   return (
     <div className="p-2 sm:p-2 mt-0 sm:mt-12 bg-gray-100 min-h-screen">
-      {/* Header with Logos, Team Names/Records, Scores, and INSZN Logo */}
+      {/* Header */}
       <div className="bg-gray-200 flex flex-row items-center justify-between p-2 sm:p-4 rounded-t border-b-2 border-[#235347] mb-4 sm:mb-6">
         <div className="flex items-center">
           {matchup?.awayTeamLogo && (
@@ -125,6 +126,7 @@ const SingleGameRecap = ({ year = '2025' }) => {
           </div>
         </div>
         <span className="text-lg sm:text-xl md:text-4xl font-bold text-black mx-2 sm:mx-4">{awayStats?.points || 0}</span>
+
         <div className="hidden md:block flex items-center">
           <img
             src="/TurfLogo_RemovedBkg.png"
@@ -132,7 +134,9 @@ const SingleGameRecap = ({ year = '2025' }) => {
             className="w-24 sm:w-36 h-auto mx-1 sm:mx-2"
           />
         </div>
+
         <span className="text-lg sm:text-xl md:text-4xl font-bold text-black mx-2 sm:mx-4">{homeStats?.points || 0}</span>
+
         <div className="flex items-center flex-row-reverse">
           {matchup?.homeTeamLogo && (
             <img src={matchup.homeTeamLogo} alt={`${matchup.homeTeamName} logo`} className="w-12 sm:w-16 h-12 sm:h-16" />
@@ -147,12 +151,15 @@ const SingleGameRecap = ({ year = '2025' }) => {
           </div>
         </div>
       </div>
+
       {/* Tabs */}
       <div className="border-b border-gray-300 mb-4 sm:mb-4">
         <ul className="flex gap-1 sm:gap-4">
           <li>
             <button
-              className={`text-[#235347] hover:text-[#235347] pb-0.5 sm:pb-2 border-b-2 text-xs sm:text-base px-1 sm:px-0 ${isOverviewActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'}`}
+              className={`text-[#235347] hover:text-[#235347] pb-0.5 sm:pb-2 border-b-2 text-xs sm:text-base px-1 sm:px-0 ${
+                isOverviewActive ? 'border-[#235347]' : 'border-transparent hover:border-[#235347]'
+              }`}
               onClick={() => setActiveTab('Overview')}
             >
               Overview
@@ -160,15 +167,29 @@ const SingleGameRecap = ({ year = '2025' }) => {
           </li>
           <li>
             <button
-              className={`text-gray-500 hover:text-gray-700 pb-0.5 sm:pb-2 border-b-2 text-xs sm:text-base px-1 sm:px-0 ${isAdvancedOffenseActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
+              className={`text-gray-500 hover:text-gray-700 pb-0.5 sm:pb-2 border-b-2 text-xs sm:text-base px-1 sm:px-0 ${
+                isAdvancedOffenseActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'
+              }`}
               onClick={() => setActiveTab('AdvancedOffense')}
             >
               Advanced Offense
             </button>
           </li>
-          {/* <li>
+          <li>
             <button
-              className={`text-gray-500 hover:text-gray-700 pb-0.5 sm:pb-2 border-b-2 text-xs sm:text-base px-1 sm:px-0 ${isPlayerStatsActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
+              className={`text-gray-500 hover:text-gray-700 pb-0.5 sm:pb-2 border-b-2 text-xs sm:text-base px-1 sm:px-0 ${
+                isAdvancedBoxScoreActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'
+              }`}
+              onClick={() => setActiveTab('AdvancedBoxScore')}
+            >
+              Advanced Box Score
+            </button>
+          </li>
+          <li>
+            <button
+              className={`text-gray-500 hover:text-gray-700 pb-0.5 sm:pb-2 border-b-2 text-xs sm:text-base px-1 sm:px-0 ${
+                isPlayerStatsActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'
+              }`}
               onClick={() => setActiveTab('PlayerStats')}
             >
               Player Stats
@@ -176,14 +197,17 @@ const SingleGameRecap = ({ year = '2025' }) => {
           </li>
           <li>
             <button
-              className={`text-gray-500 hover:text-gray-700 pb-0.5 sm:pb-2 border-b-2 text-xs sm:text-base px-1 sm:px-0 ${isPlayByPlayActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'}`}
+              className={`text-gray-500 hover:text-gray-700 pb-0.5 sm:pb-2 border-b-2 text-xs sm:text-base px-1 sm:px-0 ${
+                isPlayByPlayActive ? 'border-gray-500' : 'border-transparent hover:border-gray-500'
+              }`}
               onClick={() => setActiveTab('PlayByPlay')}
             >
               Play-by-Play
             </button>
-          </li> */}
+          </li>
         </ul>
       </div>
+
       {/* Main Content */}
       {loading && (
         <div className="p-2 sm:p-4 text-gray-500 text-center">Loading game recap...</div>
@@ -191,9 +215,9 @@ const SingleGameRecap = ({ year = '2025' }) => {
       {error && (
         <div className="p-2 sm:p-4 text-red-500 text-center">Error: {error}</div>
       )}
+
       {activeTab === 'Overview' && (
         <div className="flex flex-col md:grid md:grid-cols-[1fr_1.5fr_1fr] gap-4 sm:gap-6">
-          {/* Head-to-Head Metrics (Top on Mobile) */}
           <div className="order-first md:order-2">
             <HeadToHeadReport
               year={year}
@@ -204,7 +228,6 @@ const SingleGameRecap = ({ year = '2025' }) => {
               homeStats={homeStats}
             />
           </div>
-          {/* Left Column: Team A (Away) */}
           <div className="order-2 md:order-1">
             <TeamAReport
               teamName={matchup?.awayTeamName}
@@ -214,7 +237,6 @@ const SingleGameRecap = ({ year = '2025' }) => {
               gameStats={awayStats}
             />
           </div>
-          {/* Right Column: Team B (Home) */}
           <div className="order-3 md:order-3">
             <TeamBReport
               teamName={matchup?.homeTeamName}
@@ -226,6 +248,7 @@ const SingleGameRecap = ({ year = '2025' }) => {
           </div>
         </div>
       )}
+
       {activeTab === 'AdvancedOffense' && (
         <AdvancedOffense
           awayTeamName={matchup?.awayTeamName}
@@ -238,6 +261,19 @@ const SingleGameRecap = ({ year = '2025' }) => {
           homeStats={homeStats}
         />
       )}
+
+      {activeTab === 'AdvancedBoxScore' && (
+        <AdvancedBoxScore
+          gameId={id}
+          awayStats={awayStats}
+          homeStats={homeStats}
+          awayTeamName={matchup?.awayTeamName}
+          homeTeamName={matchup?.homeTeamName}
+          year={year}
+
+        />
+      )}
+
       {activeTab === 'PlayerStats' && (
         <PlayerStats
           year={year}
@@ -246,6 +282,7 @@ const SingleGameRecap = ({ year = '2025' }) => {
           gameId={id}
         />
       )}
+
       {activeTab === 'PlayByPlay' && (
         <PlayByPlay
           year={year}
