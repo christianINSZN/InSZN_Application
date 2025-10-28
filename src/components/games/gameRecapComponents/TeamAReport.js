@@ -1,5 +1,6 @@
 // src/components/games/singleGameRecapComponents/TeamAReport.js
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 const TeamAReport = ({ teamName, teamId, year, gameId, gameStats }) => {
   const [showTooltip, setShowTooltip] = useState(null);
@@ -95,7 +96,7 @@ const TeamAReport = ({ teamName, teamId, year, gameId, gameStats }) => {
   };
 
   // -----------------------------------------------------------------------
-  // Fetch Top QB — WITH FULL DEBUG LOGS
+  // Fetch Top QB — Uses SELECT * (your endpoint)
   // -----------------------------------------------------------------------
   useEffect(() => {
     if (!teamId || !week || !year) {
@@ -128,7 +129,7 @@ const TeamAReport = ({ teamName, teamId, year, gameId, gameStats }) => {
           throw new Error('Invalid JSON');
         }
 
-        console.log('QB Data Parsed:', data);
+        console.log('QB Data Parsed (full row):', data);
         setTopQB(data);
       } catch (err) {
         console.error('QB Fetch Failed:', err.message);
@@ -201,30 +202,33 @@ const TeamAReport = ({ teamName, teamId, year, gameId, gameStats }) => {
         )}
       </div>
 
-      {/* === Key Performers: Top QB === */}
+      {/* === Key Performers: Top Passer (Name + Yards + Link) === */}
       <div className="border border-gray-300 rounded-lg p-0">
         <h2 className="flex items-center justify-center text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[30px] rounded">
           Key Performers
         </h2>
         <div className="bg-white rounded-lg shadow-lg p-3">
           {loadingQB ? (
-            <p className="text-xs text-gray-500">Loading QB...</p>
+            <p className="text-xs text-gray-500">Loading...</p>
           ) : topQB ? (
             <div className="flex items-center justify-between text-xs">
               <div>
-                <span className="font-bold">{topQB.playerName}</span> (QB)
+                <Link
+                  to={`/players/qb/${topQB.playerId}`}
+                  className="font-bold text-[#235347] hover:underline"
+                >
+                  {topQB.player || 'Unknown Player'}
+                </Link>
               </div>
               <div className="text-right">
-                <div>{topQB.yards} yds</div>
-                <div>{topQB.touchdowns} TD • {topQB.interceptions} INT</div>
-                <div className="text-[#235347] font-medium">Grade: {topQB.grades_pass?.toFixed(1) || 'N/A'}</div>
+                <div className="font-medium">{topQB.yards ?? 0} Pass Yards</div>
               </div>
             </div>
           ) : (
             <div>
               <p className="text-xs text-red-500">No passing data</p>
               <p className="text-xs text-gray-500 mt-1">
-                Check console logs for teamId, week, seasonType
+                Check console logs
               </p>
             </div>
           )}
