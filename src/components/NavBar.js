@@ -111,13 +111,15 @@ function NavBar() {
                     </Link>
                   </li>
                   <li>
-                    <Link
-                      to="/portal"
-                      className="block px-4 py-2 text-black hover:bg-[#235347]/70 hover:text-white text-base"
-                      onClick={() => setIsPlayersDropdownOpen(false)}
+                    <div
+                      className="group relative block px-4 py-2 text-gray-400 cursor-not-allowed"
+                      title="Coming Soon"
                     >
                       Transfer Portal
-                    </Link>
+                      <span className="absolute hidden group-hover:block -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs rounded px-2 py-1 whitespace-nowrap">
+                        Coming Soon
+                      </span>
+                    </div>
                   </li>
                 </ul>
               )}
@@ -263,16 +265,15 @@ function NavBar() {
                         </Link>
                       </li>
                       <li>
-                        <Link
-                          to="/portal"
-                          className="block px-4 py-2 text-black hover:bg-[#235347]/70 hover:text-white text-base"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleMobileLinkClick();
-                          }}
+                        <div
+                          className="group relative block px-4 py-2 text-gray-400 cursor-not-allowed"
+                          title="Coming Soon"
                         >
                           Transfer Portal
-                        </Link>
+                          <span className="absolute hidden group-hover:block -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs rounded px-2 py-1 whitespace-nowrap">
+                            Coming Soon
+                          </span>
+                        </div>
                       </li>
                     </ul>
                   )}
