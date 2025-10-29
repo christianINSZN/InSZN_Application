@@ -292,7 +292,7 @@ const AdvancedBoxScore = ({ gameId, awayStats, homeStats, awayTeamName, homeTeam
         ) : (
           <div className="space-y-4">
             {/* === PASSING === */}
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <StatTable
                 title={`${awayTeamName} Passing`}
                 data={awayPassers}
@@ -328,7 +328,7 @@ const AdvancedBoxScore = ({ gameId, awayStats, homeStats, awayTeamName, homeTeam
             </div>
 
             {/* === RUSHING === */}
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <StatTable
                 title={`${awayTeamName} Rushing`}
                 data={awayRushers}
@@ -362,7 +362,7 @@ const AdvancedBoxScore = ({ gameId, awayStats, homeStats, awayTeamName, homeTeam
             </div>
 
             {/* === RECEIVING === */}
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <StatTable
                 title={`${awayTeamName} Receiving`}
                 data={awayReceivers}
@@ -398,7 +398,7 @@ const AdvancedBoxScore = ({ gameId, awayStats, homeStats, awayTeamName, homeTeam
             </div>
 
             {/* === BLOCKING === */}
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <StatTable
                 title={`${awayTeamName} Blocking`}
                 data={awayBlockers}
@@ -434,7 +434,7 @@ const AdvancedBoxScore = ({ gameId, awayStats, homeStats, awayTeamName, homeTeam
             </div>
 
             {/* === DEFENSE === */}
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <StatTable
                 title={`${awayTeamName} Defense`}
                 data={awayDefenders}
