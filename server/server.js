@@ -1869,6 +1869,19 @@ app.get('/api/team_game_stats/:gameId', (req, res) => {
   );
 });
 
+// Portal Endpoint
+app.get('/api/players_portal', (req, res) => {
+  db.all('SELECT * FROM Players_TransferPortal', [], (err, rows) => {
+    if (err) {
+      return res.status(500).send(err.message);
+    }
+    if (!rows || rows.length === 0) {
+      return res.status(404).send('No players found in transfer portal');
+    }
+    res.json(rows);
+  });
+});
+
 // Tweets endpoint
 app.get('/api/teams_feeds/:id', async (req, res) => {
     const { id } = req.params;
