@@ -47,7 +47,7 @@ function TopQBs() {
         );
       },
     }),
-    columnHelper.accessor('QBRz', {
+    columnHelper.accessor('QBR', {
       id: 'qbr',
       size: 60,
       header: () => (
