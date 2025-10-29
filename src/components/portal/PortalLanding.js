@@ -17,7 +17,7 @@ const PortalLanding = ({ className = "" }) => {
 
   const isMobile = window.innerWidth < 640;
   const headshotSize = 36;
-  const logoSize = 32;
+  const logoSize = isMobile ? 28 : 32; // Fixed: smaller on mobile, normal on desktop
 
   const formatHeight = (inches) => {
     if (!inches) return '—';
@@ -85,14 +85,17 @@ const PortalLanding = ({ className = "" }) => {
   }, [portalData, filterName, filterPosition, filterOrigin, filterDestination, filterStatus, filterYear]);
 
   // -------------------------------------------------------------------
-  // Columns: Mobile vs Desktop
+  // Column Helper
   // -------------------------------------------------------------------
   const columnHelper = createColumnHelper();
 
+  // -------------------------------------------------------------------
+  // Mobile Columns (3-column card)
+  // -------------------------------------------------------------------
   const mobileColumns = [
-    // Player Info (merged)
+    // Player + Position
     columnHelper.display({
-      id: 'PlayerInfo',
+      id: 'Player',
       header: 'Player',
       cell: ({ row }) => {
         const p = row.original;
@@ -108,27 +111,15 @@ const PortalLanding = ({ className = "" }) => {
           }
         }
         return (
-          <div className="flex items-center space-x-2">
-            {p.headshotURL ? (
-              <img
-                src={p.headshotURL}
-                alt={p.name}
-                className="w-9 h-9 rounded-full object-cover"
-                onError={(e) => { e.target.src = 'https://a.espncdn.com/i/headshots/nophoto.png'; }}
-              />
-            ) : (
-              <div className="w-9 h-9 bg-gray-200 border-2 border-dashed border-gray-300 rounded-full" />
-            )}
-            <div>
-              <div className="font-medium text-sm">
-                {toPath ? (
-                  <Link to={toPath} className="text-[#235347] hover:underline">
-                    {p.name}
-                  </Link>
-                ) : p.name}
-              </div>
-              <div className="text-xs text-gray-600">{p.position || '—'}</div>
+          <div className="text-left">
+            <div className="font-semibold text-sm">
+              {toPath ? (
+                <Link to={toPath} className="text-[#235347] hover:underline">
+                  {p.name}
+                </Link>
+              ) : p.name}
             </div>
+            <div className="text-xs text-gray-600">{p.position || '—'}</div>
           </div>
         );
       },
@@ -143,37 +134,53 @@ const PortalLanding = ({ className = "" }) => {
         return (
           <div className="flex items-center justify-center space-x-1">
             {p.originLogo ? (
-              <img src={p.originLogo} alt={p.origin} className="w-8 h-8 object-contain" onError={(e) => e.target.style.display = 'none'} />
+              <img src={p.originLogo} alt={p.origin} className="w-7 h-7 object-contain" onError={(e) => e.target.style.display = 'none'} />
             ) : (
-              <div className="w-8 h-8 bg-gray-200 border border-gray-300 rounded" />
+              <div className="w-7 h-7 bg-gray-200 border border-gray-300 rounded" />
             )}
-            <span className="text-lg text-gray-500">→</span>
+            <span className="text-base text-gray-500">→</span>
             {p.destinationLogo ? (
-              <img src={p.destinationLogo} alt={p.destination} className="w-8 h-8 object-contain" onError={(e) => e.target.style.display = 'none'} />
+              <img src={p.destinationLogo} alt={p.destination} className="w-7 h-7 object-contain" onError={(e) => e.target.style.display = 'none'} />
             ) : (
-              <div className="w-8 h-8 bg-gray-200 border border-gray-300 rounded" />
+              <div className="w-7 h-7 bg-gray-200 border border-gray-300 rounded" />
             )}
           </div>
         );
       },
     }),
 
-    // Rating + Stars
+    // Stars
+    columnHelper.display({
+      id: 'Stars',
+      header: 'Stars',
+      cell: ({ row }) => {
+        const p = row.original;
+        return p.stars ? (
+          <div className="text-center text-yellow-500 font-bold text-sm">
+            {'★'.repeat(p.stars)}
+          </div>
+        ) : <span className="text-gray-400">—</span>;
+      },
+    }),
+
+    // Rating
     columnHelper.display({
       id: 'Rating',
       header: 'Rating',
       cell: ({ row }) => {
         const p = row.original;
-        return (
-          <div className="text-center">
-            {p.stars ? <div className="text-yellow-500 font-bold text-sm">{'★'.repeat(p.stars)}</div> : null}
-            {p.rating ? <div className="text-xs text-gray-700">{p.rating.toFixed(2)}</div> : null}
+        return p.rating ? (
+          <div className="text-center text-xs font-medium text-gray-700">
+            {p.rating.toFixed(2)}
           </div>
-        );
+        ) : <span className="text-gray-400">—</span>;
       },
     }),
   ];
 
+  // -------------------------------------------------------------------
+  // Desktop Columns (full)
+  // -------------------------------------------------------------------
   const desktopColumns = [
     columnHelper.accessor('headshotURL', {
       id: 'Headshot',
@@ -269,13 +276,13 @@ const PortalLanding = ({ className = "" }) => {
             <img
               src={p.originLogo}
               alt={p.origin}
-              className={`w-${logoSize/4} h-${logoSize/4} object-contain`}
+              className={`w-8 h-8 object-contain`} // Fixed: w-8 h-8
               onError={(e) => { e.target.style.display = 'none'; }}
             />
           </div>
         ) : (
           <div className="flex justify-center">
-            <div className={`w-${logoSize/4} h-${logoSize/4} bg-gray-200 border border-gray-300 rounded`} />
+            <div className="w-8 h-8 bg-gray-200 border border-gray-300 rounded" />
           </div>
         );
       },
@@ -301,13 +308,13 @@ const PortalLanding = ({ className = "" }) => {
             <img
               src={p.destinationLogo}
               alt={p.destination || '—'}
-              className={`w-${logoSize/4} h-${logoSize/4} object-contain`}
+              className={`w-8 h-8 object-contain`} // Fixed: w-8 h-8
               onError={(e) => { e.target.style.display = 'none'; }}
             />
           </div>
         ) : (
           <div className="flex justify-center">
-            <div className={`w-${logoSize/4} h-${logoSize/4} bg-gray-200 border border-gray-300 rounded`} />
+            <div className="w-8 h-8 bg-gray-200 border border-gray-300 rounded" />
           </div>
         );
       },
@@ -351,7 +358,7 @@ const PortalLanding = ({ className = "" }) => {
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    initialState: { sorting: [{ id: isMobile ? 'Rating' : 'Rating', desc: true }] },
+    initialState: { sorting: [{ id: 'Rating', desc: true }] },
   });
 
   // -------------------------------------------------------------------
@@ -516,9 +523,9 @@ const PortalLanding = ({ className = "" }) => {
         <div className="mb-3 text-center">
           <button
             onClick={() => setShowFullColumns(!showFullColumns)}
-            className="px-4 py-1.5 bg-[#235347] text-white text-xs rounded hover:bg-[#1a3d31]"
+            className="px-3 py-1 bg-[#235347] text-white text-xs rounded hover:bg-[#1a3d31]"
           >
-            {showFullColumns ? '← Basic' : 'Full →'}
+            {showFullColumns ? 'Basic' : 'Full'}
           </button>
         </div>
       )}
