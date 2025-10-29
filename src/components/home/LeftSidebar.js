@@ -6,7 +6,6 @@ function LeftSidebar() {
   return (
     <div className="space-y-6">
       <TopTeams />
-      <FeaturedVideos />
     </div>
   );
 }

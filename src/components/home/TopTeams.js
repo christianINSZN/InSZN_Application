@@ -16,20 +16,34 @@ function TopTeams() {
   const columns = useMemo(() => [
     columnHelper.accessor('school', {
       id: 'School',
-      size: 100,
+      size: 150,
       cell: ({ row }) => {
         const toPath = `/teams/${row.original.teamId}/${year}`;
+        const logo = row.original.logo;
+        const schoolName = row.original.school.charAt(0).toUpperCase() + row.original.school.slice(1) || 'N/A';
+
         return (
           <Link
             to={toPath}
-            className="text-black hover:text-gray-500 underline underline-offset-2 ml-1 sm:ml-2 inline-block cursor-pointer"
-            style={{ display: 'inline-block' }}
+            className="flex items-center gap-2 text-black hover:text-gray-500 underline underline-offset-2 cursor-pointer"
             onClick={(e) => {
               e.preventDefault();
               navigate(toPath, { state: { year } });
             }}
           >
-            {row.original.school.charAt(0).toUpperCase() + row.original.school.slice(1) || 'N/A'}
+            {logo ? (
+              <img
+                src={logo}
+                alt={schoolName}
+                className="w-6 h-6 object-contain"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
+              />
+            ) : (
+              <div className="w-6 h-6 bg-gray-200 rounded-full" />
+            )}
+            <span className="ml-1 sm:ml-0">{schoolName}</span>
           </Link>
         );
       },
@@ -194,6 +208,14 @@ function TopTeams() {
               ? parsedData.filter(team => team && typeof team === 'object' && team.teamId && team.school)
               : [];
             console.log('Filtered valid data:', validData);
+
+            // DEBUG: Check logo values
+            console.log('First 3 teams with logos:', validData.slice(0, 3).map(t => ({
+              school: t.school,
+              teamId: t.teamId,
+              logo: t.logo
+            })));
+
             setData(validData);
           } catch (e) {
             console.error('JSON parsing error:', e.message, 'Raw response:', text);
@@ -263,8 +285,8 @@ function TopTeams() {
           {showAllColumns ? 'Basic Rankings' : 'Advanced Rankings'}
         </button>
       </div>
-      <div className={isMobile ? "h-[300px] overflow-y-auto" : "h-[420px] overflow-y-auto" }>
-        <table className="w-full text-center border-collapse" >
+      <div className={isMobile ? "h-[300px] overflow-y-auto" : "h-[420px] overflow-y-auto"}>
+        <table className="w-full text-center border-collapse">
           <thead className="sticky top-0 bg-white z-0">
             {tableInstance.getHeaderGroups().map(headerGroup => (
               <tr key={headerGroup.id} className="bg-white">
