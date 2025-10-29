@@ -5,7 +5,7 @@ import RightSidebar from './home/RightSidebar';
 
 function Home() {
   return (
-    <div className="max-w-8xl mx-auto p-4 sm:p-6 mt-12">
+    <div className="max-w-8xl mx-auto p-4 sm:p-6 mt-0 sm:mt-10">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {/* Left: 25% */}
         <aside className="md:col-span-1">
