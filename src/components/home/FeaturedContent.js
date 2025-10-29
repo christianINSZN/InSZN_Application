@@ -46,7 +46,7 @@ function FeaturedContent() {
           <img
             src={item.image}
             alt={item.title}
-            className="w-full h-60 sm:h-[26.5rem] object-cover"
+            className="w-full h-[17rem] sm:h-[26.5rem] object-cover"
           />
           <div className="p-3 sm:p-4">
             <h3 className="font-bold text-base sm:text-lg text-[#235347] line-clamp-2">
