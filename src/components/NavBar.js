@@ -111,15 +111,13 @@ function NavBar() {
                     </Link>
                   </li>
                   <li>
-                    <div
-                      className="group relative block px-4 py-2 text-gray-400 cursor-not-allowed"
-                      title="Coming Soon"
+                    <Link
+                      to="/portal"
+                      className="block px-4 py-2 text-black hover:bg-[#235347]/70 hover:text-white text-base"
+                      onClick={() => setIsPlayersDropdownOpen(false)}
                     >
                       Transfer Portal
-                      <span className="absolute hidden group-hover:block -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs rounded px-2 py-1 whitespace-nowrap">
-                        Coming Soon
-                      </span>
-                    </div>
+                    </Link>
                   </li>
                 </ul>
               )}
@@ -166,12 +164,19 @@ function NavBar() {
             </div>
 
             <div className="flex items-center">
-              <Link to="/h2h" className="flex items-center space-x-2 text-white hover:bg-[#829994] hover:text-black px-4 py-2 rounded text-base xl:text-lg">
+              <Link
+                to="/h2h"
+                className="flex items-center space-x-2 text-white hover:bg-[#829994] hover:text-black px-4 py-2 rounded text-base xl:text-lg"
+              >
                 <MdPeople /> <span>H2H</span>
               </Link>
             </div>
+
             <div className="flex items-center">
-              <Link to="/games" className="flex items-center space-x-2 text-white hover:bg-[#829994] hover:text-black px-4 py-2 rounded text-base xl:text-lg">
+              <Link
+                to="/games"
+                className="flex items-center space-x-2 text-white hover:bg-[#829994] hover:text-black px-4 py-2 rounded text-base xl:text-lg"
+              >
                 <MdOutlineJoinFull /> <span>Games</span>
               </Link>
             </div>
@@ -258,15 +263,16 @@ function NavBar() {
                         </Link>
                       </li>
                       <li>
-                        <div
-                          className="group relative block px-4 py-2 text-gray-400 cursor-not-allowed"
-                          title="Coming Soon"
+                        <Link
+                          to="/portal"
+                          className="block px-4 py-2 text-black hover:bg-[#235347]/70 hover:text-white text-base"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMobileLinkClick();
+                          }}
                         >
                           Transfer Portal
-                          <span className="absolute hidden group-hover:block -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs rounded px-2 py-1 whitespace-nowrap">
-                            Coming Soon
-                          </span>
-                        </div>
+                        </Link>
                       </li>
                     </ul>
                   )}
@@ -323,6 +329,7 @@ function NavBar() {
                     <MdPeople /> <span>H2H</span>
                   </Link>
                 </li>
+
                 <li>
                   <Link
                     to="/games"
@@ -332,6 +339,7 @@ function NavBar() {
                     <MdOutlineJoinFull /> <span>Games</span>
                   </Link>
                 </li>
+
                 <li>
                   <Link
                     to="/subscribe"
@@ -341,6 +349,7 @@ function NavBar() {
                     <span>Subscribe</span>
                   </Link>
                 </li>
+
                 {isSignedIn ? (
                   <li className="relative w-full" ref={profileDropdownRef}>
                     <button
