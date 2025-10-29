@@ -1,10 +1,20 @@
+#!/usr/bin/env python3
+"""
+Single script:
+1. Create Players_TransferPortal table
+2. Fetch & insert 2025 portal data
+3. Enrich with Players_Basic (optional)
+4. Add originLogo & destinationLogo from Teams (school name → logo_main)
+   → BOTH origin & destination use same logic
+"""
+
 import sqlite3
 import os
 import requests
 import re
 from pathlib import Path
 from dotenv import load_dotenv
-from fuzzywuzzy import fuzz  # pip install fuzzywuzzy python-levenshtein
+from fuzzywuzzy import fuzz
 
 # Load environment
 load_dotenv()
@@ -12,14 +22,23 @@ API_KEY = os.getenv("API_KEY", "xPVVHT3+7AMkH/gk2Rbnpin03CxVlm6HyGgL2yNiPL1riWLP
 YEAR = int(os.getenv("YEAR", 2025))
 DB_FILE = Path("/Users/christianberry/Desktop/Perennial Data/perennial-data-app/server/data/db/cfb_database.db")
 
+# -----------------------------------------------------------------------
+# Helper: Normalize string
+# -----------------------------------------------------------------------
+def normalize(s):
+    return re.sub(r'[^a-z0-9]', '', str(s).lower().strip()) if s else ""
+
+def clean_name(s):
+    return re.sub(r'\b(jr|sr|ii|iii|iv)\b', '', s, flags=re.I).strip()
+
 # Connect
 conn = sqlite3.connect(DB_FILE)
 cursor = conn.cursor()
 
 # -----------------------------------------------------------------------
-# 1. Create table with ALL Players_Basic fields
+# 1. Create table
 # -----------------------------------------------------------------------
-print("Creating Players_TransferPortal table with ALL Players_Basic fields...")
+print("Creating Players_TransferPortal table...")
 create_table_sql = """
 CREATE TABLE IF NOT EXISTS Players_TransferPortal (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -48,6 +67,8 @@ CREATE TABLE IF NOT EXISTS Players_TransferPortal (
     redshirt TEXT,
     player_id_PFF TEXT,
     headshotURL TEXT,
+    originLogo TEXT,
+    destinationLogo TEXT,
     UNIQUE(season, name, origin)
 );
 """
@@ -55,7 +76,7 @@ cursor.execute(create_table_sql)
 conn.commit()
 
 # -----------------------------------------------------------------------
-# 2. Fetch transfer portal data
+# 2. Fetch portal data
 # -----------------------------------------------------------------------
 print(f"Fetching transfer portal data for {YEAR}...")
 url = "https://api.collegefootballdata.com/player/portal"
@@ -78,7 +99,7 @@ if not portal_data:
     exit(0)
 
 # -----------------------------------------------------------------------
-# 3. Insert portal data (name = first + last)
+# 3. Insert portal data
 # -----------------------------------------------------------------------
 insert_portal_sql = """
 INSERT OR IGNORE INTO Players_TransferPortal 
@@ -114,15 +135,28 @@ else:
     print("No valid portal records to insert.")
 
 # -----------------------------------------------------------------------
-# 4. Load ALL Players_Basic fields for fuzzy matching
+# 4. Load Teams for logos (school → logo_main)
 # -----------------------------------------------------------------------
-print("Loading ALL fields from Players_Basic for fuzzy metadata enrichment...")
+print("Loading Teams for logo lookup...")
+cursor.execute("SELECT school, logo_main FROM Teams WHERE year = ?", (YEAR,))
+teams_rows = cursor.fetchall()
+
+team_logo_by_school = {}
+for school, logo in teams_rows:
+    if school:
+        key = normalize(school)
+        team_logo_by_school[key] = logo
+        print(f"Logo mapped: {school} → {key} → {logo}")  # DEBUG
+
+# -----------------------------------------------------------------------
+# 5. Load Players_Basic for metadata (optional)
+# -----------------------------------------------------------------------
+print("Loading Players_Basic for metadata enrichment...")
 cursor.execute("""
-SELECT 
-    playerId, year, name, team, school, teamID, position, height, weight,
-    homeCity, homeState, homeCountry, homeProvince,
-    homeLatitude, homeLongitude, jersey, redshirt,
-    player_id_PFF, headshotURL
+SELECT playerId, year, name, team, school, teamID, position, height, weight,
+       homeCity, homeState, homeCountry, homeProvince,
+       homeLatitude, homeLongitude, jersey, redshirt,
+       player_id_PFF, headshotURL
 FROM Players_Basic
 WHERE year IN (?, ?)
 """, (YEAR, YEAR - 1))
@@ -131,19 +165,9 @@ basic_rows = cursor.fetchall()
 print(f"Loaded {len(basic_rows)} Players_Basic rows.")
 
 # -----------------------------------------------------------------------
-# 5. Normalize & fuzzy match
+# 6. Fuzzy match Players_Basic
 # -----------------------------------------------------------------------
-def normalize(s):
-    if not s:
-        return ""
-    return re.sub(r'[^a-z0-9]', '', s.lower().strip())
-
-def clean_name(s):
-    return re.sub(r'\b(jr|sr|ii|iii|iv)\b', '', s, flags=re.I).strip()
-
-# Index: {year: {norm_school: [(norm_name, full_row_dict)]}}
 basic_by_school = {YEAR: {}, YEAR - 1: {}}
-
 for row in basic_rows:
     (
         playerId, y, name, team, school, teamID, pos, height, weight,
@@ -184,17 +208,17 @@ for row in basic_rows:
     ))
 
 # -----------------------------------------------------------------------
-# 6. Match & enrich with FUZZY NAME + EXACT SCHOOL
+# 7. Enrich: Players_Basic + Logos (both from school name)
 # -----------------------------------------------------------------------
-print("Starting FUZZY metadata enrichment...")
+print("Starting enrichment with Players_Basic + Team Logos...")
 cursor.execute("""
-SELECT id, name, origin, destination, season 
+SELECT id, name, origin, destination, season
 FROM Players_TransferPortal 
-WHERE season = ? AND (playerId IS NULL OR playerId = 0)
+WHERE season = ?
 """, (YEAR,))
 
 to_enrich = cursor.fetchall()
-print(f"Found {len(to_enrich)} portal entries needing enrichment.")
+print(f"Found {len(to_enrich)} portal entries to enrich.")
 
 update_sql = """
 UPDATE Players_TransferPortal
@@ -202,7 +226,8 @@ SET
     playerId = ?, team = ?, school = ?, teamID = ?, position = ?, height = ?, weight = ?,
     homeCity = ?, homeState = ?, homeCountry = ?, homeProvince = ?,
     homeLatitude = ?, homeLongitude = ?, jersey = ?, redshirt = ?,
-    player_id_PFF = ?, headshotURL = ?
+    player_id_PFF = ?, headshotURL = ?,
+    originLogo = ?, destinationLogo = ?
 WHERE id = ?
 """
 
@@ -215,7 +240,6 @@ for pid, p_name, origin, dest, season in to_enrich:
     n_p_name = normalize(clean_p)
     match = None
     match_score = 0
-    match_school = ""
 
     # CASE 1: destination → current year
     if dest:
@@ -226,11 +250,9 @@ for pid, p_name, origin, dest, season in to_enrich:
             if score >= 90 and score > match_score:
                 match = data
                 match_score = score
-                match_school = dest
-            elif score >= 50 and score > match_score and not match:
+            elif score >= 80 and score > match_score and not match:
                 match = data
                 match_score = score
-                match_school = dest
 
     # CASE 2: no destination → origin + prev year
     if not match and origin:
@@ -242,11 +264,19 @@ for pid, p_name, origin, dest, season in to_enrich:
             if score >= 90 and score > match_score:
                 match = data
                 match_score = score
-                match_school = origin
             elif score >= 80 and score > match_score and not match:
                 match = data
                 match_score = score
-                match_school = origin
+
+    # Resolve logos — SAME LOGIC FOR BOTH
+    origin_key = normalize(origin)
+    dest_key = normalize(dest)
+
+    origin_logo = team_logo_by_school.get(origin_key)
+    destination_logo = team_logo_by_school.get(dest_key)
+
+    print(f"LOGO LOOKUP: origin='{origin}' → '{origin_key}' → {origin_logo}")
+    print(f"LOGO LOOKUP: dest='{dest}' → '{dest_key}' → {destination_logo}")
 
     if match:
         updates.append((
@@ -267,37 +297,44 @@ for pid, p_name, origin, dest, season in to_enrich:
             match["redshirt"],
             match["player_id_PFF"],
             match["headshotURL"],
+            origin_logo,
+            destination_logo,
             pid
         ))
         match_count += 1
-        print(f"MATCH: {p_name} → {match_school} | Score: {match_score} | playerId={match['playerId']}")
     else:
+        updates.append((
+            None, None, None, None, None, None, None,
+            None, None, None, None, None, None, None, None,
+            None, None,
+            origin_logo, destination_logo,
+            pid
+        ))
         miss_count += 1
-        print(f"MISS: {p_name} | No match")
 
 # -----------------------------------------------------------------------
-# 7. Apply updates
+# 8. Apply updates
 # -----------------------------------------------------------------------
 if updates:
-    print(f"Updating {len(updates)} matched records...")
+    print(f"Updating {len(updates)} records with metadata + logos...")
     cursor.executemany(update_sql, updates)
     conn.commit()
     print(f"Updated {cursor.rowcount} rows.")
 else:
-    print("No matches to update.")
+    print("No updates needed.")
 
 # -----------------------------------------------------------------------
-# 8. Final Summary
+# 9. Final Summary
 # -----------------------------------------------------------------------
 print("\n" + "="*60)
-print("TRANSFER PORTAL SETUP & FUZZY ENRICHMENT COMPLETE")
+print("TRANSFER PORTAL + LOGOS COMPLETE")
 print("="*60)
-print(f"Year:                 {YEAR}")
-print(f"Portal Records:       {len(portal_data)}")
-print(f"Inserted:             {len(portal_values) if 'portal_values' in locals() else 0}")
-print(f"Matched (fuzzy):      {match_count}")
-print(f"Missed:               {miss_count}")
+print(f"Year: {YEAR}")
+print(f"Portal Records: {len(portal_data)}")
+print(f"Inserted: {len(portal_values) if 'portal_values' in locals() else 0}")
+print(f"Matched (player): {match_count}")
+print(f"Logos Added: {len([u for u in updates if u[-3] or u[-2]])}")
 print("="*60)
 
 conn.close()
-print("Done. Table ready: Players_TransferPortal (with playerId + ALL fields + FUZZY MATCH)")
+print("Done. Table ready: Players_TransferPortal (with originLogo + destinationLogo)")

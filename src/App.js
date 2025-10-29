@@ -21,7 +21,7 @@ import ReceivingAnalyticsTE from './components/playerprofiles/TE/ReceivingAnalyt
 import HeadToHeadContainerTE from './components/playerprofiles/TE/HeadToHead';
 import FieldViewInterfaceTE from './components/playerprofiles/TE/FieldView';
 import GameRecap from './components/games/GameRecap';
-import ScoutingReport from './components/games/ScoutingReport';
+import PortalLanding from './components/portal/PortalLanding';
 import OverviewCB from './components/playerprofiles/CB/Overview';
 import OverviewDL from './components/playerprofiles/DL/Overview';
 import OverviewC from './components/playerprofiles/C/Overview';
@@ -58,7 +58,7 @@ function App() {
           <Route path="/sign-up/*" element={<SignUpPage />} />
           <Route path="/" element={<Home />} />
           <Route path="/players" element={<Players year={defaultYear} />} />
-
+          <Route path="/portal" element={<PortalLanding year={defaultYear} />} />
           <Route path="/players/qb/:playerId" element={<OverviewQB year={defaultYear} />} />
           <Route path="/players/qb/:playerId/passing" element={<PassingAnalytics year={defaultYear} />} />
           <Route path="/players/qb/:playerId/fieldview" element={<FieldViewInterface year={defaultYear} />} />
