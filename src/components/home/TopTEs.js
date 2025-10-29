@@ -8,52 +8,57 @@ function TopTEs() {
   const [error, setError] = useState(null);
   const year = 2025;
   const navigate = useNavigate();
-
   const columnHelper = createColumnHelper();
+
   const columns = useMemo(() => [
-    columnHelper.accessor('name', {
-      id: 'Player Name',
+    columnHelper.display({
+      id: 'player',
+      size: 200,
+      header: () => null,
       cell: ({ row }) => {
         const toPath = `/players/te/${row.original.playerId}`;
+        const headshot = row.original.headshotURL || row.original.headshot_URL;
+        const name = row.original.name || 'N/A';
+
         return (
           <Link
             to={toPath}
-            className="text-black hover:text-gray-900 underline underline-offset-2 inline-block cursor-pointer"
-            style={{ display: 'inline-block' }}
+            className="flex items-center gap-2 text-black hover:text-gray-500 underline underline-offset-2 cursor-pointer"
             onClick={(e) => {
               e.preventDefault();
               navigate(toPath, { state: { year } });
             }}
           >
-            {row.original.name || 'No Name'}
+            {headshot ? (
+              <img
+                src={headshot}
+                alt={name}
+                className="w-7 h-7 rounded-full object-cover flex-shrink-0"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
+              />
+            ) : (
+              <div className="w-7 h-7 bg-gray-300 rounded-full flex-shrink-0" />
+            )}
+            <span className="text-xs font-medium leading-none">{name}</span>
           </Link>
         );
       },
     }),
-    columnHelper.accessor('team', {
-      id: 'School',
-      cell: ({ row }) => {
-        const toPath = row.original.teamID ? `/teams/${row.original.teamID}/${year}` : '#';
-        return (
-          <Link
-            to={toPath}
-            className={`text-black hover:text-gray-900 underline underline-offset-2 inline-block cursor-pointer ${!row.original.teamID ? 'pointer-events-none opacity-50' : ''}`}
-            style={{ display: 'inline-block' }}
-            onClick={(e) => {
-              if (row.original.teamID) {
-                e.preventDefault();
-                navigate(toPath, { state: { year } });
-              }
-            }}
-          >
-            {row.original.team.charAt(0).toUpperCase() + row.original.team.slice(1) || 'N/A'}
-          </Link>
-        );
-      },
-    }),
-    columnHelper.accessor('averagePPA_pass', {
-      id: 'Rec. PPA',
-      cell: info => (info.getValue() !== null ? info.getValue().toFixed(3) : 'N/A'),
+    columnHelper.accessor('TER', {
+      id: 'ter',
+      size: 60,
+      header: () => (
+        <div className="text-center">
+          <div className="text-xs font-bold">TERz</div>
+        </div>
+      ),
+      cell: info => (
+        <div className="text-center text-xs font-medium">
+          {info.getValue() ? info.getValue().toFixed(1) : 'N/A'}
+        </div>
+      ),
     }),
   ], [navigate, year]);
 
@@ -62,7 +67,7 @@ function TopTEs() {
     setIsLoading(true);
     setData([]);
 
-    fetch(`${process.env.REACT_APP_API_URL}/api/players/ppa/${year}/top-tes`, {
+    fetch(`${process.env.REACT_APP_API_URL}/api/playerdashboard/${year}`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -70,42 +75,38 @@ function TopTEs() {
       }
     })
       .then(response => {
-        console.log('API response status:', response.status, response.statusText);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        return response.text();
+        return response.json();
       })
-      .then(text => {
+      .then(jsonData => {
         if (isMounted) {
-          try {
-            const parsedData = JSON.parse(text);
-            console.log('Full API response:', parsedData);
-            const validData = Array.isArray(parsedData)
-              ? parsedData.filter(player => player && typeof player === 'object' && player.playerId && player.name && player.team)
-              : [];
-            console.log('Filtered valid data:', validData);
-            setData(validData);
-          } catch (e) {
-            console.error('JSON parsing error:', e.message, 'Raw response:', text);
-            setError('Failed to parse response data');
-          } finally {
-            setIsLoading(false);
-          }
+          const teData = Array.isArray(jsonData)
+            ? jsonData.filter(p =>
+                p &&
+                p.position === 'TE' &&
+                p.playerId &&
+                p.name &&
+                p.TER !== null &&
+                p.TER !== undefined
+              )
+            : [];
+          const sorted = teData
+            .sort((a, b) => (b.TER || 0) - (a.TER || 0))
+            .slice(0, 10);
+          setData(sorted);
+          setIsLoading(false);
         }
       })
-      .catch(error => {
+      .catch(err => {
         if (isMounted) {
-          console.error('API error:', error);
-          setError(error.message);
+          setError(err.message);
           setIsLoading(false);
         }
       });
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+    return () => { isMounted = false; };
+  }, [year]);
 
   const tableInstance = useReactTable({
     data,
@@ -115,70 +116,60 @@ function TopTEs() {
 
   if (isLoading) {
     return (
-      <div className="p-0 shadow-xl rounded-lg h-full">
-        <h2 className="flex items-center justify-center text-md sm:text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-auto sm:h-auto rounded-t-lg">Top-25 TEs (PPA)</h2>
-        <p className="text-gray-500 text-center p-4">Loading...</p>
+      <div className="p-0 shadow-xl rounded-lg relative z-100">
+        <h2 className="flex items-center justify-center text-md bg-[#235347] font-bold text-white border-b border-[#235347] rounded-t-lg py-2">INSZN Top-10 TERz</h2>
+        <p className="text-gray-500 text-center p-3 text-xs">Loading...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-0 shadow-xl rounded-lg h-full">
-        <h2 className="flex items-center justify-center text-md sm:text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-auto sm:h-auto rounded-t-lg">Top-25 TEs (PPA)</h2>
-        <p className="text-red-500 text-center p-4">Error: {error}</p>
+      <div className="p-0 shadow-xl rounded-lg relative z-100">
+        <h2 className="flex items-center justify-center text-md bg-[#235347] font-bold text-white border-b border-[#235347] rounded-t-lg py-2">INSZN Top-10 TERz</h2>
+        <p className="text-red-500 text-center p-3 text-xs">Error: {error}</p>
       </div>
     );
   }
 
   if (!data.length) {
     return (
-      <div className="p-0 shadow-xl rounded-lg h-full">
-        <h2 className="flex items-center justify-center text-md sm:text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-auto sm:h-auto rounded-t-lg">Top-25 TEs (PPA)</h2>
-        <p className="text-gray-500 text-center p-4">No data available for {year}.</p>
+      <div className="p-0 shadow-xl rounded-lg relative z-100">
+        <h2 className="flex items-center justify-center text-md bg-[#235347] font-bold text-white border-b border-[#235347] rounded-t-lg py-2">INSZN Top-10 TERz</h2>
+        <p className="text-gray-500 text-center p-3 text-xs">No TE data available.</p>
       </div>
     );
   }
 
   return (
-    <div className="p-0 shadow-xl rounded-lg h-full border-b border-[#235347]">
-      <h2 className="flex items-center justify-center text-md sm:text-md bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-auto sm:h-auto rounded-t-lg">Top-25 TEs (PPA)</h2>
-      <div className="h-[420px] overflow-y-auto border-b border-[#235347]">
-        <table className="w-full text-center border-collapse">
-          <thead className="sticky top-0 bg-white z-500">
+    <div className="p-0 shadow-xl rounded-lg relative z-100">
+      <h2 className="flex items-center justify-center text-md bg-[#235347] font-bold text-white border-b border-[#235347] rounded-t-lg py-2">INSZN Top-10 TERz</h2>
+
+      {/* Desktop */}
+      <div className="hidden sm:block">
+        <table className="w-full">
+          <thead className="sticky top-0 bg-white z-100">
             {tableInstance.getHeaderGroups().map(headerGroup => (
-              <tr key={headerGroup.id} className="bg-gray-0">
+              <tr key={headerGroup.id}>
                 {headerGroup.headers.map(column => (
                   <th
                     key={column.id}
-                    className="p-3 text-xs font-semibold border-b border-[#235347] text-black"
-                    style={{
-                      textAlign: column.id === 'Player Name' || column.id === 'School' ? 'left' : 'center',
-                      verticalAlign: 'middle',
-                      lineHeight: '1.1',
-                    }}
+                    className="px-3 py-1.5 text-xs font-bold border-b border-[#235347] text-left"
+                    style={{ width: column.column.columnDef.size }}
                   >
-                    {column.id}
+                    {flexRender(column.column.columnDef.header, column.getContext())}
                   </th>
                 ))}
               </tr>
             ))}
           </thead>
           <tbody>
-            {tableInstance.getRowModel().rows.map((row, index) => (
-              <tr
-                key={row.id}
-                className={index % 2 === 0 ? 'bg-gray-0' : 'bg-[#235347]/20'}
-              >
+            {tableInstance.getRowModel().rows.map(row => (
+              <tr key={row.id} className="bg-white hover:bg-gray-50">
                 {row.getVisibleCells().map(cell => (
                   <td
                     key={cell.id}
-                    className="p-1 text-xs text-black border-b border-gray-300"
-                    style={{
-                      textAlign: cell.column.id === 'Player Name' || cell.column.id === 'School' ? 'left' : 'center',
-                      verticalAlign: 'middle',
-                      lineHeight: '1.2',
-                    }}
+                    className="px-3 py-1.5 border-b border-gray-200 align-middle"
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
@@ -188,13 +179,47 @@ function TopTEs() {
           </tbody>
         </table>
       </div>
-      <div className="p-2 text-center text-[8px] sm:text-xs bg-[#235347] rounded-b-lg text-white">
+
+      {/* Mobile */}
+      <div className="sm:hidden h-64 overflow-y-auto">
+        <table className="w-full">
+          <thead className="sticky top-0 bg-white z-100">
+            {tableInstance.getHeaderGroups().map(headerGroup => (
+              <tr key={headerGroup.id}>
+                {headerGroup.headers.map(column => (
+                  <th
+                    key={column.id}
+                    className="px-2 py-1 text-[10px] font-bold border-b border-[#235347] text-left"
+                  >
+                    {flexRender(column.column.columnDef.header, column.getContext())}
+                  </th>
+                ))}
+              </tr>
+            ))}
+          </thead>
+          <tbody>
+            {tableInstance.getRowModel().rows.map(row => (
+              <tr key={row.id} className="bg-white hover:bg-gray-50">
+                {row.getVisibleCells().map(cell => (
+                  <td
+                    key={cell.id}
+                    className="px-2 py-1 border-b border-gray-200 align-middle"
+                  >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="p-2 text-center text-xs bg-[#235347] rounded-b-lg text-white">
         <Link
-          to="https://inszn.co/players"
-          className="text-white hover:text-gray-300 underline underline-offset-2 inline-block cursor-pointer"
-          style={{ display: 'inline-block' }}
+          to="/players"
+          className="text-white hover:text-gray-300 underline underline-offset-2"
         >
-          Full Rankings
+          Full Player Rankings
         </Link>
       </div>
     </div>
