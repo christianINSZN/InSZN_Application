@@ -31,8 +31,10 @@ new_columns = [
     ("quad2_record", "TEXT"),
     ("quad3_record", "TEXT"),
     ("quad4_record", "TEXT"),
-    ("conference", "TEXT")  # New conference column
+    ("conference", "TEXT"),
+    ("logo", "TEXT")
 ]
+
 for col_name, col_type in new_columns:
     if col_name not in columns:
         cursor.execute(f"ALTER TABLE Teams_Rankings ADD COLUMN {col_name} {col_type}")
@@ -65,6 +67,7 @@ CREATE TABLE IF NOT EXISTS Teams_Rankings (
     quad2_record TEXT,
     quad3_record TEXT,
     quad4_record TEXT,
+    logo TEXT,
     PRIMARY KEY (teamId, year, week)
 )
 """)
@@ -81,7 +84,7 @@ def fetch_rankings(year, week):
     try:
         response = session.get(url, headers=headers, params=params, timeout=10)
         response.raise_for_status()
-        time.sleep(1)  # Rate limit delay
+        time.sleep(1)
         data = response.json()
         print(f"Fetched rankings: {data}")
         return data
@@ -96,7 +99,7 @@ def fetch_sp_ratings(year, week):
     try:
         response = session.get(url, headers=headers, params=params, timeout=10)
         response.raise_for_status()
-        time.sleep(1)  # Rate limit delay
+        time.sleep(1)
         data = response.json()
         print(f"Fetched SP+ ratings: {data}")
         return data
@@ -111,7 +114,7 @@ def fetch_elo_ratings(year, week):
     try:
         response = session.get(url, headers=headers, params=params, timeout=10)
         response.raise_for_status()
-        time.sleep(1)  # Rate limit delay
+        time.sleep(1)
         data = response.json()
         print(f"Fetched Elo ratings: {data}")
         return data
@@ -126,7 +129,7 @@ def fetch_fpi_ratings(year, week):
     try:
         response = session.get(url, headers=headers, params=params, timeout=10)
         response.raise_for_status()
-        time.sleep(1)  # Rate limit delay
+        time.sleep(1)
         data = response.json()
         print(f"Fetched FPI ratings: {data}")
         return data
@@ -186,7 +189,6 @@ def calculate_team_record(team_id, year, week, school):
                     away_wins += 1
                 elif is_loss:
                     away_losses += 1
-            # Get opponent's FPI_Ranking for the game's week
             cursor.execute(
                 'SELECT FPI_Ranking FROM Teams_Rankings WHERE teamId = ? AND year = ? AND week = ?',
                 [opponent_id, year, game_week]
@@ -215,7 +217,6 @@ def calculate_team_record(team_id, year, week, school):
                     elif is_loss:
                         quad4_losses += 1
             else:
-                # Treat NR as Quad 4
                 if is_win:
                     quad4_wins += 1
                 elif is_loss:
@@ -232,26 +233,33 @@ def calculate_team_record(team_id, year, week, school):
     }
 
 def save_rankings(year, week):
-    # Fetch data from all endpoints
     rankings_data = fetch_rankings(year, week)
     sp_data = fetch_sp_ratings(year, week)
     elo_data = fetch_elo_ratings(year, week)
     fpi_data = fetch_fpi_ratings(year, week)
     count = 0
 
-    # Fetch all teams from Teams table, including conference
+    # DEBUG: Check if logo_main exists in Teams table
+    cursor.execute("PRAGMA table_info(Teams)")
+    teams_cols = [row[1] for row in cursor.fetchall()]
+    print(f"DEBUG: Teams table columns: {teams_cols}")
+
+    # Fetch logo map
+    cursor.execute("SELECT id, logo_main FROM Teams WHERE year = ?", (year,))
+    raw_logos = cursor.fetchall()
+    logo_map = {str(row[0]): row[1] for row in raw_logos if row[1]}
+    print(f"DEBUG: logo_map has {len(logo_map)} entries. Sample: {dict(list(logo_map.items())[:5])}")
+
+    # Fetch teams
     cursor.execute("SELECT id, school, conference FROM Teams WHERE year = ?", (year,))
     teams = {str(row[0]): {'school': row[1], 'conference': row[2]} for row in cursor.fetchall()}
-    print(f"Teams from database: {teams}")
 
-    # Initialize rankings dictionaries
     coaches_poll = {}
     ap_poll = {}
     sp_ratings = {}
     elo_ratings = {}
     fpi_ratings = {}
 
-    # Process rankings data (Coaches Poll and AP Top 25)
     if rankings_data and isinstance(rankings_data, list) and len(rankings_data) > 0:
         for poll in rankings_data[0].get("polls", []):
             if poll["poll"] in ["Coaches Poll", "AP Top 25"]:
@@ -263,9 +271,7 @@ def save_rankings(year, week):
                         coaches_poll[team_id] = rank_value
                     elif poll["poll"] == "AP Top 25":
                         ap_poll[team_id] = rank_value
-                    print(f"Processed {poll['poll']} for teamId {team_id} ({school}): rank {rank_value}")
 
-    # Process SP+ ratings data (match by team name)
     if sp_data and isinstance(sp_data, list):
         for team in sp_data:
             if team["year"] == year:
@@ -278,17 +284,13 @@ def save_rankings(year, week):
                     "SP_Def_Ranking": team.get("defense", {}).get("ranking"),
                     "SP_Def_Rating": team.get("defense", {}).get("rating")
                 }
-                print(f"Processed SP+ for team {team_name}: {sp_ratings[team_name]}")
 
-    # Process Elo ratings data (match by team name)
     if elo_data and isinstance(elo_data, list):
         for team in elo_data:
             if team["year"] == year:
                 team_name = team["team"]
                 elo_ratings[team_name] = team.get("elo")
-                print(f"Processed Elo for team {team_name}: {elo_ratings[team_name]}")
 
-    # Process FPI ratings data (match by team name)
     if fpi_data and isinstance(fpi_data, list):
         for team in fpi_data:
             if team["year"] == year:
@@ -298,12 +300,13 @@ def save_rankings(year, week):
                     "FPI_Ranking": team.get("resumeRanks", {}).get("fpi"),
                     "SOS": team.get("resumeRanks", {}).get("strengthOfSchedule")
                 }
-                print(f"Processed FPI for team {team_name}: {fpi_ratings[team_name]}")
 
-    # Insert or update rankings for each team
     for team_id, team_info in teams.items():
         school = team_info['school']
         conference = team_info['conference']
+        logo_url = logo_map.get(team_id)
+        print(f"DEBUG: team_id={team_id}, school={school}, logo_url={logo_url}")  # DEBUG per team
+
         coaches_rank = coaches_poll.get(team_id, "NR")
         ap_rank = ap_poll.get(team_id, "NR")
         sp_data_team = sp_ratings.get(school, {})
@@ -326,20 +329,17 @@ def save_rankings(year, week):
                 teamId, year, week, school, conference, coaches_poll_rank, ap_poll_rank,
                 SP_Ranking, SP_Rating, SP_Off_Ranking, SP_Off_Rating, SP_Def_Ranking, SP_Def_Rating,
                 ELO_Rating, SOR, FPI_Ranking, SOS, record, home_record, away_record, neutral_record,
-                quad1_record, quad2_record, quad3_record, quad4_record
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                quad1_record, quad2_record, quad3_record, quad4_record, logo
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 team_id, year, week, school, conference, coaches_rank, ap_rank,
                 sp_ranking, sp_rating, sp_off_ranking, sp_off_rating, sp_def_ranking, sp_def_rating,
                 elo_rating, sor, fpi_ranking, sos, records['overall'], records['home'], records['away'],
-                records['neutral'], records['quad1'], records['quad2'], records['quad3'], records['quad4']
+                records['neutral'], records['quad1'], records['quad2'], records['quad3'], records['quad4'], logo_url
             )
         )
         count += cursor.rowcount
-        print(f"Saved teamId {team_id} ({school}): Conference={conference}, Coaches={coaches_rank}, AP={ap_rank}, SP={sp_ranking}, ELO={elo_rating}, FPI={fpi_ranking}, "
-              f"Record={records['overall']}, Home={records['home']}, Away={records['away']}, Neutral={records['neutral']}, "
-              f"Quad1={records['quad1']}, Quad2={records['quad2']}, Quad3={records['quad3']}, Quad4={records['quad4']}")
 
     print(f"Saved {count} team rankings for year {year}, week {week}")
     return count
