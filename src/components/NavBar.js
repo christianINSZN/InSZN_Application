@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+// src/components/NavBar.js
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useUser, SignOutButton } from '@clerk/clerk-react';
 import { BsFillPersonFill } from 'react-icons/bs';
@@ -9,13 +10,18 @@ import { HiMenu, HiX } from 'react-icons/hi';
 
 function NavBar() {
   const [isTeamsDropdownOpen, setIsTeamsDropdownOpen] = useState(false);
+  const [isPlayersDropdownOpen, setIsPlayersDropdownOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
+
   const teamsDropdownRef = useRef(null);
+  const playersDropdownRef = useRef(null);
   const profileDropdownRef = useRef(null);
   const hamburgerRef = useRef(null);
   const teamsButtonRef = useRef(null);
+  const playersButtonRef = useRef(null);
   const profileButtonRef = useRef(null);
+
   const { isSignedIn, user } = useUser();
 
   useEffect(() => {
@@ -26,6 +32,13 @@ function NavBar() {
         (!teamsButtonRef.current || !teamsButtonRef.current.contains(event.target))
       ) {
         setIsTeamsDropdownOpen(false);
+      }
+      if (
+        playersDropdownRef.current &&
+        !playersDropdownRef.current.contains(event.target) &&
+        (!playersButtonRef.current || !playersButtonRef.current.contains(event.target))
+      ) {
+        setIsPlayersDropdownOpen(false);
       }
       if (
         profileDropdownRef.current &&
@@ -45,8 +58,8 @@ function NavBar() {
   }, []);
 
   const handleMobileLinkClick = () => {
-    console.log('Mobile link clicked');
     setIsTeamsDropdownOpen(false);
+    setIsPlayersDropdownOpen(false);
     setIsHamburgerOpen(false);
   };
 
@@ -74,15 +87,48 @@ function NavBar() {
               {isHamburgerOpen ? <HiX className="h-8 w-8" /> : <HiMenu className="h-8 w-8" />}
             </button>
           </div>
+
           {/* Desktop: Main navigation (centered) */}
           <div className="hidden xl:flex absolute left-1/2 transform -translate-x-1/2 items-center justify-center gap-4 xl:gap-6">
-            <div className="flex items-center">
-              <Link to="/players" className="flex items-center space-x-2 text-white hover:bg-[#829994] hover:text-black px-3 py-2 rounded text-base xl:text-lg">
+            {/* Players Dropdown */}
+            <div className="relative" ref={playersDropdownRef}>
+              <button
+                ref={playersButtonRef}
+                onClick={() => setIsPlayersDropdownOpen(!isPlayersDropdownOpen)}
+                className="flex items-center space-x-2 text-white hover:bg-[#829994] hover:text-black px-3 py-2 rounded text-base xl:text-lg"
+              >
                 <BsFillPersonFill /> <span>Players</span>
-              </Link>
+              </button>
+              {isPlayersDropdownOpen && (
+                <ul className="absolute left-0 mt-2 w-48 bg-white border-2 border-[#235347] rounded shadow-lg z-20">
+                  <li>
+                    <Link
+                      to="/players"
+                      className="block px-4 py-2 text-black hover:bg-[#235347]/70 hover:text-white text-base"
+                      onClick={() => setIsPlayersDropdownOpen(false)}
+                    >
+                      By Position
+                    </Link>
+                  </li>
+                  <li>
+                    <div
+                      className="group relative block px-4 py-2 text-gray-400 cursor-not-allowed"
+                      title="Coming Soon"
+                    >
+                      Transfer Portal
+                      <span className="absolute hidden group-hover:block -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs rounded px-2 py-1 whitespace-nowrap">
+                        Coming Soon
+                      </span>
+                    </div>
+                  </li>
+                </ul>
+              )}
             </div>
+
+            {/* Teams Dropdown */}
             <div className="relative" ref={teamsDropdownRef}>
               <button
+                ref={teamsButtonRef}
                 onClick={() => setIsTeamsDropdownOpen(!isTeamsDropdownOpen)}
                 className="flex items-center space-x-2 text-white hover:bg-[#829994] hover:text-black px-2 py-2 rounded text-base xl:text-lg"
               >
@@ -111,11 +157,14 @@ function NavBar() {
                 </ul>
               )}
             </div>
+
+            {/* Logo */}
             <div className="flex items-center">
               <Link to="/" className="flex items-center justify-center px-3 py-2">
                 <img src="/TurfLogo_RemovedBkg.png" alt="INSZN Logo" className="h-10 xl:h-14 w-auto" />
               </Link>
             </div>
+
             <div className="flex items-center">
               <Link to="/h2h" className="flex items-center space-x-2 text-white hover:bg-[#829994] hover:text-black px-4 py-2 rounded text-base xl:text-lg">
                 <MdPeople /> <span>H2H</span>
@@ -127,6 +176,7 @@ function NavBar() {
               </Link>
             </div>
           </div>
+
           {/* Desktop: Profile or Sign In/Sign Up/Subscribe (right-aligned) */}
           <div className="hidden lg:flex items-center ml-auto space-x-4">
             <Link
@@ -176,25 +226,58 @@ function NavBar() {
               </div>
             )}
           </div>
+
           {/* Mobile: Hamburger Dropdown */}
           {isHamburgerOpen && (
             <div ref={hamburgerRef} className="xl:hidden absolute top-[64px] left-0 w-full bg-white border-b-2 border-[#235347] shadow-lg z-30">
               <ul className="flex flex-col items-start p-4 space-y-2">
-                <li>
-                  <Link
-                    to="/players"
-                    className="flex items-center space-x-2 text-black hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base"
-                    onClick={() => handleMobileLinkClick()}
+                {/* Players Dropdown */}
+                <li className="relative w-full" ref={playersDropdownRef}>
+                  <button
+                    ref={playersButtonRef}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsPlayersDropdownOpen(!isPlayersDropdownOpen);
+                    }}
+                    className="flex items-center space-x-2 text-black hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base w-full text-left"
                   >
                     <BsFillPersonFill /> <span>Players</span>
-                  </Link>
+                  </button>
+                  {isPlayersDropdownOpen && (
+                    <ul className="pl-6 space-y-2 z-40">
+                      <li>
+                        <Link
+                          to="/players"
+                          className="block px-4 py-2 text-black hover:bg-[#235347]/70 hover:text-white text-base"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMobileLinkClick();
+                          }}
+                        >
+                          By Position
+                        </Link>
+                      </li>
+                      <li>
+                        <div
+                          className="group relative block px-4 py-2 text-gray-400 cursor-not-allowed"
+                          title="Coming Soon"
+                        >
+                          Transfer Portal
+                          <span className="absolute hidden group-hover:block -top-8 left-1/2 transform -translate-x-1/2 bg-black text-white text-xs rounded px-2 py-1 whitespace-nowrap">
+                            Coming Soon
+                          </span>
+                        </div>
+                      </li>
+                    </ul>
+                  )}
                 </li>
+
+                {/* Teams Dropdown */}
                 <li className="relative w-full" ref={teamsDropdownRef}>
                   <button
                     ref={teamsButtonRef}
                     onClick={(e) => {
                       e.stopPropagation();
-                      console.log('Teams button clicked, isTeamsDropdownOpen:', !isTeamsDropdownOpen);
                       setIsTeamsDropdownOpen(!isTeamsDropdownOpen);
                     }}
                     className="flex items-center space-x-2 text-black hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base w-full text-left"
@@ -209,7 +292,6 @@ function NavBar() {
                           className="block px-4 py-2 text-black hover:bg-[#235347]/70 hover:text-white text-base"
                           onClick={(e) => {
                             e.stopPropagation();
-                            console.log('Navigating to /teams');
                             handleMobileLinkClick();
                           }}
                         >
@@ -222,7 +304,6 @@ function NavBar() {
                           className="block px-4 py-2 text-black hover:bg-[#235347]/70 hover:text-white text-base"
                           onClick={(e) => {
                             e.stopPropagation();
-                            console.log('Navigating to /team_rankings');
                             handleMobileLinkClick();
                           }}
                         >
@@ -232,6 +313,7 @@ function NavBar() {
                     </ul>
                   )}
                 </li>
+
                 <li>
                   <Link
                     to="/h2h"
@@ -265,7 +347,6 @@ function NavBar() {
                       ref={profileButtonRef}
                       onClick={(e) => {
                         e.stopPropagation();
-                        console.log('Profile button clicked, isProfileDropdownOpen:', !isProfileDropdownOpen);
                         setIsProfileDropdownOpen(!isProfileDropdownOpen);
                       }}
                       className="flex items-center space-x-2 text-black hover:bg-[#235347]/70 hover:text-white px-3 py-2 rounded text-base w-full text-left"

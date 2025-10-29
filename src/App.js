@@ -58,6 +58,7 @@ function App() {
           <Route path="/sign-up/*" element={<SignUpPage />} />
           <Route path="/" element={<Home />} />
           <Route path="/players" element={<Players year={defaultYear} />} />
+
           <Route path="/players/qb/:playerId" element={<OverviewQB year={defaultYear} />} />
           <Route path="/players/qb/:playerId/passing" element={<PassingAnalytics year={defaultYear} />} />
           <Route path="/players/qb/:playerId/fieldview" element={<FieldViewInterface year={defaultYear} />} />
