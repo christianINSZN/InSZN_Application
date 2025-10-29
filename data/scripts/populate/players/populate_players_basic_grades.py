@@ -12,7 +12,9 @@ GRADE_CONFIG = {
         "extra_columns": ["player_game_count", "completion_percent", "yards", "ypa", "touchdowns", "interceptions"],
         "additional_db_fields": [
             {"name": "QBR", "table": "Players_Full_Percentiles_QB"},
-            {"name": "passing_snaps", "table": "Players_Full_Percentiles_QB"}
+            {"name": "passing_snaps", "table": "Players_Full_Percentiles_QB"},
+            {"name": "headshotURL", "table": "Players_Basic"}
+
         ]
     },
     "RB": {
@@ -22,7 +24,9 @@ GRADE_CONFIG = {
         "extra_columns": ["player_game_count", "fumbles", "yards", "ypa", "touchdowns", "attempts"],
         "additional_db_fields": [
             {"name": "RBR", "table": "Players_Full_Percentiles_RB_Rushing"},
-            {"name": "run_plays", "table": "Players_Full_Percentiles_RB_Rushing"}
+            {"name": "run_plays", "table": "Players_Full_Percentiles_RB_Rushing"},
+            {"name": "headshotURL", "table": "Players_Basic"}
+
         ]
     },
     "WR": {
@@ -32,7 +36,9 @@ GRADE_CONFIG = {
         "extra_columns": ["player_game_count", "yards", "touchdowns", "yards_per_reception", "receptions"],
         "additional_db_fields": [
             {"name": "WRR", "table": "Players_Full_Percentiles_WR"},
-            {"name": "routes", "table": "Players_Full_Percentiles_WR"}
+            {"name": "routes", "table": "Players_Full_Percentiles_WR"},
+            {"name": "headshotURL", "table": "Players_Basic"}
+
         ]
     },
     "TE": {
@@ -42,7 +48,9 @@ GRADE_CONFIG = {
         "extra_columns": ["player_game_count", "yards", "touchdowns", "yards_per_reception", "receptions"],
         "additional_db_fields": [
             {"name": "TER", "table": "Players_Full_Percentiles_TE_Receiving"},
-            {"name": "routes", "table": "Players_Full_Percentiles_TE_Receiving"}
+            {"name": "routes", "table": "Players_Full_Percentiles_TE_Receiving"},
+            {"name": "headshotURL", "table": "Players_Basic"}
+
         ]
     },
     "C": {
@@ -52,7 +60,9 @@ GRADE_CONFIG = {
         "extra_columns": ["player_game_count", "grades_offense", "snap_counts_offense", "hurries_allowed", "pressures_allowed", "hits_allowed", "sacks_allowed", "pbe"],
         "additional_db_fields": [
             {"name": "CR", "table": "Players_Full_Percentiles_C_Blocking"},
-            {"name": "snap_counts_block", "table": "Players_Full_Percentiles_C_Blocking"}
+            {"name": "snap_counts_block", "table": "Players_Full_Percentiles_C_Blocking"},
+            {"name": "headshotURL", "table": "Players_Basic"}
+
         ]
     },
     "G": {
@@ -62,7 +72,9 @@ GRADE_CONFIG = {
         "extra_columns": ["player_game_count", "grades_offense", "snap_counts_offense", "hurries_allowed", "pressures_allowed", "hits_allowed", "sacks_allowed", "pbe"],
         "additional_db_fields": [
             {"name": "GR", "table": "Players_Full_Percentiles_G_Blocking"},
-            {"name": "snap_counts_block", "table": "Players_Full_Percentiles_G_Blocking"}
+            {"name": "snap_counts_block", "table": "Players_Full_Percentiles_G_Blocking"},
+            {"name": "headshotURL", "table": "Players_Basic"}
+
         ]
     },
     "T": {
@@ -72,7 +84,9 @@ GRADE_CONFIG = {
         "extra_columns": ["player_game_count", "grades_offense", "snap_counts_offense", "hurries_allowed", "pressures_allowed", "hits_allowed", "sacks_allowed", "pbe"],
         "additional_db_fields": [
             {"name": "TR", "table": "Players_Full_Percentiles_T_Blocking"},
-            {"name": "snap_counts_block", "table": "Players_Full_Percentiles_T_Blocking"}
+            {"name": "snap_counts_block", "table": "Players_Full_Percentiles_T_Blocking"},
+            {"name": "headshotURL", "table": "Players_Basic"}
+
         ]
     },
     "LB": {
@@ -82,7 +96,9 @@ GRADE_CONFIG = {
         "extra_columns": ["player_game_count", "grades_defense", "hits", "hurries", "sacks", "snap_counts_defense", "stops", "tackles", "tackles_for_loss", "total_pressures", "grades_coverage_defense"],
         "additional_db_fields": [
             {"name": "LBR", "table": "Players_Full_Percentiles_LBE"},
-            {"name": "snap_counts_defense", "table": "Players_Full_Percentiles_LBE"}
+            {"name": "snap_counts_defense", "table": "Players_Full_Percentiles_LBE"},
+            {"name": "headshotURL", "table": "Players_Basic"}
+
         ]
     },
     "CB": {
@@ -92,7 +108,9 @@ GRADE_CONFIG = {
         "extra_columns": ["player_game_count", "snap_counts_coverage", "grades_coverage_defense", "catch_rate", "pass_break_ups", "tackles", "coverage_percent", "forced_incompletion_rate", "avg_depth_of_target"],
         "additional_db_fields": [
             {"name": "CBR", "table": "Players_Full_Percentiles_CB"},
-            {"name": "snap_counts_defense", "table": "Players_Full_Percentiles_CB"}
+            {"name": "snap_counts_defense", "table": "Players_Full_Percentiles_CB"},
+            {"name": "headshotURL", "table": "Players_Basic"}
+
         ]
     },
     "S": {
@@ -102,7 +120,9 @@ GRADE_CONFIG = {
         "extra_columns": ["player_game_count", "snap_counts_coverage", "grades_coverage_defense", "catch_rate", "pass_break_ups", "tackles", "coverage_percent", "forced_incompletion_rate", "avg_depth_of_target"],
         "additional_db_fields": [
             {"name": "SR", "table": "Players_Full_Percentiles_S"},
-            {"name": "snap_counts_defense", "table": "Players_Full_Percentiles_S"}
+            {"name": "snap_counts_defense", "table": "Players_Full_Percentiles_S"},
+            {"name": "headshotURL", "table": "Players_Basic"}
+
         ]
     },
     "DE": {
@@ -111,7 +131,9 @@ GRADE_CONFIG = {
         "stat_column": "grades_defense",
         "extra_columns": ["player_game_count", "grades_defense", "hits", "hurries", "sacks", "snap_counts_defense", "stops", "tackles", "tackles_for_loss", "total_pressures"],
         "additional_db_fields": [
-            {"name": "DLR", "table": "Players_Full_Percentiles_DL"}
+            {"name": "DLR", "table": "Players_Full_Percentiles_DL"},
+            {"name": "headshotURL", "table": "Players_Basic"}
+
         ]
     },
     "DT": {
@@ -120,7 +142,9 @@ GRADE_CONFIG = {
         "stat_column": "grades_defense",
         "extra_columns": ["player_game_count", "grades_defense", "hits", "hurries", "sacks", "snap_counts_defense", "stops", "tackles", "tackles_for_loss", "total_pressures"],
         "additional_db_fields": [
-            {"name": "DLR", "table": "Players_Full_Percentiles_DL"}
+            {"name": "DLR", "table": "Players_Full_Percentiles_DL"},
+            {"name": "headshotURL", "table": "Players_Basic"}
+
         ]
     },
     "DL": {
@@ -129,7 +153,9 @@ GRADE_CONFIG = {
         "stat_column": "grades_defense",
         "extra_columns": ["player_game_count", "grades_defense", "hits", "hurries", "sacks", "snap_counts_defense", "stops", "tackles", "tackles_for_loss", "total_pressures"],
         "additional_db_fields": [
-            {"name": "DLR", "table": "Players_Full_Percentiles_DL"}
+            {"name": "DLR", "table": "Players_Full_Percentiles_DL"},
+            {"name": "headshotURL", "table": "Players_Basic"}
+
         ]
     },
     "EDGE": {
@@ -139,7 +165,9 @@ GRADE_CONFIG = {
         "extra_columns": ["player_game_count", "grades_defense", "hits", "hurries", "sacks", "snap_counts_defense", "stops", "tackles", "tackles_for_loss", "total_pressures", "grades_coverage_defense"],
         "additional_db_fields": [
             {"name": "LBR", "table": "Players_Full_Percentiles_LBE"},
-            {"name": "snap_counts_defense", "table": "Players_Full_Percentiles_LBE"}
+            {"name": "snap_counts_defense", "table": "Players_Full_Percentiles_LBE"},
+            {"name": "headshotURL", "table": "Players_Basic"}
+
         ]
     },
     "DB": {
@@ -149,7 +177,9 @@ GRADE_CONFIG = {
         "extra_columns": ["player_game_count", "snap_counts_coverage", "grades_coverage_defense", "catch_rate", "pass_break_ups", "tackles", "coverage_percent", "forced_incompletion_rate", "avg_depth_of_target"],
         "additional_db_fields": [
             {"name": "DBR", "table": "Players_Full_Percentiles_DB"},
-            {"name": "snap_counts_defense", "table": "Players_Full_Percentiles_DB"}
+            {"name": "snap_counts_defense", "table": "Players_Full_Percentiles_DB"},
+            {"name": "headshotURL", "table": "Players_Basic"}
+
         ]
     }
 }
