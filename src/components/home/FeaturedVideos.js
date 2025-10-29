@@ -8,23 +8,23 @@ function FeaturedVideos() {
   const slides = [
     {
       image: '/Home_1.jpg', // Replace with actual path
-      videoUrl: 'https://www.youtube.com/watch?v=FELycYenhzI', // Replace with actual YouTube link
+      videoUrl: 'https://www.youtube.com/watch?v=9ZT3NlMEYTc', // Replace with actual YouTube link
     },
     {
       image: '/Home_2.jpg', // Replace with actual path
-      videoUrl: 'https://www.youtube.com/watch?v=dxdnbnlYEWI', // Replace with actual YouTube link
+      videoUrl: 'https://www.youtube.com/watch?v=OmpiXtg-1nc&t=367s', // Replace with actual YouTube link
     },
     {
       image: '/Home_3.jpg', // Replace with actual path
-      videoUrl: 'https://www.youtube.com/watch?v=dTNkbynp2TY', // Replace with actual YouTube link
+      videoUrl: 'https://www.youtube.com/watch?v=s_0oX0rDYdc', // Replace with actual YouTube link
     },
     {
       image: '/Home_4.jpg', // Replace with actual path
-      videoUrl: 'https://www.youtube.com/watch?v=7ej_g98rHDU', // Replace with actual YouTube link
+      videoUrl: 'https://www.youtube.com/watch?v=x2eLQmUMQy4', // Replace with actual YouTube link
     },
     {
       image: '/Home_5.jpg', // Replace with actual path
-      videoUrl: 'https://www.youtube.com/watch?v=u3-jAtDtyqY', // Replace with actual YouTube link
+      videoUrl: 'https://www.youtube.com/watch?v=ktPVqHoYrIQ&t=7s', // Replace with actual YouTube link
     },
   ];
 
