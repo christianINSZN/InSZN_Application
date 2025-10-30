@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Chart from 'chart.js/auto';
+import { Link } from 'react-router-dom';
+import { useClerk } from '@clerk/clerk-react';
 
 const HeadlineGrades = ({
   isPopupOpen,
@@ -13,6 +15,11 @@ const HeadlineGrades = ({
   height = '50%',
   className = "text-sm sm:text-base"
 }) => {
+  const { user } = useClerk();
+  const subscriptionPlan = user?.publicMetadata?.subscriptionPlan;
+  const isSubscribed = subscriptionPlan === 'pro' || subscriptionPlan === 'premium';
+  const isPremium = isSubscribed;
+
   const convertToLetterGrade = (value) => {
     if (value === 'N/A' || value === null || value === undefined) return 'N/A';
     const numValue = parseFloat(value);
@@ -144,7 +151,7 @@ const HeadlineGrades = ({
         : {
             scales: {
               x: { title: { display: false, text: 'Opponent' }, ticks: { autoSkip: false, maxRotation: 45, minRotation: 45, labelOffset: 10 } },
-              y: { title: { display:  true, text: 'Grade' }, beginAtZero: true, min: yMin, max: yMax, ticks: { stepSize: (yMax - yMin) / 5 } },
+              y: { title: { display: true, text: 'Grade' }, beginAtZero: true, min: yMin, max: yMax, ticks: { stepSize: (yMax - yMin) / 5 } },
             },
             plugins: { legend: { display: true, position: 'top' }, tooltip: { mode: 'index', intersect: false } },
             responsive: true,
@@ -176,52 +183,180 @@ const HeadlineGrades = ({
     }
   }, [isPopupOpen, selectedGrade, weeklyGrades, teamGames, isMobile]);
 
-  if (isMobile) {
-    return (
-      <div className={`h-auto bg-white rounded-lg shadow-lg ${className}`}>
-        <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Headline Grades</h2>
-        <div className="grid grid-cols-1 gap-4 mb-4 h-auto">
-          <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[120px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Run Block'); }}>
-            <h3 className="text-sm font-medium">Run Block</h3>
-            <p className="text-2xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Run Block'))}</p>
-            <p className="text-[10px] text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Run Block'))}</p>
+  return (
+    <div className={`h-auto bg-white rounded-lg shadow-lg relative ${className}`}>
+      <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Headline Grades</h2>
+      <div className="relative">
+        {isSubscribed ? (
+          isMobile ? (
+            <div className="grid grid-cols-1 gap-4 mb-4 h-auto">
+              <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[120px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Run Block'); }}>
+                <h3 className="text-sm font-medium">Run Block</h3>
+                <p className="text-2xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Run Block'))}</p>
+                <p className="text-[10px] text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Run Block'))}</p>
+              </div>
+              <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[120px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Overall Blocking'); }}>
+                <h3 className="text-sm font-medium">Overall Blocking</h3>
+                <p className="text-2xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Overall Blocking'))}</p>
+                <p className="text-[10px] text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Overall Blocking'))}</p>
+              </div>
+              <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[120px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Pass Block'); }}>
+                <h3 className="text-xs font-medium">Pass Block</h3>
+                <p className="text-2xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Pass Block'))}</p>
+                <p className="text-[10px] text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Pass Block'))}</p>
+              </div>
+              <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[120px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Gap Grade Run Block'); }}>
+                <h3 className="text-xs font-medium">Gap Grade Run Block</h3>
+                <p className="text-2xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Gap Grade Run Block'))}</p>
+                <p className="text-[10px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('Gap Grade Run Block'))}</p>
+              </div>
+              <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[120px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Zone Grade Run Block'); }}>
+                <h3 className="text-xs font-medium">Zone Grade Run Block</h3>
+                <p className="text-2xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Zone Grade Run Block'))}</p>
+                <p className="text-[10px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('Zone Grade Run Block'))}</p>
+              </div>
+              <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[120px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('True Pass Play Block'); }}>
+                <h3 className="text-xs font-medium">True Pass Play Block</h3>
+                <p className="text-2xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('True Pass Play Block'))}</p>
+                <p className="text-[10px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('True Pass Play Block'))}</p>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-3 gap-4 mb-4 h-[40%]">
+                <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Run Block'); }}>
+                  <h3 className="text-md font-medium">Run Block</h3>
+                  <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Run Block'))}</p>
+                  <p className="text-xs text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Run Block'))}</p>
+                </div>
+                <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Overall Blocking'); }}>
+                  <h3 className="text-md font-medium">Overall Blocking</h3>
+                  <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Overall Blocking'))}</p>
+                  <p className="text-xs text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Overall Blocking'))}</p>
+                </div>
+                <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Pass Block'); }}>
+                  <h3 className="text-md font-medium">Pass Block</h3>
+                  <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Pass Block'))}</p>
+                  <p className="text-xs text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Pass Block'))}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2 h-[40%]">
+                <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Gap Grade Run Block'); }}>
+                  <h3 className="text-sm font-medium">Gap Grade Run Block</h3>
+                  <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Gap Grade Run Block'))}</p>
+                  <p className="text-[11px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('Gap Grade Run Block'))}</p>
+                </div>
+                <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Zone Grade Run Block'); }}>
+                  <h3 className="text-sm font-medium">Zone Grade Run Block</h3>
+                  <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Zone Grade Run Block'))}</p>
+                  <p className="text-[11px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('Zone Grade Run Block'))}</p>
+                </div>
+                <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('True Pass Play Block'); }}>
+                  <h3 className="text-sm font-medium">True Pass Play Block</h3>
+                  <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('True Pass Play Block'))}</p>
+                  <p className="text-[11px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('True Pass Play Block'))}</p>
+                </div>
+              </div>
+            </>
+          )
+        ) : (
+          <div className="relative">
+            {isMobile ? (
+              <div className="grid grid-cols-1 gap-4 mb-4 h-auto filter blur-xs opacity-80">
+                <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[120px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Run Block'); }}>
+                  <h3 className="text-sm font-medium">Run Block</h3>
+                  <p className="text-2xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Run Block'))}</p>
+                  <p className="text-[10px] text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Run Block'))}</p>
+                </div>
+                <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[120px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Overall Blocking'); }}>
+                  <h3 className="text-sm font-medium">Overall Blocking</h3>
+                  <p className="text-2xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Overall Blocking'))}</p>
+                  <p className="text-[10px] text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Overall Blocking'))}</p>
+                </div>
+                <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[120px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Pass Block'); }}>
+                  <h3 className="text-xs font-medium">Pass Block</h3>
+                  <p className="text-2xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Pass Block'))}</p>
+                  <p className="text-[10px] text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Pass Block'))}</p>
+                </div>
+                <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[120px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Gap Grade Run Block'); }}>
+                  <h3 className="text-xs font-medium">Gap Grade Run Block</h3>
+                  <p className="text-2xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Gap Grade Run Block'))}</p>
+                  <p className="text-[10px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('Gap Grade Run Block'))}</p>
+                </div>
+                <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[120px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Zone Grade Run Block'); }}>
+                  <h3 className="text-xs font-medium">Zone Grade Run Block</h3>
+                  <p className="text-2xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Zone Grade Run Block'))}</p>
+                  <p className="text-[10px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('Zone Grade Run Block'))}</p>
+                </div>
+                <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[120px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('True Pass Play Block'); }}>
+                  <h3 className="text-xs font-medium">True Pass Play Block</h3>
+                  <p className="text-2xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('True Pass Play Block'))}</p>
+                  <p className="text-[10px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('True Pass Play Block'))}</p>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-3 gap-4 mb-4 h-[40%] filter blur-xs opacity-80">
+                  <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Run Block'); }}>
+                    <h3 className="text-md font-medium">Run Block</h3>
+                    <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Run Block'))}</p>
+                    <p className="text-xs text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Run Block'))}</p>
+                  </div>
+                  <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Overall Blocking'); }}>
+                    <h3 className="text-md font-medium">Overall Blocking</h3>
+                    <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Overall Blocking'))}</p>
+                    <p className="text-xs text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Overall Blocking'))}</p>
+                  </div>
+                  <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Pass Block'); }}>
+                    <h3 className="text-md font-medium">Pass Block</h3>
+                    <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Pass Block'))}</p>
+                    <p className="text-xs text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Pass Block'))}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-2 h-[40%] filter blur-xs opacity-80">
+                  <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Gap Grade Run Block'); }}>
+                    <h3 className="text-sm font-medium">Gap Grade Run Block</h3>
+                    <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Gap Grade Run Block'))}</p>
+                    <p className="text-[11px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('Gap Grade Run Block'))}</p>
+                  </div>
+                  <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Zone Grade Run Block'); }}>
+                    <h3 className="text-sm font-medium">Zone Grade Run Block</h3>
+                    <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Zone Grade Run Block'))}</p>
+                    <p className="text-[11px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('Zone Grade Run Block'))}</p>
+                  </div>
+                  <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('True Pass Play Block'); }}>
+                    <h3 className="text-sm font-medium">True Pass Play Block</h3>
+                    <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('True Pass Play Block'))}</p>
+                    <p className="text-[11px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('True Pass Play Block'))}</p>
+                  </div>
+                </div>
+              </>
+            )}
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 backdrop-filter backdrop-blur-sm rounded-lg h-auto sm:h-[240px]">
+              <div className="p-4 sm:p-6 bg-white rounded-lg shadow-lg text-center">
+                <p className="text-gray-700 text-base sm:text-lg font-semibold mb-2">Exclusive Content</p>
+                <p className="text-gray-500 text-sm sm:text-base mb-4">This content is exclusive to INSZN Insider subscribers.</p>
+                <Link
+                  to="/subscribe"
+                  className="px-3 sm:px-4 py-1 sm:py-2 bg-[#235347] text-white text-sm sm:text-base rounded hover:bg-[#1b3e32]"
+                >
+                  Subscribe Now
+                </Link>
+              </div>
+            </div>
           </div>
-          <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[120px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Overall Blocking'); }}>
-            <h3 className="text-sm font-medium">Overall Blocking</h3>
-            <p className="text-2xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Overall Blocking'))}</p>
-            <p className="text-[10px] text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Overall Blocking'))}</p>
-          </div>
-          <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[120px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Pass Block'); }}>
-            <h3 className="text-xs font-medium">Pass Block</h3>
-            <p className="text-2xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Pass Block'))}</p>
-            <p className="text-[10px] text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Pass Block'))}</p>
-          </div>
-          <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[120px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Gap Grade Run Block'); }}>
-            <h3 className="text-xs font-medium">Gap Grade Run Block</h3>
-            <p className="text-2xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Gap Grade Run Block'))}</p>
-            <p className="text-[10px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('Gap Grade Run Block'))}</p>
-          </div>
-          <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[120px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Zone Grade Run Block'); }}>
-            <h3 className="text-xs font-medium">Zone Grade Run Block</h3>
-            <p className="text-2xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Zone Grade Run Block'))}</p>
-            <p className="text-[10px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('Zone Grade Run Block'))}</p>
-          </div>
-          <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg min-h-[120px]" onClick={() => { setIsPopupOpen(true); setSelectedGrade('True Pass Play Block'); }}>
-            <h3 className="text-xs font-medium">True Pass Play Block</h3>
-            <p className="text-2xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('True Pass Play Block'))}</p>
-            <p className="text-[10px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('True Pass Play Block'))}</p>
-          </div>
-        </div>
+        )}
+        {/* Popup Chart */}
         {isPopupOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-2 rounded-lg shadow-lg w-[95%] h-[50%] flex flex-col">
-              <h3 className="text-sm font-semibold mb-1">{selectedGrade}</h3>
-              <div className="flex-1 overflow-auto" style={{ maxHeight: '275px' }}>
-                <canvas id="mobileTrendChart" className="w-full h-full" />
+            <div className="bg-white p-4 rounded-lg shadow-lg w-1/2 h-1/2 flex flex-col">
+              <h3 className="text-lg font-semibold mb-2">{selectedGrade}</h3>
+              <div className="flex-1 overflow-auto">
+                <canvas id="trendChart" className="w-full h-full" />
               </div>
-              <div className="mt-1 flex justify-end">
+              <div className="mt-2 flex justify-end">
                 <button
-                  className="bg-red-500 text-white p-1 rounded hover:bg-red-700"
+                  className="bg-red-500 text-white p-2 rounded hover:bg-red-700"
                   onClick={() => setIsPopupOpen(false)}
                 >
                   Close
@@ -231,64 +366,6 @@ const HeadlineGrades = ({
           </div>
         )}
       </div>
-    );
-  }
-
-  return (
-    <div className={`h-80 bg-white rounded-lg shadow-lg ${className}`}>
-      <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Headline Grades</h2>
-      <div className="grid grid-cols-3 gap-4 mb-4 h-[40%]">
-        <div className="bg-gray-0 p-2 rounded text-center hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Run Block'); }}>
-          <h3 className="text-md font-medium">Run Block</h3>
-          <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Run Block'))}</p>
-          <p className="text-xs text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Run Block'))}</p>
-        </div>
-        <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Overall Blocking'); }}>
-          <h3 className="text-md font-medium">Overall Blocking</h3>
-          <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Overall Blocking'))}</p>
-          <p className="text-xs text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Overall Blocking'))}</p>
-        </div>
-        <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Pass Block'); }}>
-          <h3 className="text-md font-medium">Pass Block</h3>
-          <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Pass Block'))}</p>
-          <p className="text-xs text-gray-500 p-2">Percentile: {formatPercentile(getGradeValue('Pass Block'))}</p>
-        </div>
-      </div>
-      <div className="grid grid-cols-3 gap-2 h-[40%]">
-        <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Gap Grade Run Block'); }}>
-          <h3 className="text-sm font-medium">Gap Grade Run Block</h3>
-          <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Gap Grade Run Block'))}</p>
-          <p className="text-[11px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('Gap Grade Run Block'))}</p>
-        </div>
-        <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('Zone Grade Run Block'); }}>
-          <h3 className="text-sm font-medium">Zone Grade Run Block</h3>
-          <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('Zone Grade Run Block'))}</p>
-          <p className="text-[11px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('Zone Grade Run Block'))}</p>
-        </div>
-        <div className="bg-gray-0 p-2 rounded text-center h-full hover:bg-[#235347]/20 shadow-lg" onClick={() => { setIsPopupOpen(true); setSelectedGrade('True Pass Play Block'); }}>
-          <h3 className="text-sm font-medium">True Pass Play Block</h3>
-          <p className="text-4xl font-bold text-gray-800">{convertToLetterGrade(getGradeValue('True Pass Play Block'))}</p>
-          <p className="text-[11px] text-gray-500 p-2.5">Percentile: {formatPercentile(getGradeValue('True Pass Play Block'))}</p>
-        </div>
-      </div>
-      {isPopupOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-4 rounded-lg shadow-lg w-1/2 h-1/2 flex flex-col">
-            <h3 className="text-lg font-semibold mb-2">{selectedGrade}</h3>
-            <div className="flex-1 overflow-auto">
-              <canvas id="trendChart" className="w-full h-full" />
-            </div>
-            <div className="mt-2 flex justify-end">
-              <button
-                className="bg-red-500 text-white p-2 rounded hover:bg-red-700"
-                onClick={() => setIsPopupOpen(false)}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
