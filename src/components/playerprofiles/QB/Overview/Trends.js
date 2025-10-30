@@ -101,7 +101,7 @@ const Trends = ({ teamGames, weeklyGrades }) => {
   }, [teamGames, weeklyGrades]);
 
   return (
-    <div className="h-80 bg-white rounded-lg shadow-lg relative">
+    <div className=" bg-white rounded-lg shadow-lg relative">
       {/* Title — Always Visible */}
       <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Trends (3 Game)</h2>
 
@@ -112,7 +112,7 @@ const Trends = ({ teamGames, weeklyGrades }) => {
             <p className="text-gray-500 text-center p-4 text-sm sm:text-base">Trends populate after 3 played games</p>
           ) : (
             <>
-              <div className="grid grid-cols-3 gap-4 mb-4 h-[40%]">
+              <div className="grid grid-cols-3 gap-2 h-[40%]">
                 {trendData.trendUp.length > 0 ? (
                   trendData.trendUp.map((trend, index) => (
                     <div
@@ -152,8 +152,8 @@ const Trends = ({ teamGames, weeklyGrades }) => {
 
         {/* Premium Lock Overlay — Covers Content Only */}
         {!isPremium && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 backdrop-filter backdrop-blur-md rounded-b-lg">
-            <div className="p-0 sm:p-6 bg-white rounded-lg shadow-lg text-center">
+          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 h-auto backdrop-filter backdrop-blur-md rounded-b-lg">
+            <div className="p-4 sm:p-6 bg-white rounded-lg shadow-lg text-center">
               <p className="text-gray-700 text-base sm:text-lg font-semibold mb-2">Exclusive Content</p>
               <p className="text-gray-500 text-sm sm:text-base mb-4">This content is exclusive to INSZN Insider subscribers.</p>
               <Link

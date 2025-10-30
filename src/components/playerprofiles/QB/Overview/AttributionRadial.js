@@ -192,7 +192,7 @@ const AttributionRadial = ({ playerId, year, percentileGrades }) => {
 
         {/* Premium Lock Overlay — Covers Chart Only */}
         {!isPremium && (
-          <div className="absolute inset-0 top-[0px] flex items-center justify-center bg-black bg-opacity-30 backdrop-filter backdrop-blur-md rounded-b-lg">
+          <div className="absolute inset-0 top-[0px] flex items-center justify-center bg-black bg-opacity-30 backdrop-filter backdrop-blur-md rounded-b-lg h-auto">
             <div className="p-4 sm:p-6 bg-white rounded-lg shadow-lg text-center">
               <p className="text-gray-700 text-base sm:text-lg font-semibold mb-2">Exclusive Content</p>
               <p className="text-gray-500 text-sm sm:text-base mb-4">This content is exclusive to INSZN Insider subscribers.</p>
