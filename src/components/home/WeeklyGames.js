@@ -2,8 +2,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
-
-// Import modals from your games folder
 import ScoutingReport from '../../components/games/ScoutingReport';
 import GameRecap from '../../components/games/GameRecap';
 
@@ -13,7 +11,6 @@ const WeeklyGames = ({ year = '2025', week = 10 }) => {
   const [loading, setLoading] = useState(true);
   const scrollContainerRef = useRef(null);
 
-  // Modal state
   const [showScoutingReport, setShowScoutingReport] = useState(false);
   const [showGameRecap, setShowGameRecap] = useState(false);
   const [selectedMatchup, setSelectedMatchup] = useState(null);
@@ -55,7 +52,6 @@ const WeeklyGames = ({ year = '2025', week = 10 }) => {
     fetchWeeklyGames();
   }, [year, week]);
 
-  // Smart scroll: ~90% of container width
   const scroll = (direction) => {
     if (!scrollContainerRef.current) return;
     const container = scrollContainerRef.current;
@@ -66,7 +62,6 @@ const WeeklyGames = ({ year = '2025', week = 10 }) => {
     });
   };
 
-  // Modal handlers
   const openScoutingReport = (game) => {
     setSelectedMatchup({
       awayId: game.awayId,
@@ -105,7 +100,7 @@ const WeeklyGames = ({ year = '2025', week = 10 }) => {
 
   if (loading) {
     return (
-      <div className="mb-0 bg-white rounded-lg shadow-lg p-0 h-32 flex items-center justify-center">
+      <div className="mb-0 bg-gray-100 rounded-lg p-0 h-32 flex items-center justify-center">
         <p className="text-gray-600">Loading...</p>
       </div>
     );
@@ -117,17 +112,17 @@ const WeeklyGames = ({ year = '2025', week = 10 }) => {
 
   return (
     <>
-      <div className="mb-0 bg-white rounded-lg shadow-lg p-0 h-32 relative overflow-hidden">
-        {/* Desktop Scroll Buttons */}
+      <div className="mb-0 bg-gray-100 p-0 h-32 relative overflow-hidden">
+        {/* Desktop Scroll Buttons – BELOW NAVBAR */}
         <button
           onClick={() => scroll('left')}
-          className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white p-1.5 rounded-r shadow-lg transition-all"
+          className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 z-0 bg-white/90 hover:bg-white p-1.5 rounded-r shadow-lg transition-all"
         >
           <ChevronLeftIcon className="w-5 h-5 text-gray-700" />
         </button>
         <button
           onClick={() => scroll('right')}
-          className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white p-1.5 rounded-l shadow-lg transition-all"
+          className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 z-0 bg-white/90 hover:bg-white p-1.5 rounded-l shadow-lg transition-all"
         >
           <ChevronRightIcon className="w-5 h-5 text-gray-700" />
         </button>
@@ -162,7 +157,6 @@ const WeeklyGames = ({ year = '2025', week = 10 }) => {
                   }`}
                   onClick={handleCardClick}
                 >
-                  {/* Date + Action Link */}
                   <div className="flex justify-between items-center min-h-[1.5rem]">
                     <div className="text-xs text-gray-600">{formattedDate}</div>
                     {game.completed === 0 ? (
@@ -190,7 +184,6 @@ const WeeklyGames = ({ year = '2025', week = 10 }) => {
                     )}
                   </div>
 
-                  {/* Teams + Scores */}
                   <div className="flex justify-between items-center h-full">
                     <div className="text-xs text-left">
                       <div className="flex items-center">
