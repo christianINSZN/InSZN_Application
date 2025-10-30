@@ -98,7 +98,6 @@ const WeeklyGames = ({ year = '2025', week = 10 }) => {
     setSelectedGameId(null);
   };
 
-  // Format: "Fri - 6:00PM ET"
   const formatGameTime = (dateStr) => {
     const date = new Date(dateStr);
     const options = {
@@ -112,7 +111,7 @@ const WeeklyGames = ({ year = '2025', week = 10 }) => {
       .replace(',', '')
       .replace(' PM', 'PM')
       .replace(' AM', 'AM')
-      .replace(/ET$/, '') + ' ET'; // Ensure "ET" is added
+      .replace(/ET$/, '') + ' ET';
   };
 
   if (loading) {
@@ -144,13 +143,13 @@ const WeeklyGames = ({ year = '2025', week = 10 }) => {
           <ChevronRightIcon className="w-5 h-5 text-gray-700" />
         </button>
 
-        {/* Scrollable Container */}
+        {/* Scrollable Container – LEFT PADDING ONLY */}
         <div
           ref={scrollContainerRef}
-          className="overflow-x-auto scrollbar-hide h-full"
+          className="overflow-x-auto scrollbar-hide h-full pl-8"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          <div className="flex gap-3 pb-2 h-full items-center px-2">
+          <div className="flex gap-3 pb-2 h-full items-center">
             {games.map((game) => {
               const homeWins = game.homePoints > game.awayPoints;
               const awayWins = game.awayPoints > game.homePoints;
@@ -173,12 +172,10 @@ const WeeklyGames = ({ year = '2025', week = 10 }) => {
                   }`}
                   onClick={handleCardClick}
                 >
-                  {/* Top: Date (left) */}
                   <div className="text-xs text-gray-600 text-left">
                     {formattedTime}
                   </div>
 
-                  {/* Center: Teams + Scores */}
                   <div className="flex justify-between items-center flex-1">
                     <div className="text-xs text-left">
                       <div className="flex items-center">
@@ -212,7 +209,6 @@ const WeeklyGames = ({ year = '2025', week = 10 }) => {
                     </div>
                   </div>
 
-                  {/* Bottom: Action Link (centered) */}
                   <div className="flex justify-center">
                     {game.completed === 0 ? (
                       <button
