@@ -99,7 +99,7 @@ const Trends = ({
   }, [trendDataMemo]);
 
   return (
-    <div className={`h-80 bg-white rounded-lg shadow-lg relative ${className}`}>
+    <div className={`bg-white rounded-lg shadow-lg relative ${className}`}>
       <h2 className="flex items-center justify-center text-base sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 sm:h-[40px] rounded">Trends (3 Game)</h2>
       <div className="relative">
         {isPremium ? (
