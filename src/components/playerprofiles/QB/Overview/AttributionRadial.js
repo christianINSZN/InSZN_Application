@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Chart } from 'chart.js/auto';
+import { Link } from 'react-router-dom';
+import { useClerk } from '@clerk/clerk-react';
 
 // Metric explanations
 const metricExplanations = {
@@ -11,6 +13,11 @@ const metricExplanations = {
 };
 
 const AttributionRadial = ({ playerId, year, percentileGrades }) => {
+  const { user } = useClerk();
+  const subscriptionPlan = user?.publicMetadata?.subscriptionPlan;
+  const isSubscribed = subscriptionPlan === 'pro' || subscriptionPlan === 'premium';
+  const isPremium = isSubscribed;
+
   const getGradeValue = (gradeKey) => {
     if (!percentileGrades) return 'N/A';
     switch (gradeKey) {
@@ -50,7 +57,6 @@ const AttributionRadial = ({ playerId, year, percentileGrades }) => {
       setData({ labels: [], data: [] });
       return;
     }
-
     const gradeKeys = ['Grade A', 'Grade B', 'Grade C', 'Grade D', 'Grade E'];
     const labels = gradeKeys.map(key => customLabels[key] || key);
     const dataValues = gradeKeys.map(key => {
@@ -97,7 +103,7 @@ const AttributionRadial = ({ playerId, year, percentileGrades }) => {
               },
               pointLabels: {
                 font: {
-                  size: window.innerWidth < 640 ? 12 : 16, // Smaller on mobile
+                  size: window.innerWidth < 640 ? 12 : 16,
                   family: 'Arial',
                   weight: 'bold'
                 },
@@ -171,13 +177,34 @@ const AttributionRadial = ({ playerId, year, percentileGrades }) => {
   }, [data]);
 
   return (
-    <div className="bg-white rounded-lg shadow-lg row-span-2">
+    <div className="bg-white rounded-lg shadow-lg row-span-2 relative">
+      {/* Title — Always Visible */}
       <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">
         Attribution Radial
       </h2>
-      <div className="h-[380px] bg-white flex items-center justify-center relative" style={{ position: 'relative', width: '100%' }}>
-        <canvas ref={canvasRef} id="attributionChart" style={{ width: '100%', height: '100%', maxWidth: '600px', maxHeight: '400px' }} />
-        {!data.labels.length && <div className="absolute text-red-500">No data available</div>}
+
+      {/* Chart + Paywall */}
+      <div className="relative">
+        <div className="h-[380px] bg-white flex items-center justify-center relative" style={{ position: 'relative', width: '100%' }}>
+          <canvas ref={canvasRef} id="attributionChart" style={{ width: '100%', height: '100%', maxWidth: '600px', maxHeight: '400px' }} />
+          {!data.labels.length && <div className="absolute text-red-500">No data available</div>}
+        </div>
+
+        {/* Premium Lock Overlay — Covers Chart Only */}
+        {!isPremium && (
+          <div className="absolute inset-0 top-[0px] flex items-center justify-center bg-black bg-opacity-30 backdrop-filter backdrop-blur-md rounded-b-lg">
+            <div className="p-4 sm:p-6 bg-white rounded-lg shadow-lg text-center">
+              <p className="text-gray-700 text-base sm:text-lg font-semibold mb-2">Exclusive Content</p>
+              <p className="text-gray-500 text-sm sm:text-base mb-4">This content is exclusive to INSZN Insider subscribers.</p>
+              <Link
+                to="/subscribe"
+                className="px-3 sm:px-4 py-1 sm:py-2 bg-[#235347] text-white text-sm sm:text-base rounded hover:bg-[#1b3e32]"
+              >
+                Subscribe Now
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
