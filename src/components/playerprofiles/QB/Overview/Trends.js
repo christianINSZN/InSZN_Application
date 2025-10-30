@@ -153,7 +153,7 @@ const Trends = ({ teamGames, weeklyGrades }) => {
         {/* Premium Lock Overlay — Covers Content Only */}
         {!isPremium && (
           <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 backdrop-filter backdrop-blur-md rounded-b-lg">
-            <div className="p-4 sm:p-6 bg-white rounded-lg shadow-lg text-center">
+            <div className="p-0 sm:p-6 bg-white rounded-lg shadow-lg text-center">
               <p className="text-gray-700 text-base sm:text-lg font-semibold mb-2">Exclusive Content</p>
               <p className="text-gray-500 text-sm sm:text-base mb-4">This content is exclusive to INSZN Insider subscribers.</p>
               <Link
