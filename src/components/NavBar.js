@@ -75,9 +75,9 @@ function NavBar() {
         <div className="max-w-8xl mx-auto flex items-center px-4 xl:px-6 h-full relative">
           {/* Mobile: Centered Logo and Hamburger */}
           <div className="xl:hidden flex items-center w-full relative">
-            <div className="absolute left-1/2 transform -translate-x-[calc(52px)]">
+            <div className="absolute left-1/2 transform -translate-x-[calc(65px)]">
               <Link to="/" className="flex items-center">
-                <img src="/TurfLogo_RemovedBkg.png" alt="INSZN Logo" className="h-14 w-auto" />
+                <img src="/INSZN_LogoHeader.png" alt="INSZN Logo" className="h-8 w-auto" />
               </Link>
             </div>
             <button
@@ -161,7 +161,7 @@ function NavBar() {
             {/* Logo */}
             <div className="flex items-center">
               <Link to="/" className="flex items-center justify-center px-3 py-2">
-                <img src="/TurfLogo_RemovedBkg.png" alt="INSZN Logo" className="h-10 xl:h-14 w-auto" />
+                <img src="/INSZN_LogoHeader.png" alt="INSZN Logo" className="h-10 xl:h-8 w-auto mr-1" />
               </Link>
             </div>
 

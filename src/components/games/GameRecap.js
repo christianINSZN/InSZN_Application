@@ -103,7 +103,7 @@ const GameRecap = ({ matchup, gameId, year, onClose = () => {} }) => {
           {/* INSZN Logo + Advanced Link */}
           <div className="hidden md:flex flex-col items-center">
             <img
-              src="/TurfLogo_RemovedBkg.png"
+              src="/INSZN_LogoHeader.png"
               alt="INSZN Logo"
               className="w-24 sm:w-36 h-auto mt-0 mx-1 sm:mx-2"
             />

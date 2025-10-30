@@ -82,7 +82,7 @@ const ScoutingReport = ({ matchup, onClose, year }) => {
               </div>
             </div>
             <div className="hidden md:block flex items-center">
-              <img src="/TurfLogo_RemovedBkg.png" alt="INSZN Logo" className="w-24 sm:w-36 h-auto mt-0 mx-1 sm:mx-2" />
+              <img src="/INSZN_LogoHeader.png" alt="INSZN Logo" className="w-24 sm:w-36 h-auto mt-0 mx-1 sm:mx-2" />
             </div>
             <div className="flex items-center flex-row-reverse">
               {matchup?.homeTeamLogo && (

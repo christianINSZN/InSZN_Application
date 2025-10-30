@@ -129,7 +129,7 @@ const SingleGameRecap = ({ year = '2025' }) => {
 
         <div className="hidden md:block flex items-center">
           <img
-            src="/TurfLogo_RemovedBkg.png"
+            src="/INSZN_LogoHeader.png"
             alt="INSZN Logo"
             className="w-24 sm:w-36 h-auto mx-1 sm:mx-2"
           />
