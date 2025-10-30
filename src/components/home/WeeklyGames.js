@@ -98,6 +98,23 @@ const WeeklyGames = ({ year = '2025', week = 10 }) => {
     setSelectedGameId(null);
   };
 
+  // Format: "Fri - 6:00PM ET"
+  const formatGameTime = (dateStr) => {
+    const date = new Date(dateStr);
+    const options = {
+      weekday: 'short',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: 'America/New_York'
+    };
+    return date.toLocaleString('en-US', options)
+      .replace(',', '')
+      .replace(' PM', 'PM')
+      .replace(' AM', 'AM')
+      .replace(/ET$/, '') + ' ET'; // Ensure "ET" is added
+  };
+
   if (loading) {
     return (
       <div className="mb-0 bg-gray-100 rounded-lg p-0 h-32 flex items-center justify-center">
@@ -113,7 +130,7 @@ const WeeklyGames = ({ year = '2025', week = 10 }) => {
   return (
     <>
       <div className="mb-0 bg-gray-100 p-0 h-32 relative overflow-hidden">
-        {/* Desktop Scroll Buttons – BELOW NAVBAR */}
+        {/* Desktop Scroll Buttons */}
         <button
           onClick={() => scroll('left')}
           className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 z-0 bg-white/90 hover:bg-white p-1.5 rounded-r shadow-lg transition-all"
@@ -146,8 +163,7 @@ const WeeklyGames = ({ year = '2025', week = 10 }) => {
                 }
               };
 
-              const date = new Date(game.startDate);
-              const formattedDate = `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}`;
+              const formattedTime = formatGameTime(game.startDate);
 
               return (
                 <div
@@ -157,34 +173,13 @@ const WeeklyGames = ({ year = '2025', week = 10 }) => {
                   }`}
                   onClick={handleCardClick}
                 >
-                  <div className="flex justify-between items-center min-h-[1.5rem]">
-                    <div className="text-xs text-gray-600">{formattedDate}</div>
-                    {game.completed === 0 ? (
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          openScoutingReport(game);
-                        }}
-                        className="text-blue-500 hover:text-blue-700 underline text-xs"
-                      >
-                        Scouting Report
-                      </button>
-                    ) : (
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          openGameRecap(game);
-                        }}
-                        className="text-blue-500 hover:text-blue-700 underline text-xs"
-                      >
-                        Game Summary
-                      </button>
-                    )}
+                  {/* Top: Date (left) */}
+                  <div className="text-xs text-gray-600 text-left">
+                    {formattedTime}
                   </div>
 
-                  <div className="flex justify-between items-center h-full">
+                  {/* Center: Teams + Scores */}
+                  <div className="flex justify-between items-center flex-1">
                     <div className="text-xs text-left">
                       <div className="flex items-center">
                         {game.awayTeamLogo && (
@@ -215,6 +210,33 @@ const WeeklyGames = ({ year = '2025', week = 10 }) => {
                       <div>{awayWins ? <strong>{game.awayPoints}</strong> : game.awayPoints ?? '-'}</div>
                       <div>{homeWins ? <strong>{game.homePoints}</strong> : game.homePoints ?? '-'}</div>
                     </div>
+                  </div>
+
+                  {/* Bottom: Action Link (centered) */}
+                  <div className="flex justify-center">
+                    {game.completed === 0 ? (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          openScoutingReport(game);
+                        }}
+                        className="text-blue-500 hover:text-blue-700 underline text-xs"
+                      >
+                        Scouting Report
+                      </button>
+                    ) : (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          openGameRecap(game);
+                        }}
+                        className="text-blue-500 hover:text-blue-700 underline text-xs"
+                      >
+                        Game Summary
+                      </button>
+                    )}
                   </div>
                 </div>
               );
