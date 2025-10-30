@@ -105,7 +105,7 @@ const WeeklyGames = ({ year = '2025', week = 10 }) => {
 
   if (loading) {
     return (
-      <div className="mb-6 bg-white rounded-lg shadow-lg p-0 h-32 flex items-center justify-center">
+      <div className="mb-0 bg-white rounded-lg shadow-lg p-0 h-32 flex items-center justify-center">
         <p className="text-gray-600">Loading...</p>
       </div>
     );
@@ -117,7 +117,7 @@ const WeeklyGames = ({ year = '2025', week = 10 }) => {
 
   return (
     <>
-      <div className="mb-6 bg-white rounded-lg shadow-lg p-0 h-32 relative overflow-hidden">
+      <div className="mb-0 bg-white rounded-lg shadow-lg p-0 h-32 relative overflow-hidden">
         {/* Desktop Scroll Buttons */}
         <button
           onClick={() => scroll('left')}

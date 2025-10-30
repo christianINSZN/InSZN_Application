@@ -7,7 +7,7 @@ import WeeklyGames from './home/WeeklyGames'; // Import
 
 function Home() {
   return (
-    <div className="max-w-8xl mx-auto p-4 sm:p-6 mt-0 sm:mt-10">
+    <div className="max-w-8xl mx-auto p-4 sm:p-0 mt-0 sm:mt-10">
       {/* Games of the Week */}
       <WeeklyGames year="2025" week={10} />
 
