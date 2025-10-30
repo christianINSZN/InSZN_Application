@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Chart } from 'chart.js/auto';
+import { Link } from 'react-router-dom';
+import { useClerk } from '@clerk/clerk-react';
 
 // Metric explanations
 const metricExplanations = {
-  'Usage Share': 'Measures the player\'s share of total team receiving targets.',
+  'Usage Share': "Measures the player's share of total team receiving targets.",
   'Explosiveness': 'Evaluates the ability to generate yards after the catch.',
   'Consistency': 'Assesses the percentage of catchable passes successfully caught.',
   'Strength': 'Evaluates ability to secure catches in contested situations.',
@@ -11,6 +13,11 @@ const metricExplanations = {
 };
 
 const AttributionRadial = ({ playerId, year, percentileGrades, className = "text-sm sm:text-base" }) => {
+  const { user } = useClerk();
+  const subscriptionPlan = user?.publicMetadata?.subscriptionPlan;
+  const isSubscribed = subscriptionPlan === 'pro' || subscriptionPlan === 'premium';
+  const isPremium = isSubscribed;
+
   const getGradeValue = (gradeKey) => {
     if (!percentileGrades) return 'N/A';
     switch (gradeKey) {
@@ -37,10 +44,11 @@ const AttributionRadial = ({ playerId, year, percentileGrades, className = "text
     'Grade E': 'Ball Security'
   };
 
+  const isMobile = window.innerWidth < 640;
+
   const [data, setData] = useState({ labels: [], data: [] });
   const chartRef = useRef(null);
   const canvasRef = useRef(null);
-  const isMobile = window.innerWidth < 640;
 
   useEffect(() => {
     console.log('AttributionRadial props:', { playerId, year, percentileGrades });
@@ -176,14 +184,44 @@ const AttributionRadial = ({ playerId, year, percentileGrades, className = "text
     } else {
       console.log('Chart not created - data or context missing:', { labels: data.labels.length, data: data.data, somePositive: data.data.some(v => v > 0) });
     }
-  }, [data]);
+
+    return () => {
+      if (chartRef.current) {
+        chartRef.current.destroy();
+        console.log('Chart destroyed on cleanup');
+      }
+    };
+  }, [data, isMobile]);
 
   return (
-    <div className={`bg-white rounded-lg shadow-lg row-span-2 ${className}`}>
-      <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Attribution Radial</h2>
-      <div className={isMobile ? "h-[320px] bg-white flex items-center justify-center relative" : "h-[380px] bg-white flex items-center justify-center relative"} style={{ position: 'relative', width: '100%' }}>
-        <canvas ref={canvasRef} id="attributionChart" style={{ width: '100%', height: '100%', maxWidth: isMobile ? '360px' : '600px', maxHeight: isMobile ? '320px' : '400px' }} />
-        {!data.labels.length && <div className={`absolute text-red-500 ${isMobile ? 'text-sm' : 'text-base'}`}>No data available</div>}
+    <div className={`bg-white rounded-lg shadow-lg row-span-2 relative ${className}`}>
+      {/* Title — Always Visible */}
+      <h2 className="flex items-center justify-center text-base sm:text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-8 sm:h-[40px] rounded">
+        Attribution Radial
+      </h2>
+
+      {/* Chart + Paywall */}
+      <div className="relative">
+        <div className={isMobile ? "h-[320px] bg-white flex items-center justify-center relative" : "h-[380px] bg-white flex items-center justify-center relative"} style={{ position: 'relative', width: '100%' }}>
+          <canvas ref={canvasRef} id="attributionChart" style={{ width: '100%', height: '100%', maxWidth: isMobile ? '360px' : '600px', maxHeight: isMobile ? '320px' : '400px' }} />
+          {!data.labels.length && <div className={`absolute text-red-500 ${isMobile ? 'text-sm' : 'text-base'}`}>No data available</div>}
+        </div>
+
+        {/* Premium Lock Overlay — Covers Chart Only */}
+        {!isPremium && (
+          <div className="absolute inset-0 top-[0px] flex items-center justify-center bg-black bg-opacity-30 backdrop-filter backdrop-blur-md rounded-b-lg h-auto">
+            <div className="p-4 sm:p-6 bg-white rounded-lg shadow-lg text-center">
+              <p className="text-gray-700 text-base sm:text-lg font-semibold mb-2">Exclusive Content</p>
+              <p className="text-gray-500 text-sm sm:text-base mb-4">This content is exclusive to INSZN Insider subscribers.</p>
+              <Link
+                to="/subscribe"
+                className="px-3 sm:px-4 py-1 sm:py-2 bg-[#235347] text-white text-sm sm:text-base rounded hover:bg-[#1b3e32]"
+              >
+                Subscribe Now
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
