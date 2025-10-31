@@ -411,7 +411,7 @@ for game_id, game_info in game_team_map.items():
             cumulative_ppa_overall.get('quarter2'),
             cumulative_ppa_overall.get('quarter3'),
             cumulative_ppa_overall.get('quarter4'),
-            cumulative_ppa_passing.get('total'),
+            cumulative_ppa_passing.get('total'), 
             cumulative_ppa_passing.get('quarter1'),
             cumulative_ppa_passing.get('quarter2'),
             cumulative_ppa_passing.get('quarter3'),

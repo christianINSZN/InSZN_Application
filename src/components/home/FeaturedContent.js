@@ -3,15 +3,15 @@ function FeaturedContent() {
   const items = [
     {
       image: '/Home_1.jpg',
-      videoUrl: 'https://www.youtube.com/watch?v=9ZT3NlMEYTc',
-      title: 'SEC WEEK 9 QB Ratings & Recap',
-      desc: 'We recap every SEC QB play from this weekend. We spend time talking about Texas A&M quarterback Marcel Reeds performance vs LSU, we talk about Joey Aguilar , Ty Simpson, Trinidad Chambliss and more!'
+      videoUrl: 'https://www.youtube.com/watch?v=IG7tNp4vhkU',
+      title: 'INSZN College Football Show: Week 10 Preview',
+      desc: 'Welcome to the first episode of the INSZN College Football Show.  In this video, we preview six 6 matchups to watch out for in Week 10 with a deep dive into the data and analytics.'
     },
     {
       image: '/Home_2.jpg',
-      videoUrl: 'https://www.youtube.com/watch?v=OmpiXtg-1nc&t=367s',
-      title: 'Texas A&M Football: Marcel Reeds\' PERFORMANCE vs LSU, Reaction & Recap',
-      desc: 'We talk about Texas A&M quarterback, Marcel Reed, and his performance vs LSU. We breakdown what stood out and what he was able to do well to have success in Death Valley.'
+      videoUrl: 'https://www.youtube.com/watch?v=0g6lgdQqJak&t=62s',
+      title: 'Oklahoma vs Tennessee: INSZN\'s Week 10 Scouting Report',
+      desc: 'We preview the Oklahoma Sooners contest against the Tennessee Volunteers and discuss how the Sooners\' defense can slow down Joey Aguilar and the high-powered Volunteers\' offense.'
     },
     {
       image: '/Home_3.jpg',

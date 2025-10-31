@@ -8,11 +8,11 @@ function FeaturedVideos() {
   const slides = [
     {
       image: '/Home_1.jpg', // Replace with actual path
-      videoUrl: 'https://www.youtube.com/watch?v=9ZT3NlMEYTc', // Replace with actual YouTube link
+      videoUrl: 'https://www.youtube.com/watch?v=IG7tNp4vhkU', // Replace with actual YouTube link
     },
     {
       image: '/Home_2.jpg', // Replace with actual path
-      videoUrl: 'https://www.youtube.com/watch?v=OmpiXtg-1nc&t=367s', // Replace with actual YouTube link
+      videoUrl: 'https://youtube.com/watch?v=0g6lgdQqJak', // Replace with actual YouTube link
     },
     {
       image: '/Home_3.jpg', // Replace with actual path
