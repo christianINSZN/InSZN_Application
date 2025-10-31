@@ -14,7 +14,6 @@ const weeks = Array.from({ length: 15 }, (_, i) => i + 1);
 
 function GamesComponent({ year = '2025' }) {
   const navigate = useNavigate();
-
   const [isLoading, setIsLoading] = useState(true);
   const [gamesData, setGamesData] = useState([]);
   const [activeWeek, setActiveWeek] = useState(10);
@@ -26,7 +25,6 @@ function GamesComponent({ year = '2025' }) {
 
   useEffect(() => {
     let isMounted = true;
-
     if (isLoading) {
       fetch(`${process.env.REACT_APP_API_URL}/api/teams_games`, {
         method: 'GET',
@@ -43,7 +41,6 @@ function GamesComponent({ year = '2025' }) {
             try {
               const data = JSON.parse(text);
               console.log('Raw gamesData:', data);
-
               const uniqueGames = [];
               const seenIds = new Set();
               for (const game of data) {
@@ -52,7 +49,6 @@ function GamesComponent({ year = '2025' }) {
                   uniqueGames.push(game);
                 }
               }
-
               const validData = Array.isArray(uniqueGames)
                 ? uniqueGames.filter(
                     game =>
@@ -63,7 +59,6 @@ function GamesComponent({ year = '2025' }) {
                       (game.homeClassification === 'fbs' || game.awayClassification === 'fbs')
                   )
                 : [];
-
               console.log('Filtered validData:', validData);
               setGamesData(validData);
             } catch (e) {
@@ -80,7 +75,6 @@ function GamesComponent({ year = '2025' }) {
           }
         });
     }
-
     return () => {
       isMounted = false;
     };
@@ -89,7 +83,6 @@ function GamesComponent({ year = '2025' }) {
   if (isLoading) {
     return <div className="p-2 sm:p-4"><p className="text-black text-base sm:text-lg">Loading games...</p></div>;
   }
-
   if (gamesData.length === 0) {
     return <div className="p-2 sm:p-4"><p className="text-black text-base sm:text-lg">No games data available.</p></div>;
   }
@@ -97,7 +90,6 @@ function GamesComponent({ year = '2025' }) {
   const filteredGames = gamesData.filter(game => {
     const weekMatch = game.week === activeWeek;
     let conferenceMatch = true;
-
     if (activeTab === 'All') {
       conferenceMatch = true;
     } else if (activeTab === 'Top 25') {
@@ -105,7 +97,6 @@ function GamesComponent({ year = '2025' }) {
     } else {
       conferenceMatch = game.homeConference === activeTab || game.awayConference === activeTab;
     }
-
     return weekMatch && conferenceMatch;
   });
 
@@ -147,6 +138,29 @@ function GamesComponent({ year = '2025' }) {
     setSelectedGameId(null);
   };
 
+  // NEW: Format "Fri - 6:00PM ET" or "Fri - TBD"
+  const formatGameTime = (game) => {
+    if (game.startTimeTBD === 1) {
+      const date = new Date(game.startDate);
+      const weekday = date.toLocaleString('en-US', { weekday: 'short', timeZone: 'America/New_York' });
+      return `${weekday} - TBD`;
+    }
+
+    const date = new Date(game.startDate);
+    const options = {
+      weekday: 'short',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: 'America/New_York'
+    };
+    return date.toLocaleString('en-US', options)
+      .replace(',', '')
+      .replace(' PM', 'PM')
+      .replace(' AM', 'AM')
+      .replace(/ET$/, '') + ' ET';
+  };
+
   return (
     <div className="p-2 sm:p-4 shadow-xl rounded-lg mt-0 sm:mt-12">
       {/* Year + Week Controls */}
@@ -164,7 +178,6 @@ function GamesComponent({ year = '2025' }) {
             <option value="2025">2025</option>
           </select>
         </div>
-
         <div className="w-full sm:max-w-[70%]">
           <div className="text-sm sm:text-base font-medium text-gray-700 mb-1">Week</div>
           <div className="block sm:hidden">
@@ -226,8 +239,6 @@ function GamesComponent({ year = '2025' }) {
           const homeWins = game.homePoints !== null && game.awayPoints !== null && game.homePoints > game.awayPoints;
           const awayWins = game.awayPoints !== null && game.homePoints !== null && game.awayPoints > game.homePoints;
           const isFBSMatchup = conferences.includes(game.homeConference) && conferences.includes(game.awayConference);
-
-          // Only completed games are clickable
           const isClickable = game.completed === 1;
 
           const handleContainerClick = (e) => {
@@ -236,6 +247,8 @@ function GamesComponent({ year = '2025' }) {
               navigate(`/games/recap/${game.id}`);
             }
           };
+
+          const formattedTime = formatGameTime(game);
 
           return (
             <div
@@ -247,7 +260,7 @@ function GamesComponent({ year = '2025' }) {
             >
               <div className="flex justify-between items-center min-h-[1.5rem]">
                 <div className="text-xs sm:text-sm text-gray-600">
-                  {new Date(game.startDate).toLocaleDateString()}
+                  {formattedTime}
                 </div>
                 {game.completed === 0 ? (
                   isFBSMatchup ? (
@@ -281,7 +294,6 @@ function GamesComponent({ year = '2025' }) {
                   </div>
                 )}
               </div>
-
               <div className="flex justify-between items-center h-full">
                 <div className="text-sm sm:text-base text-left">
                   <div className="flex items-center">

@@ -37,9 +37,12 @@ const WeeklyGames = ({ year = '2025', week = 10 }) => {
           (game.homeClassification === 'fbs' || game.awayClassification === 'fbs')
         );
 
-        const sorted = filtered.sort((a, b) =>
-          new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
-        );
+        // SORT: earliest → latest, TBD at end
+        const sorted = filtered.sort((a, b) => {
+          if (a.startTimeTBD === 1 && b.startTimeTBD !== 1) return 1;
+          if (b.startTimeTBD === 1 && a.startTimeTBD !== 1) return -1;
+          return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
+        });
 
         setGames(sorted);
       } catch (err) {
@@ -98,8 +101,14 @@ const WeeklyGames = ({ year = '2025', week = 10 }) => {
     setSelectedGameId(null);
   };
 
-  const formatGameTime = (dateStr) => {
-    const date = new Date(dateStr);
+  const formatGameTime = (game) => {
+    if (game.startTimeTBD === 1) {
+      const date = new Date(game.startDate);
+      const weekday = date.toLocaleString('en-US', { weekday: 'short', timeZone: 'America/New_York' });
+      return `${weekday} - TBD`;
+    }
+
+    const date = new Date(game.startDate);
     const options = {
       weekday: 'short',
       hour: 'numeric',
@@ -162,7 +171,7 @@ const WeeklyGames = ({ year = '2025', week = 10 }) => {
                 }
               };
 
-              const formattedTime = formatGameTime(game.startDate);
+              const formattedTime = formatGameTime(game);
 
               return (
                 <div
