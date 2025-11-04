@@ -32,7 +32,7 @@ const TeamAReport = ({ teamName, teamId, year, gameId, gameStats }) => {
   const metrics = [
     {
       key: 'scoring_opportunities_opportunities',
-      label: 'TEST TEST',
+      label: 'Scoring Opportunities',
       tooltip: {
         title: 'Scoring Opportunities',
         definition: 'Number of offensive drives reaching at least the opponent’s 40-yard line.',
