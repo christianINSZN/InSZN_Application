@@ -34,7 +34,7 @@ const GameRecap = ({ matchup, gameId, year, onClose = () => {} }) => {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
           }),
-        ]);
+        ]); 
 
         if (!statsResponse.ok) {
           const errorText = await statsResponse.text();
