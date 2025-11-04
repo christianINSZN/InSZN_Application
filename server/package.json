@@ -1,0 +1,18 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node server.js",
+    "postinstall": "npm rebuild sqlite3"
+  },
+  "dependencies": {
+    "@clerk/clerk-sdk-node": "^4.13.23",
+    "axios": "^1.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^4.17.1",
+    "sqlite3": "^5.1.6",
+    "stripe": "^18.5.0",
+    "xml2js": "^0.4.23"
+  }
+}

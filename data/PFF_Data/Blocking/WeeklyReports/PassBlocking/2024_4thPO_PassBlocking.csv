@@ -1,0 +1,27 @@
+player,player_id,position,team_name,player_game_count,declined_penalties,franchise_id,grades_pass_block,hits_allowed,hurries_allowed,non_spike_pass_block,non_spike_pass_block_percentage,pass_block_percent,pbe,penalties,pressures_allowed,sacks_allowed,snap_counts_pass_block,snap_counts_pass_play,true_pass_set_grades_pass_block,true_pass_set_hits_allowed,true_pass_set_hurries_allowed,true_pass_set_non_spike_pass_block,true_pass_set_non_spike_pass_block_percentage,true_pass_set_pass_block_percent,true_pass_set_pbe,true_pass_set_pressures_allowed,true_pass_set_sacks_allowed,true_pass_set_snap_counts_pass_block,true_pass_set_snap_counts_pass_play
+Rocco Spindler,147478,G,NOTRE DAME,1,0,258,81.9,0,1,35,100.0,100.0,98.6,0,1,0,41,41,83.5,0,0,12,100.0,100.0,100.0,0,0,16,16
+Charles Jagusah,171087,G,NOTRE DAME,1,0,258,66.9,1,1,35,100.0,100.0,94.3,1,3,1,41,41,47.7,1,1,12,100.0,100.0,83.3,3,1,16,16
+Billy Schrauth,156979,G,NOTRE DAME,1,0,258,49.1,0,0,35,100.0,100.0,100.0,0,0,0,41,41,19.5,0,0,12,100.0,100.0,100.0,0,0,16,16
+Aamil Wagner,156973,T,NOTRE DAME,1,0,258,53.7,0,3,35,100.0,100.0,95.7,0,3,0,41,41,70.9,0,1,12,100.0,100.0,95.8,1,0,16,16
+Pat Coogan,147482,C,NOTRE DAME,1,0,258,80.4,1,0,35,100.0,100.0,98.6,0,1,0,41,41,81.5,0,0,12,100.0,100.0,100.0,0,0,16,16
+Donovan Jackson,145064,T,OHIO STATE,1,0,260,74.5,0,0,25,100.0,100.0,100.0,0,0,0,27,27,63.6,0,0,11,100.0,100.0,100.0,0,0,11,11
+Luke Montgomery,170261,G,OHIO STATE,1,0,260,35.0,0,0,25,100.0,100.0,100.0,0,0,0,27,27,9.2,0,0,11,100.0,100.0,100.0,0,0,11,11
+Josh Fryar,129746,T,OHIO STATE,1,0,260,47.1,0,1,25,100.0,100.0,98.0,1,1,0,27,27,76.4,0,1,11,100.0,100.0,95.5,1,0,11,11
+Carson Hinzman,162867,C,OHIO STATE,1,0,260,51.8,0,3,25,100.0,100.0,94.0,0,3,0,27,27,32.9,0,2,11,100.0,100.0,90.9,2,0,11,11
+Tegra Tshabola,75288,G,OHIO STATE,1,0,260,57.9,0,1,15,100.0,100.0,96.7,0,1,0,15,15,47.9,0,1,9,100.0,100.0,94.4,1,0,9,9
+Austin Siereveld,170269,G,OHIO STATE,1,0,260,81.8,0,0,10,100.0,100.0,100.0,0,0,0,12,12,75.6,0,0,2,100.0,100.0,100.0,0,0,2,2
+Jeremiyah Love,171090,HB,NOTRE DAME,1,0,258,80.1,0,0,8,33.3,32.0,100.0,0,0,0,8,25,70.0,0,0,1,14.3,14.3,100.0,0,0,1,7
+TreVeyon Henderson,145059,HB,OHIO STATE,1,0,260,80.7,0,0,6,31.6,33.3,100.0,0,0,0,7,21,79.4,0,0,4,40.0,40.0,100.0,0,0,4,10
+Will Kacmarek,145896,TE,OHIO STATE,1,0,260,71.8,0,0,2,33.3,50.0,100.0,0,0,0,4,8,69.8,0,0,1,100.0,100.0,100.0,0,0,1,1
+Aneyas Williams,184108,HB,NOTRE DAME,1,0,258,36.3,1,0,1,16.7,22.2,50.0,0,1,0,2,9,36.3,1,0,1,50.0,40.0,50.0,1,0,2,5
+Eli Raridon,156970,TE,NOTRE DAME,1,0,258,72.1,0,0,1,11.1,18.2,100.0,0,0,0,2,11,,0,0,0,0.0,0.0,,0,0,0,4
+Quinshon Judkins,157128,HB,OHIO STATE,1,0,260,72.5,0,0,1,16.7,16.7,100.0,0,0,0,1,6,,0,0,0,0.0,0.0,,0,0,0,1
+Gee Scott Jr.,129756,TE,OHIO STATE,1,0,260,72.5,0,0,1,5.3,5.0,100.0,0,0,0,1,20,,0,0,0,0.0,0.0,,0,0,0,8
+Jayden Harrison,98556,WR,NOTRE DAME,1,0,258,63.8,0,0,1,50.0,33.3,100.0,0,0,0,1,3,,0,0,0,,0.0,,0,0,0,1
+Jadarian Price,156985,HB,NOTRE DAME,1,0,258,0.0,0,0,1,16.7,12.5,0.0,0,1,1,1,8,0.0,0,0,1,33.3,25.0,0.0,1,1,1,4
+Drayk Bowen,171077,LB,NOTRE DAME,1,0,258,63.8,0,0,1,100.0,100.0,100.0,0,0,0,1,1,,0,0,0,,,,0,0,0,0
+Jack Kiser,97889,LB,NOTRE DAME,1,0,258,63.8,0,0,1,100.0,100.0,100.0,0,0,0,1,1,,0,0,0,,,,0,0,0,0
+Max Hurleman,143017,S,NOTRE DAME,1,0,258,63.8,0,0,1,100.0,100.0,100.0,0,0,0,1,1,,0,0,0,,,,0,0,0,0
+Luke Talich,171100,S,NOTRE DAME,1,0,258,63.8,0,0,1,100.0,100.0,100.0,0,0,0,1,1,,0,0,0,,,,0,0,0,0
+Joseph Vinci,184106,LS,NOTRE DAME,1,0,258,63.8,0,0,1,100.0,100.0,100.0,0,0,0,1,1,,0,0,0,,,,0,0,0,0
+Davis Sherwood,147493,TE,NOTRE DAME,1,0,258,63.8,0,0,1,100.0,100.0,100.0,0,0,0,1,1,,0,0,0,,,,0,0,0,0
