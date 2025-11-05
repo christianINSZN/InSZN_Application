@@ -51,6 +51,67 @@ const db = new sqlite3.Database(dbPath, (err) => {
 
 app.use(cors());
 
+// === COMMENTS & UPVOTES API (ADD THIS) ===
+
+app.use(express.json());
+
+// GET comments for a team page
+app.get('/api/comments', (req, res) => {
+  const { postId } = req.query;
+  if (!postId) return res.status(400).json({ error: 'postId required' });
+
+  const sql = `
+    SELECT c.id, c.postId, c.content, c.authorName, c.createdAt,
+           COUNT(u.id) as upvoteCount
+    FROM comments c
+    LEFT JOIN upvotes u ON c.id = u.commentId
+    WHERE c.postId = ?
+    GROUP BY c.id
+    ORDER BY c.createdAt DESC
+  `;
+
+  db.all(sql, [postId], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
+});
+
+// POST new comment
+app.post('/api/comments', (req, res) => {
+  const { postId, content, authorName = 'Anonymous' } = req.body;
+  if (!postId || !content) return res.status(400).json({ error: 'postId and content required' });
+
+  const sql = `INSERT INTO comments (postId, content, authorName) VALUES (?, ?, ?)`;
+  db.run(sql, [postId, content, authorName], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({
+      id: this.lastID,
+      postId,
+      content,
+      authorName,
+      createdAt: new Date().toISOString(),
+      upvoteCount: 0
+    });
+  });
+});
+
+// POST upvote
+app.post('/api/upvotes', (req, res) => {
+  const { commentId } = req.body;
+  if (!commentId) return res.status(400).json({ error: 'commentId required' });
+
+  const insertSql = `INSERT INTO upvotes (commentId) VALUES (?)`;
+  db.run(insertSql, [commentId], function(err) {
+    if (err) return res.status(500).json({ error: err.message });
+
+    const countSql = `SELECT COUNT(*) as upvoteCount FROM upvotes WHERE commentId = ?`;
+    db.get(countSql, [commentId], (err, row) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ upvoteCount: row.upvoteCount });
+    });
+  });
+});
+
 // Handle raw body for Stripe webhooks
 app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
