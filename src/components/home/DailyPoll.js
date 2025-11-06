@@ -1,3 +1,4 @@
+// DailyPoll.jsx – Better formatting
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@clerk/clerk-react';
 
@@ -46,67 +47,69 @@ const DailyPoll = () => {
       });
       if (r.ok) {
         setHasVoted(true);
-        await fetchPoll(); // Refresh tally
-      } else {
-        const err = await r.json();
-        if (err.error === 'Already voted') setHasVoted(true);
+        await fetchPoll();
       }
     } catch (err) {
       console.error(err);
     }
   };
 
-  if (loading) return <p>Loading poll...</p>;
-  if (!poll) return <p>No poll today.</p>;
+  if (loading) return <p className="text-center text-gray-500">Loading poll...</p>;
+  if (!poll) return <p className="text-center text-gray-500">No poll today.</p>;
 
   return (
-    <div className="bg-white rounded-lg p-4 shadow">
-      <h3 className="font-bold text-lg mb-3">{poll.question}</h3>
+    <div className="bg-white rounded-lg p-5 shadow-md max-w-md mx-auto">
+      <h3 className="font-bold text-xl text-center mb-4 text-[#235347]">{poll.question}</h3>
 
       {!hasVoted ? (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {poll.options.map((opt, i) => (
-            <label key={i} className="flex items-center p-2 hover:bg-gray-50 cursor-pointer">
-              <input
-                type="radio"
-                name="poll"
-                value={i}
-                checked={selected === i}
-                onChange={() => setSelected(i)}
-                className="mr-2"
-              />
-              {opt}
+            <label
+              key={i}
+              className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
+            >
+              <div className="flex items-center">
+                <input
+                  type="radio"
+                  name="poll"
+                  value={i}
+                  checked={selected === i}
+                  onChange={() => setSelected(i)}
+                  className="mr-3 h-4 w-4 text-[#235347]"
+                />
+                <span className="text-sm font-medium">{opt}</span>
+              </div>
             </label>
           ))}
           <button
             onClick={vote}
             disabled={selected == null}
-            className="mt-3 bg-[#235347] text-white px-4 py-2 rounded disabled:opacity-50"
+            className="w-full mt-4 bg-[#235347] hover:bg-[#1a3d32] text-white font-semibold py-2.5 rounded-lg disabled:opacity-50 transition"
           >
             Submit Vote
           </button>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {poll.options.map((opt, i) => {
             const votes = poll.tally[i];
             const percent = poll.totalVotes ? (votes / poll.totalVotes * 100).toFixed(1) : 0;
             return (
-              <div key={i} className="flex justify-between items-center">
-                <span>{opt}</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-32 bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-[#235347] h-2 rounded-full"
-                      style={{ width: `${percent}%` }}
-                    />
-                  </div>
-                  <span className="text-sm">{percent}% ({votes})</span>
+              <div key={i} className="flex flex-col">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-sm font-medium">{opt}</span>
+                  <span className="text-sm font-semibold">{percent}% ({votes})</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-3">
+                  <div
+                    className="bg-[#235347] h-3 rounded-full transition-all duration-500"
+                    style={{ width: `${percent}%` }}
+                  />
                 </div>
               </div>
             );
           })}
-          <p className="text-sm text-green-600 mt-3">Thanks for voting!</p>
+          <p className="text-center text-sm text-green-600 font-medium mt-4">Thanks for voting!</p>
         </div>
       )}
     </div>
