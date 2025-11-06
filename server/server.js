@@ -11,28 +11,27 @@ const { Clerk } = require('@clerk/clerk-sdk-node');
 
 const app = express();
 const port = process.env.PORT || 3001;
+
+/* -------------------------------------------------------------
+   MAIN DATABASE (cfb_database.db) – copied from repo on every deploy
+   ------------------------------------------------------------- */
 const dbPath = process.env.SQLITE_DB_PATH || './data/db/cfb_database.db';
 const repoDbPath = path.join(__dirname, 'data/db/cfb_database.db');
 const getDefaultYear = () => 2025;
 
-// Validate environment variables
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('Missing STRIPE_SECRET_KEY in environment variables');
-}
-if (!process.env.CLERK_SECRET_KEY) {
-  throw new Error('Missing CLERK_SECRET_KEY in environment variables');
-}
+// Validate env vars
+if (!process.env.STRIPE_SECRET_KEY) throw new Error('Missing STRIPE_SECRET_KEY');
+if (!process.env.CLERK_SECRET_KEY) throw new Error('Missing CLERK_SECRET_KEY');
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2025-08-27.basil' });
 
-// Ensure database directory exists and copy database from repo to disk
+// Copy main DB from repo
 console.log(`Copying database from ${repoDbPath} to ${dbPath}`);
 fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 fs.copyFileSync(repoDbPath, dbPath);
 const stats = fs.statSync(dbPath);
 console.log(`Database file at: ${dbPath}, size: ${stats.size} bytes`);
-if (stats.size === 0) {
-  console.error('Database file is empty');
-}
+if (stats.size === 0) console.error('Database file is empty');
 
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
@@ -40,29 +39,64 @@ const db = new sqlite3.Database(dbPath, (err) => {
   } else {
     console.log('Connected to SQLite database');
     db.all('SELECT name FROM sqlite_master WHERE type="table"', [], (err, rows) => {
-      if (err) {
-        console.error('Error querying tables:', err.message);
-      } else {
-        console.log('Available tables:', rows.map(row => row.name));
-      }
+      if (err) console.error('Error querying tables:', err.message);
+      else console.log('Available tables:', rows.map(r => r.name));
     });
   }
 });
 
+/* -------------------------------------------------------------
+   PERSISTENT COMMENTS DATABASE (comments.db) – never overwritten
+   ------------------------------------------------------------- */
+const commentsDbPath = path.join(path.dirname(dbPath), 'comments.db');
+
+// Create file + tables **only the first time**
+if (!fs.existsSync(commentsDbPath)) {
+  console.log('Creating new comments.db …');
+  const initDb = new sqlite3.Database(commentsDbPath);
+  const initSql = `
+    CREATE TABLE comments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      postId TEXT NOT NULL,
+      content TEXT NOT NULL,
+      authorName TEXT,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE upvotes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      commentId INTEGER,
+      FOREIGN KEY (commentId) REFERENCES comments (id) ON DELETE CASCADE
+    );
+  `;
+  initDb.exec(initSql, (err) => {
+    if (err) console.error('Comments DB init error:', err);
+    else console.log('comments.db tables created');
+    initDb.close();
+  });
+}
+
+// Open persistent connection
+const commentsDb = new sqlite3.Database(commentsDbPath, (err) => {
+  if (err) console.error('Comments DB connection error:', err);
+  else console.log('Connected to persistent comments DB');
+});
+
+/* -------------------------------------------------------------
+   MIDDLEWARE
+   ------------------------------------------------------------- */
 app.use(cors());
+app.use(express.json());   // <-- required for POST bodies
 
-// === COMMENTS & UPVOTES API (ADD THIS) ===
-
-app.use(express.json());
-
-// GET comments for a team page
+/* -------------------------------------------------------------
+   COMMENTS & UPVOTES API – use commentsDb
+   ------------------------------------------------------------- */
 app.get('/api/comments', (req, res) => {
   const { postId } = req.query;
   if (!postId) return res.status(400).json({ error: 'postId required' });
 
   const sql = `
     SELECT c.id, c.postId, c.content, c.authorName, c.createdAt,
-           COUNT(u.id) as upvoteCount
+           COUNT(u.id) AS upvoteCount
     FROM comments c
     LEFT JOIN upvotes u ON c.id = u.commentId
     WHERE c.postId = ?
@@ -70,19 +104,18 @@ app.get('/api/comments', (req, res) => {
     ORDER BY c.createdAt DESC
   `;
 
-  db.all(sql, [postId], (err, rows) => {
+  commentsDb.all(sql, [postId], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
+    res.json(rows || []);
   });
 });
 
-// POST new comment
 app.post('/api/comments', (req, res) => {
   const { postId, content, authorName = 'Anonymous' } = req.body;
   if (!postId || !content) return res.status(400).json({ error: 'postId and content required' });
 
   const sql = `INSERT INTO comments (postId, content, authorName) VALUES (?, ?, ?)`;
-  db.run(sql, [postId, content, authorName], function(err) {
+  commentsDb.run(sql, [postId, content, authorName], function (err) {
     if (err) return res.status(500).json({ error: err.message });
     res.json({
       id: this.lastID,
@@ -90,22 +123,21 @@ app.post('/api/comments', (req, res) => {
       content,
       authorName,
       createdAt: new Date().toISOString(),
-      upvoteCount: 0
+      upvoteCount: 0,
     });
   });
 });
 
-// POST upvote
 app.post('/api/upvotes', (req, res) => {
   const { commentId } = req.body;
   if (!commentId) return res.status(400).json({ error: 'commentId required' });
 
   const insertSql = `INSERT INTO upvotes (commentId) VALUES (?)`;
-  db.run(insertSql, [commentId], function(err) {
+  commentsDb.run(insertSql, [commentId], function (err) {
     if (err) return res.status(500).json({ error: err.message });
 
-    const countSql = `SELECT COUNT(*) as upvoteCount FROM upvotes WHERE commentId = ?`;
-    db.get(countSql, [commentId], (err, row) => {
+    const countSql = `SELECT COUNT(*) AS upvoteCount FROM upvotes WHERE commentId = ?`;
+    commentsDb.get(countSql, [commentId], (err, row) => {
       if (err) return res.status(500).json({ error: err.message });
       res.json({ upvoteCount: row.upvoteCount });
     });
