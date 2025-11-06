@@ -1,3 +1,4 @@
+// MatchupProjection.jsx – "Spread" shows team name + sign
 import React, { useState, useEffect } from 'react';
 import ScoutingReport from '../../../games/ScoutingReport';
 
@@ -6,14 +7,12 @@ const MatchupProjection = ({ teamId, year }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showScoutingReport, setShowScoutingReport] = useState(false);
-  
 
   useEffect(() => {
     const fetchMatchup = async () => {
       setLoading(true);
       setError(null);
       if (!teamId) {
-        console.log('teamId is undefined or null');
         setLoading(false);
         setError('Team ID not available');
         return;
@@ -29,7 +28,7 @@ const MatchupProjection = ({ teamId, year }) => {
           .filter(m => (m.homeId === teamId || m.awayId === teamId) && !m.completed)
           .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))[0];
         if (!nextMatchup) throw new Error('No scheduled matchups found');
-        console.log('nextMatchup:', nextMatchup); // Log the object to inspect its structure
+
         const mappedMatchup = {
           startDate: nextMatchup.startDate,
           startTimeTBD: nextMatchup.startTimeTBD,
@@ -41,12 +40,10 @@ const MatchupProjection = ({ teamId, year }) => {
           awayTeamLogo: nextMatchup.awayTeamLogo,
           spread: nextMatchup.draftKingsSpread,
           overUnder: nextMatchup.draftKingsOverUnder,
-          homeMoneyline: nextMatchup.draftKingsHomeMoneyline,
           status: 'scheduled',
         };
         setMatchup(mappedMatchup);
       } catch (err) {
-        console.error('Fetch error:', err.message);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -62,9 +59,16 @@ const MatchupProjection = ({ teamId, year }) => {
   const dateStr = matchup.startTimeTBD ? 'TBD' : new Date(matchup.startDate).toLocaleDateString();
   const timeStr = matchup.startTimeTBD ? 'TBD' : new Date(matchup.startDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+  // Determine team name and spread with sign
+  const isHome = matchup.homeId === teamId;
+  const teamName = isHome ? matchup.homeTeamName : matchup.awayTeamName;
+  const rawSpread = matchup.spread;
+  const spreadDisplay = rawSpread != null ? `${matchup.homeTeamName} ${rawSpread > 0 ? '+' : ''}${rawSpread}` : 'N/A';
+
   return (
     <div className="bg-white p-2 sm:p-0 rounded-lg shadow-lg">
       <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Next Matchup</h2>
+
       {/* Mobile View */}
       <div className="sm:hidden flex flex-col mt-1">
         <div className="w-full">
@@ -84,12 +88,8 @@ const MatchupProjection = ({ teamId, year }) => {
         <div className="border-t-2 border-[#235347] h-0 my-4 mx-0"></div>
         <div className="w-full flex flex-col justify-center items-center">
           <div className="flex flex-row space-x-4 overflow-x-auto">
-            <div className="text-center min-w-[80px]">
-              <p className="text-sm text-black">Line: {matchup.homeMoneyline !== null ? `${matchup.homeMoneyline}` : 'N/A'}</p>
-            </div>
-            <div className="h-6 border-l-[1px] border-[#235347]"></div>
-            <div className="text-center min-w-[80px]">
-              <p className="text-sm text-black">Spread: {matchup.spread !== null ? `${matchup.spread}` : 'N/A'}</p>
+            <div className="text-center min-w-[120px]">
+              <p className="text-sm text-black">{spreadDisplay}</p>
             </div>
             <div className="h-6 border-l-[1px] border-[#235347]"></div>
             <div className="text-center min-w-[80px]">
@@ -106,6 +106,7 @@ const MatchupProjection = ({ teamId, year }) => {
           </div>
         </div>
       </div>
+
       {/* Non-Mobile View */}
       <div className="hidden sm:flex mt-2">
         <div className="w-2/5 pr-2">
@@ -126,11 +127,7 @@ const MatchupProjection = ({ teamId, year }) => {
         <div className="w-3/5 pl-2 flex flex-col justify-center items-center">
           <div className="flex flex-row space-x-6">
             <div className="text-center">
-              <p className="text-lg text-black">Home Line: {matchup.homeMoneyline !== null ? `${matchup.homeMoneyline}` : 'TBD'}</p>
-            </div>
-            <div className="h-7 border-l-[1px] border-[#235347]"></div>
-            <div className="text-center">
-              <p className="text-lg text-black">Home Spread: {matchup.spread !== null ? `${matchup.spread}` : 'TBD'}</p>
+              <p className="text-lg text-black">{spreadDisplay}</p>
             </div>
             <div className="h-7 border-l-[1px] border-[#235347]"></div>
             <div className="text-center">
@@ -147,6 +144,7 @@ const MatchupProjection = ({ teamId, year }) => {
           </div>
         </div>
       </div>
+
       {showScoutingReport && (
         <ScoutingReport matchup={matchup} year={year} onClose={() => setShowScoutingReport(false)} />
       )}
