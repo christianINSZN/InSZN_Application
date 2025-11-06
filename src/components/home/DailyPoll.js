@@ -13,46 +13,47 @@ const DailyPoll = () => {
     fetchPoll();
   }, []);
 
-  const fetchPoll = () => {
-    fetch(`${apiUrl}/api/poll`)
-      .then(r => r.json())
-      .then(data => {
-        setPoll(data);
-        if (isSignedIn && data.id) {
-          checkVoted(data.id);
-        } else {
-          setLoading(false);
-        }
-      })
-      .catch(() => setLoading(false));
+  const fetchPoll = async () => {
+    try {
+      const r = await fetch(`${apiUrl}/api/poll`);
+      const data = await r.json();
+      setPoll(data);
+      if (isSignedIn && data.id) {
+        const votedR = await fetch(`${apiUrl}/api/poll/voted?pollId=${data.id}&userId=${user.id}`);
+        const votedData = await votedR.json();
+        setHasVoted(votedData.hasVoted);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const checkVoted = (pollId) => {
-    fetch(`${apiUrl}/api/poll/voted?pollId=${pollId}&userId=${user.id}`)
-      .then(r => r.json())
-      .then(data => {
-        setHasVoted(data.hasVoted);
-      })
-      .finally(() => setLoading(false));
-  };
-
-  const vote = () => {
+  const vote = async () => {
     if (!isSignedIn) return alert('Sign in to vote');
     if (hasVoted || selected == null) return;
 
-    fetch(`${apiUrl}/api/poll/vote`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        pollId: poll.id,
-        optionIndex: selected,
-        userId: user.id,
-      }),
-    })
-      .then(() => {
-        setHasVoted(true);
-        fetchPoll(); // Refresh tally
+    try {
+      const r = await fetch(`${apiUrl}/api/poll/vote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pollId: poll.id,
+          optionIndex: selected,
+          userId: user.id,
+        }),
       });
+      if (r.ok) {
+        setHasVoted(true);
+        await fetchPoll(); // Refresh tally
+      } else {
+        const err = await r.json();
+        if (err.error === 'Already voted') setHasVoted(true);
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   if (loading) return <p>Loading poll...</p>;
