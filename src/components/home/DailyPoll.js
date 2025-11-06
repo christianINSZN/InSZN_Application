@@ -1,4 +1,3 @@
-// DailyPoll.jsx
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@clerk/clerk-react';
 
@@ -19,19 +18,22 @@ const DailyPoll = () => {
       .then(r => r.json())
       .then(data => {
         setPoll(data);
-        if (isSignedIn) checkVoted(data.id);
+        if (isSignedIn && data.id) {
+          checkVoted(data.id);
+        } else {
+          setLoading(false);
+        }
       })
-      .finally(() => setLoading(false));
+      .catch(() => setLoading(false));
   };
 
   const checkVoted = (pollId) => {
-    // Check server if user has voted
-    fetch(`${apiUrl}/api/poll/vote`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pollId, optionIndex: -1, userId: user.id }),
-    }).catch(() => {})
-      .then(() => setHasVoted(true));
+    fetch(`${apiUrl}/api/poll/voted?pollId=${pollId}&userId=${user.id}`)
+      .then(r => r.json())
+      .then(data => {
+        setHasVoted(data.hasVoted);
+      })
+      .finally(() => setLoading(false));
   };
 
   const vote = () => {

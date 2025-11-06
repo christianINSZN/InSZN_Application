@@ -343,6 +343,21 @@ app.post('/api/admin/poll', (req, res) => {
   );
 });
 
+// GET: Has user voted?
+app.get('/api/poll/voted', (req, res) => {
+  const { pollId, userId } = req.query;
+  if (!pollId || !userId) return res.status(400).json({ error: 'Missing data' });
+
+  commentsDb.get(
+    `SELECT 1 FROM poll_votes WHERE pollId = ? AND userClerkId = ?`,
+    [pollId, userId],
+    (err, row) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ hasVoted: !!row });
+    }
+  );
+});
+
 // Handle raw body for Stripe webhooks
 app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
