@@ -1,8 +1,7 @@
-// DailyPoll.jsx – Better formatting
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@clerk/clerk-react';
 
-const DailyPoll = () => {
+const PollWidget = ({ slug }) => {
   const { user, isSignedIn } = useUser();
   const [poll, setPoll] = useState(null);
   const [selected, setSelected] = useState(null);
@@ -12,50 +11,33 @@ const DailyPoll = () => {
 
   useEffect(() => {
     fetchPoll();
-  }, []);
+  }, [slug]);
 
   const fetchPoll = async () => {
-    try {
-      const r = await fetch(`${apiUrl}/api/poll`);
-      const data = await r.json();
-      setPoll(data);
-      if (isSignedIn && data.id) {
-        const votedR = await fetch(`${apiUrl}/api/poll/voted?pollId=${data.id}&userId=${user.id}`);
-        const votedData = await votedR.json();
-        setHasVoted(votedData.hasVoted);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
+    const r = await fetch(`${apiUrl}/api/poll/${slug}`);
+    const data = await r.json();
+    setPoll(data);
+    if (isSignedIn && data.id) {
+      const v = await fetch(`${apiUrl}/api/poll/voted?pollId=${data.id}&userId=${user.id}`);
+      const vd = await v.json();
+      setHasVoted(vd.hasVoted);
     }
+    setLoading(false);
   };
 
   const vote = async () => {
-    if (!isSignedIn) return alert('Sign in to vote');
-    if (hasVoted || selected == null) return;
-
-    try {
-      const r = await fetch(`${apiUrl}/api/poll/vote`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          pollId: poll.id,
-          optionIndex: selected,
-          userId: user.id,
-        }),
-      });
-      if (r.ok) {
-        setHasVoted(true);
-        await fetchPoll();
-      }
-    } catch (err) {
-      console.error(err);
-    }
+    if (!isSignedIn || hasVoted || selected == null) return;
+    await fetch(`${apiUrl}/api/poll/vote`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pollId: poll.id, optionIndex: selected, userId: user.id }),
+    });
+    setHasVoted(true);
+    fetchPoll();
   };
 
-  if (loading) return <p className="text-center text-gray-500">Loading poll...</p>;
-  if (!poll) return <p className="text-center text-gray-500">No poll today.</p>;
+  if (loading) return <p className="text-center text-sm">Loading...</p>;
+  if (!poll) return <p className="text-center text-sm">Poll not found.</p>;
 
   return (
     <div className="bg-white rounded-lg p-5 shadow-md max-w-md mx-auto">
@@ -64,14 +46,11 @@ const DailyPoll = () => {
       {!hasVoted ? (
         <div className="space-y-3">
           {poll.options.map((opt, i) => (
-            <label
-              key={i}
-              className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition"
-            >
+            <label key={i} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition">
               <div className="flex items-center">
                 <input
                   type="radio"
-                  name="poll"
+                  name={`poll-${poll.id}`}
                   value={i}
                   checked={selected === i}
                   onChange={() => setSelected(i)}
@@ -116,4 +95,4 @@ const DailyPoll = () => {
   );
 };
 
-export default DailyPoll;
+export default PollWidget;

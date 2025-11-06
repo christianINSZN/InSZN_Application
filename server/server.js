@@ -358,6 +358,64 @@ app.get('/api/poll/voted', (req, res) => {
   );
 });
 
+/* -------------------------------------------------------------
+   MULTI-POLL SYSTEM – /api/poll/:slug
+   ------------------------------------------------------------- */
+
+// GET specific poll by slug
+app.get('/api/poll/:slug', (req, res) => {
+  const { slug } = req.params;
+
+  commentsDb.get(`SELECT * FROM polls WHERE slug = ?`, [slug], (err, poll) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!poll) return res.status(404).json({ error: 'Poll not found' });
+
+    const options = JSON.parse(poll.options);
+    const fakeVotes = JSON.parse(poll.fakeVotes);
+
+    commentsDb.all(
+      `SELECT optionIndex, COUNT(*) as count FROM poll_votes WHERE pollId = ? GROUP BY optionIndex`,
+      [poll.id],
+      (err, realVotes) => {
+        if (err) return res.status(500).json({ error: err.message });
+
+        const tally = options.map((_, i) => {
+          const real = realVotes.find(v => v.optionIndex === i)?.count || 0;
+          return real + fakeVotes[i];
+        });
+
+        res.json({
+          id: poll.id,
+          slug: poll.slug,
+          question: poll.question,
+          options,
+          tally,
+          totalVotes: tally.reduce((a, b) => a + b, 0),
+        });
+      }
+    );
+  });
+});
+
+// ADMIN: Create or update poll by slug
+app.post('/api/admin/poll/:slug', (req, res) => {
+  if (req.headers['x-admin-key'] !== process.env.ADMIN_KEY) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+
+  const { slug } = req.params;
+  const { question, options, fakeVotes } = req.body;
+
+  commentsDb.run(
+    `INSERT OR REPLACE INTO polls (slug, question, options, fakeVotes) VALUES (?, ?, ?, ?)`,
+    [slug, question, JSON.stringify(options), JSON.stringify(fakeVotes)],
+    function (err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ success: true, id: this.lastID });
+    }
+  );
+});
+
 // Handle raw body for Stripe webhooks
 app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
