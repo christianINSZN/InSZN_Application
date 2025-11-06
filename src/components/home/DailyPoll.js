@@ -1,8 +1,7 @@
+// PollWidget.jsx – Guests can vote, results show after
 import React, { useState, useEffect } from 'react';
-import { useUser } from '@clerk/clerk-react';
 
 const PollWidget = ({ slug }) => {
-  const { user, isSignedIn } = useUser();
   const [poll, setPoll] = useState(null);
   const [selected, setSelected] = useState(null);
   const [hasVoted, setHasVoted] = useState(false);
@@ -14,26 +13,36 @@ const PollWidget = ({ slug }) => {
   }, [slug]);
 
   const fetchPoll = async () => {
-    const r = await fetch(`${apiUrl}/api/poll/${slug}`);
-    const data = await r.json();
-    setPoll(data);
-    if (isSignedIn && data.id) {
-      const v = await fetch(`${apiUrl}/api/poll/voted?pollId=${data.id}&userId=${user.id}`);
-      const vd = await v.json();
-      setHasVoted(vd.hasVoted);
+    try {
+      const r = await fetch(`${apiUrl}/api/poll/${slug}`);
+      if (!r.ok) throw new Error();
+      const data = await r.json();
+      setPoll(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const vote = async () => {
-    if (!isSignedIn || hasVoted || selected == null) return;
-    await fetch(`${apiUrl}/api/poll/vote`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pollId: poll.id, optionIndex: selected, userId: user.id }),
-    });
-    setHasVoted(true);
-    fetchPoll();
+    if (hasVoted || selected == null) return;
+
+    try {
+      await fetch(`${apiUrl}/api/poll/vote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pollId: poll.id,
+          optionIndex: selected,
+          userId: null, // guest
+        }),
+      });
+      setHasVoted(true);
+      fetchPoll(); // refresh tally
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   if (loading) return <p className="text-center text-sm">Loading...</p>;
