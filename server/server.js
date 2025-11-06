@@ -49,7 +49,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
 /* -------------------------------------------------------------
    PERSISTENT COMMENTS DATABASE (comments.db) – USE EXISTING DISK
    ------------------------------------------------------------- */
-const commentsDir = path.dirname(dbPath);  // ← /opt/render/project/data/db
+const commentsDir = path.dirname(dbPath); // ← /opt/render/project/data/db
 const commentsDbPath = path.join(commentsDir, 'comments.db');
 
 // === FORCE CREATE comments.db IF MISSING (ONE-TIME) ===
@@ -60,8 +60,10 @@ if (!fs.existsSync(commentsDbPath)) {
     CREATE TABLE comments (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       postId TEXT NOT NULL,
+      parentId INTEGER,
       content TEXT NOT NULL,
       authorName TEXT,
+      authorClerkId TEXT,
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
     );
     CREATE TABLE upvotes (
@@ -101,24 +103,19 @@ app.use(express.json());
 //   if (req.headers['x-admin-key'] !== process.env.ADMIN_KEY) {
 //     return res.status(403).json({ error: 'Forbidden' });
 //   }
-
 //   const busboy = Busboy({ headers: req.headers });
 //   let uploaded = false;
-
 //   busboy.on('file', (fieldname, file, filename) => {
 //     const savePath = '/opt/render/project/data/db/comments.db';
 //     file.pipe(fs.createWriteStream(savePath));
 //     uploaded = true;
 //   });
-
 //   busboy.on('finish', () => {
 //     if (!uploaded) return res.status(400).json({ error: 'No file uploaded' });
-
 //     res.json({ success: true, message: 'DB updated. Restarting in 3s...' });
 //     // Auto-restart server to reload new DB
 //     setTimeout(() => process.exit(0), 3000);
 //   });
-
 //   req.pipe(busboy);
 // });
 
@@ -128,7 +125,7 @@ app.use(express.json());
 
 // GET top-level comments
 app.get('/api/comments', (req, res) => {
-  const { поговоритьId } = req.query;
+  const { postId } = req.query;
   if (!postId) return res.status(400).json({ error: 'postId required' });
 
   const sql = `
@@ -167,7 +164,7 @@ app.post('/api/comments', (req, res) => {
   });
 });
 
-// POST reply (nested comment)
+// POST reply
 app.post('/api/replies', (req, res) => {
   const { postId, parentId, content, authorName = 'Anonymous', authorClerkId } = req.body;
   if (!postId || !parentId || !content) return res.status(400).json({ error: 'postId, parentId, content required' });
@@ -188,7 +185,7 @@ app.post('/api/replies', (req, res) => {
   });
 });
 
-// GET replies for a comment
+// GET replies
 app.get('/api/replies', (req, res) => {
   const { parentId } = req.query;
   if (!parentId) return res.status(400).json({ error: 'parentId required' });
@@ -209,7 +206,7 @@ app.get('/api/replies', (req, res) => {
   });
 });
 
-// UPVOTE (works for both comments & replies)
+// UPVOTE
 app.post('/api/upvotes', (req, res) => {
   const { commentId } = req.body;
   if (!commentId) return res.status(400).json({ error: 'commentId required' });
@@ -229,7 +226,7 @@ app.post('/api/upvotes', (req, res) => {
 // DELETE own comment/reply
 app.delete('/api/comments/:id', (req, res) => {
   const commentId = req.params.id;
-  const { userId } = req.body;  // Clerk user.id
+  const { userId } = req.body;
 
   commentsDb.get(`SELECT authorClerkId FROM comments WHERE id = ?`, [commentId], (err, row) => {
     if (err) return res.status(500).json({ error: err.message });
