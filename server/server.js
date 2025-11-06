@@ -46,9 +46,16 @@ const db = new sqlite3.Database(dbPath, (err) => {
 });
 
 /* -------------------------------------------------------------
-   PERSISTENT COMMENTS DATABASE (comments.db) – never overwritten
+   PERSISTENT COMMENTS DATABASE (comments.db) – SAFE LOCATION
    ------------------------------------------------------------- */
-const commentsDbPath = path.join(path.dirname(dbPath), 'comments.db');
+const commentsDir = '/opt/render/project/data/comments';  // Safe from repo copy
+const commentsDbPath = path.join(commentsDir, 'comments.db');
+
+// Ensure directory exists
+if (!fs.existsSync(commentsDir)) {
+  fs.mkdirSync(commentsDir, { recursive: true });
+  console.log(`Created comments directory: ${commentsDir}`);
+}
 
 // === FORCE CREATE comments.db IF MISSING (ONE-TIME) ===
 if (!fs.existsSync(commentsDbPath)) {
@@ -72,7 +79,7 @@ if (!fs.existsSync(commentsDbPath)) {
     if (err) {
       console.error('Failed to create comments.db:', err);
     } else {
-      console.log('comments.db created successfully');
+      console.log('comments.db created successfully at:', commentsDbPath);
     }
     tempDb.close();
   });
@@ -83,7 +90,7 @@ const commentsDb = new sqlite3.Database(commentsDbPath, (err) => {
   if (err) {
     console.error('Comments DB connection error:', err);
   } else {
-    console.log('Connected to persistent comments DB');
+    console.log('Connected to persistent comments DB:', commentsDbPath);
   }
 });
 
@@ -91,7 +98,7 @@ const commentsDb = new sqlite3.Database(commentsDbPath, (err) => {
    MIDDLEWARE
    ------------------------------------------------------------- */
 app.use(cors());
-app.use(express.json()); // <-- required for POST bodies
+app.use(express.json());
 
 /* -------------------------------------------------------------
    COMMENTS & UPVOTES API – use commentsDb
