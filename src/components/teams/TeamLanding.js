@@ -177,7 +177,7 @@ const TeamLanding = () => {
             </ul>
           </div>
           <div className="flex flex-row w-full gap-6" style={{ alignItems: 'flex-start', boxSizing: 'border-box' }}>
-            <div className="flex flex-col gap-6" style={{ flexBasis: '20%', minWidth: '20%', boxSizing: 'border-box' }}>
+            <div className="flex flex-col gap-6" style={{ flexBasis: '30%', minWidth: '30%', boxSizing: 'border-box' }}>
               <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
                 <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">{year} {teamData.conference} Standings</h2>
                 <div className="p-0">
@@ -191,7 +191,7 @@ const TeamLanding = () => {
                 </div>
               </div>
             </div>
-            <div className="flex flex-col gap-6" style={{ flexBasis: '58%', minWidth: '58%', boxSizing: 'border-box' }}>
+            <div className="flex flex-col gap-6" style={{ flexBasis: '49%', minWidth: '49%', boxSizing: 'border-box' }}>
               <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
                 <MatchupProjection teamId={id} year={year} />
               </div>
@@ -207,7 +207,7 @@ const TeamLanding = () => {
                 </div>
               </div>
             </div>
-            <div className="flex flex-col gap-6" style={{ flexBasis: '20%', minWidth: '20%', boxSizing: 'border-box' }}>
+            <div className="flex flex-col gap-6" style={{ flexBasis: '18%', minWidth: '18%', boxSizing: 'border-box' }}>
               <div className="p-0 bg-gray-0 rounded-lg shadow-xl">
                 <h2 className="flex items-center justify-center text-xl bg-[#235347] font-bold text-white shadow-lg border-b border-[#235347] h-[40px] rounded">Key Performers</h2>
                 <div className="p-0">
