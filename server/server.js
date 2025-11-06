@@ -46,16 +46,10 @@ const db = new sqlite3.Database(dbPath, (err) => {
 });
 
 /* -------------------------------------------------------------
-   PERSISTENT COMMENTS DATABASE (comments.db) – SAFE LOCATION
+   PERSISTENT COMMENTS DATABASE (comments.db) – USE EXISTING DISK
    ------------------------------------------------------------- */
-const commentsDir = '/opt/render/project/data/comments';  // Safe from repo copy
+const commentsDir = path.dirname(dbPath);  // ← /opt/render/project/data/db
 const commentsDbPath = path.join(commentsDir, 'comments.db');
-
-// Ensure directory exists
-if (!fs.existsSync(commentsDir)) {
-  fs.mkdirSync(commentsDir, { recursive: true });
-  console.log(`Created comments directory: ${commentsDir}`);
-}
 
 // === FORCE CREATE comments.db IF MISSING (ONE-TIME) ===
 if (!fs.existsSync(commentsDbPath)) {
