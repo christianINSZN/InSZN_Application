@@ -7,6 +7,7 @@ const xml2js = require('xml2js');
 const fs = require('fs');
 const path = require('path');
 const Stripe = require('stripe');
+const Busboy = require('busboy');
 const { Clerk } = require('@clerk/clerk-sdk-node');
 
 const app = express();
@@ -95,8 +96,6 @@ app.use(cors());
 app.use(express.json());
 
 // === TEMP: UPLOAD comments.db (REMOVE AFTER USE) ===
-const Busboy = require('busboy');
-
 app.post('/api/upload-comments', (req, res) => {
   // SECURITY: Only allow with secret key
   if (req.headers['x-admin-key'] !== process.env.ADMIN_KEY) {
