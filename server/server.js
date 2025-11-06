@@ -95,46 +95,48 @@ const commentsDb = new sqlite3.Database(commentsDbPath, (err) => {
 app.use(cors());
 app.use(express.json());
 
-// === TEMP: UPLOAD comments.db (REMOVE AFTER USE) ===
-app.post('/api/upload-comments', (req, res) => {
-  // SECURITY: Only allow with secret key
-  if (req.headers['x-admin-key'] !== process.env.ADMIN_KEY) {
-    return res.status(403).json({ error: 'Forbidden' });
-  }
+// // === TEMP: UPLOAD comments.db (REMOVE AFTER USE) ===
+// app.post('/api/upload-comments', (req, res) => {
+//   // SECURITY: Only allow with secret key
+//   if (req.headers['x-admin-key'] !== process.env.ADMIN_KEY) {
+//     return res.status(403).json({ error: 'Forbidden' });
+//   }
 
-  const busboy = Busboy({ headers: req.headers });
-  let uploaded = false;
+//   const busboy = Busboy({ headers: req.headers });
+//   let uploaded = false;
 
-  busboy.on('file', (fieldname, file, filename) => {
-    const savePath = '/opt/render/project/data/db/comments.db';
-    file.pipe(fs.createWriteStream(savePath));
-    uploaded = true;
-  });
+//   busboy.on('file', (fieldname, file, filename) => {
+//     const savePath = '/opt/render/project/data/db/comments.db';
+//     file.pipe(fs.createWriteStream(savePath));
+//     uploaded = true;
+//   });
 
-  busboy.on('finish', () => {
-    if (!uploaded) return res.status(400).json({ error: 'No file uploaded' });
+//   busboy.on('finish', () => {
+//     if (!uploaded) return res.status(400).json({ error: 'No file uploaded' });
 
-    res.json({ success: true, message: 'DB updated. Restarting in 3s...' });
-    // Auto-restart server to reload new DB
-    setTimeout(() => process.exit(0), 3000);
-  });
+//     res.json({ success: true, message: 'DB updated. Restarting in 3s...' });
+//     // Auto-restart server to reload new DB
+//     setTimeout(() => process.exit(0), 3000);
+//   });
 
-  req.pipe(busboy);
-});
+//   req.pipe(busboy);
+// });
 
 /* -------------------------------------------------------------
-   COMMENTS & UPVOTES API – use commentsDb
+   COMMENTS, REPLIES, UPVOTES & DELETE – use commentsDb
    ------------------------------------------------------------- */
+
+// GET top-level comments
 app.get('/api/comments', (req, res) => {
-  const { postId } = req.query;
+  const { поговоритьId } = req.query;
   if (!postId) return res.status(400).json({ error: 'postId required' });
 
   const sql = `
-    SELECT c.id, c.postId, c.content, c.authorName, c.createdAt,
+    SELECT c.id, c.postId, c.content, c.authorName, c.authorClerkId, c.createdAt,
            COUNT(u.id) AS upvoteCount
     FROM comments c
     LEFT JOIN upvotes u ON c.id = u.commentId
-    WHERE c.postId = ?
+    WHERE c.postId = ? AND c.parentId IS NULL
     GROUP BY c.id
     ORDER BY c.createdAt DESC
   `;
@@ -145,24 +147,69 @@ app.get('/api/comments', (req, res) => {
   });
 });
 
+// POST new top-level comment
 app.post('/api/comments', (req, res) => {
-  const { postId, content, authorName = 'Anonymous' } = req.body;
+  const { postId, content, authorName = 'Anonymous', authorClerkId } = req.body;
   if (!postId || !content) return res.status(400).json({ error: 'postId and content required' });
 
-  const sql = `INSERT INTO comments (postId, content, authorName) VALUES (?, ?, ?)`;
-  commentsDb.run(sql, [postId, content, authorName], function (err) {
+  const sql = `INSERT INTO comments (postId, content, authorName, authorClerkId) VALUES (?, ?, ?, ?)`;
+  commentsDb.run(sql, [postId, content, authorName, authorClerkId || null], function (err) {
     if (err) return res.status(500).json({ error: err.message });
     res.json({
       id: this.lastID,
       postId,
       content,
       authorName,
+      authorClerkId: authorClerkId || null,
       createdAt: new Date().toISOString(),
       upvoteCount: 0,
     });
   });
 });
 
+// POST reply (nested comment)
+app.post('/api/replies', (req, res) => {
+  const { postId, parentId, content, authorName = 'Anonymous', authorClerkId } = req.body;
+  if (!postId || !parentId || !content) return res.status(400).json({ error: 'postId, parentId, content required' });
+
+  const sql = `INSERT INTO comments (postId, parentId, content, authorName, authorClerkId) VALUES (?, ?, ?, ?, ?)`;
+  commentsDb.run(sql, [postId, parentId, content, authorName, authorClerkId || null], function (err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({
+      id: this.lastID,
+      postId,
+      parentId,
+      content,
+      authorName,
+      authorClerkId: authorClerkId || null,
+      createdAt: new Date().toISOString(),
+      upvoteCount: 0,
+    });
+  });
+});
+
+// GET replies for a comment
+app.get('/api/replies', (req, res) => {
+  const { parentId } = req.query;
+  if (!parentId) return res.status(400).json({ error: 'parentId required' });
+
+  const sql = `
+    SELECT c.id, c.postId, c.parentId, c.content, c.authorName, c.authorClerkId, c.createdAt,
+           COUNT(u.id) AS upvoteCount
+    FROM comments c
+    LEFT JOIN upvotes u ON c.id = u.commentId
+    WHERE c.parentId = ?
+    GROUP BY c.id
+    ORDER BY c.createdAt ASC
+  `;
+
+  commentsDb.all(sql, [parentId], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows || []);
+  });
+});
+
+// UPVOTE (works for both comments & replies)
 app.post('/api/upvotes', (req, res) => {
   const { commentId } = req.body;
   if (!commentId) return res.status(400).json({ error: 'commentId required' });
@@ -175,6 +222,23 @@ app.post('/api/upvotes', (req, res) => {
     commentsDb.get(countSql, [commentId], (err, row) => {
       if (err) return res.status(500).json({ error: err.message });
       res.json({ upvoteCount: row.upvoteCount });
+    });
+  });
+});
+
+// DELETE own comment/reply
+app.delete('/api/comments/:id', (req, res) => {
+  const commentId = req.params.id;
+  const { userId } = req.body;  // Clerk user.id
+
+  commentsDb.get(`SELECT authorClerkId FROM comments WHERE id = ?`, [commentId], (err, row) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (!row) return res.status(404).json({ error: 'Not found' });
+    if (row.authorClerkId !== userId) return res.status(403).json({ error: 'Unauthorized' });
+
+    commentsDb.run(`DELETE FROM comments WHERE id = ?`, [commentId], function (err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ success: true, deletedId: commentId });
     });
   });
 });
