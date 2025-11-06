@@ -240,6 +240,109 @@ app.delete('/api/comments/:id', (req, res) => {
   });
 });
 
+/* -------------------------------------------------------------
+   DAILY POLL – admin editable, vote once, live tally
+   ------------------------------------------------------------- */
+
+// GET poll + current votes
+app.get('/api/poll', (req, res) => {
+  const today = new Date().toISOString().split('T')[0];
+
+  commentsDb.get(`SELECT * FROM polls WHERE date = ?`, [today], (err, poll) => {
+    if (err) return res.status(500).json({ error: err.message });
+
+    if (!poll) {
+      // Default poll if none exists
+      const defaultPoll = {
+        question: "What do you think?",
+        options: JSON.stringify(["Yes", "No"]),
+        fakeVotes: JSON.stringify([0, 0]),
+        date: today,
+      };
+      commentsDb.run(
+        `INSERT INTO polls (question, options, fakeVotes, date) VALUES (?, ?, ?, ?)`,
+        [defaultPoll.question, defaultPoll.options, defaultPoll.fakeVotes, today],
+        function () {
+          poll = { id: this.lastID, ...defaultPoll };
+          sendPollWithVotes(poll, res);
+        }
+      );
+    } else {
+      sendPollWithVotes(poll, res);
+    }
+  });
+});
+
+// Helper: attach real + fake votes
+function sendPollWithVotes(poll, res) {
+  const options = JSON.parse(poll.options);
+  const fakeVotes = JSON.parse(poll.fakeVotes);
+
+  commentsDb.all(
+    `SELECT optionIndex, COUNT(*) as count FROM poll_votes WHERE pollId = ? GROUP BY optionIndex`,
+    [poll.id],
+    (err, realVotes) => {
+      if (err) return res.status(500).json({ error: err.message });
+
+      const tally = options.map((opt, i) => {
+        const real = realVotes.find(v => v.optionIndex === i)?.count || 0;
+        return real + fakeVotes[i];
+      });
+
+      res.json({
+        id: poll.id,
+        question: poll.question,
+        options,
+        tally,
+        totalVotes: tally.reduce((a, b) => a + b, 0),
+        hasVoted: false, // frontend will check
+      });
+    }
+  );
+}
+
+// POST vote (once per user)
+app.post('/api/poll/vote', (req, res) => {
+  const { pollId, optionIndex, userId } = req.body;
+  if (!pollId || optionIndex == null || !userId) return res.status(400).json({ error: 'Missing data' });
+
+  commentsDb.get(
+    `SELECT 1 FROM poll_votes WHERE pollId = ? AND userClerkId = ?`,
+    [pollId, userId],
+    (err, row) => {
+      if (row) return res.status(403).json({ error: 'Already voted' });
+
+      commentsDb.run(
+        `INSERT INTO poll_votes (pollId, userClerkId, optionIndex) VALUES (?, ?, ?)`,
+        [pollId, userId, optionIndex],
+        function (err) {
+          if (err) return res.status(500).json({ error: err.message });
+          res.json({ success: true });
+        }
+      );
+    }
+  );
+});
+
+// ADMIN: Update poll + fake votes
+app.post('/api/admin/poll', (req, res) => {
+  if (req.headers['x-admin-key'] !== process.env.ADMIN_KEY) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+
+  const { question, options, fakeVotes } = req.body;
+  const today = new Date().toISOString().split('T')[0];
+
+  commentsDb.run(
+    `INSERT OR REPLACE INTO polls (question, options, fakeVotes, date) VALUES (?, ?, ?, ?)`,
+    [question, JSON.stringify(options), JSON.stringify(fakeVotes), today],
+    function (err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ success: true, id: this.lastID });
+    }
+  );
+});
+
 // Handle raw body for Stripe webhooks
 app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
