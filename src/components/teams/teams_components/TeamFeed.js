@@ -1,20 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useUser } from '@clerk/clerk-react';
 
 const TeamFeed = ({ teamData, year }) => {
   const { user, isSignedIn, isLoaded } = useUser();
 
-  const [comments, setComments] = useState([]);        // top-level
-  const [replies, setReplies] = useState({});          // {commentId: [replies]}
+  const [comments, setComments] = useState([]);
+  const [replies, setReplies] = useState({});
+  const [expanded, setExpanded] = useState({});
+  const [replyingTo, setReplyingTo] = useState(null);
   const [newComment, setNewComment] = useState('');
-  const [replyingTo, setReplyingTo] = useState(null); // commentId
   const [author, setAuthor] = useState('Anonymous');
   const [loading, setLoading] = useState(true);
+
+  const textareaRef = useRef(null);
 
   const postId = `/teams/${teamData.id}/${year}`;
   const apiUrl = process.env.REACT_APP_API_URL;
 
-  // ---- Clerk name -------------------------------------------------
+  // Clerk name
   useEffect(() => {
     if (isLoaded && isSignedIn && user) {
       const name = `${user.firstName || ''} ${user.lastName || ''}`.trim();
@@ -22,7 +25,7 @@ const TeamFeed = ({ teamData, year }) => {
     }
   }, [isLoaded, isSignedIn, user]);
 
-  // ---- Load top-level comments ------------------------------------
+  // Load top-level
   useEffect(() => {
     fetch(`${apiUrl}/api/comments?postId=${encodeURIComponent(postId)}`)
       .then(r => { if (!r.ok) throw new Error(); return r.json(); })
@@ -31,7 +34,7 @@ const TeamFeed = ({ teamData, year }) => {
       .finally(() => setLoading(false));
   }, [postId, apiUrl]);
 
-  // ---- Load replies when a thread is opened -----------------------
+  // Load replies
   const loadReplies = (commentId) => {
     if (replies[commentId]) return;
     fetch(`${apiUrl}/api/replies?parentId=${commentId}`)
@@ -39,7 +42,7 @@ const TeamFeed = ({ teamData, year }) => {
       .then(data => setReplies(prev => ({ ...prev, [commentId]: data || [] })));
   };
 
-  // ---- Post top-level comment ------------------------------------
+  // Post comment
   const postComment = () => {
     if (!newComment.trim()) return;
     const payload = {
@@ -57,11 +60,10 @@ const TeamFeed = ({ teamData, year }) => {
       .then(c => {
         setComments([c, ...comments]);
         setNewComment('');
-      })
-      .catch(console.error);
+      });
   };
 
-  // ---- Post reply -------------------------------------------------
+  // Post reply
   const postReply = (parentId) => {
     if (!newComment.trim()) return;
     const payload = {
@@ -84,11 +86,10 @@ const TeamFeed = ({ teamData, year }) => {
         }));
         setNewComment('');
         setReplyingTo(null);
-      })
-      .catch(console.error);
+      });
   };
 
-  // ---- Upvote ------------------------------------------------------
+  // Upvote
   const upvote = (id) => {
     fetch(`${apiUrl}/api/upvotes`, {
       method: 'POST',
@@ -100,11 +101,13 @@ const TeamFeed = ({ teamData, year }) => {
         const update = (list) =>
           list.map(c => (c.id === id ? { ...c, upvoteCount } : c));
         setComments(update);
-        Object.keys(replies).forEach(k => setReplies(prev => ({ ...prev, [k]: update(prev[k]) })));
+        Object.keys(replies).forEach(k =>
+          setReplies(prev => ({ ...prev, [k]: update(prev[k]) }))
+        );
       });
   };
 
-  // ---- Delete own comment -----------------------------------------
+  // Delete
   const deleteComment = (id, isReply = false) => {
     if (!isSignedIn) return alert('Sign in to delete');
     fetch(`${apiUrl}/api/comments/${id}`, {
@@ -125,22 +128,24 @@ const TeamFeed = ({ teamData, year }) => {
         } else {
           setComments(prev => prev.filter(c => c.id !== id));
         }
-      })
-      .catch(console.error);
+      });
   };
 
-  // ---- UI ---------------------------------------------------------
-  if (loading) return <p className="p-4 text-gray-500">Loading...</p>;
-
-  const Comment = ({ c, depth = 0, parentId = null }) => {
+  // Comment component
+  const Comment = ({ c, depth = 0 }) => {
     const isOwner = isSignedIn && c.authorClerkId === user?.id;
     const reps = replies[c.id] || [];
+    const isExpanded = expanded[c.id];
+    const showReplyBox = replyingTo === c.id;
+
+    useEffect(() => {
+      if (showReplyBox && textareaRef.current) {
+        textareaRef.current.focus();
+      }
+    }, [showReplyBox]);
 
     return (
-      <div
-        key={c.id}
-        className={`${depth > 0 ? 'ml-8 border-l-2 border-gray-200 pl-4' : ''} pb-3`}
-      >
+      <div className={`${depth > 0 ? 'ml-8 border-l-2 border-gray-200 pl-4' : ''} pb-3`}>
         <div className="flex justify-between items-start">
           <div>
             <strong className="text-[#235347]">{c.authorName}</strong>
@@ -157,7 +162,7 @@ const TeamFeed = ({ teamData, year }) => {
             </button>
             {isOwner && (
               <button
-                onClick={() => deleteComment(c.id, !!parentId)}
+                onClick={() => deleteComment(c.id, !!c.parentId)}
                 className="text-xs text-red-600 hover:text-red-800"
               >
                 Delete
@@ -165,12 +170,14 @@ const TeamFeed = ({ teamData, year }) => {
             )}
           </div>
         </div>
+
         <p className="mt-1 text-gray-800">{c.content}</p>
 
-        {/* Reply form */}
-        {replyingTo === c.id ? (
+        {/* Reply form - ONLY ONE */}
+        {showReplyBox ? (
           <div className="mt-2">
             <textarea
+              ref={textareaRef}
               placeholder="Write a reply..."
               value={newComment}
               onChange={e => setNewComment(e.target.value)}
@@ -194,25 +201,27 @@ const TeamFeed = ({ teamData, year }) => {
           </div>
         ) : (
           <button
-            onClick={() => {
-              setReplyingTo(c.id);
-              setNewComment('');
-            }}
+            onClick={() => { setReplyingTo(c.id); setNewComment(''); }}
             className="text-xs text-blue-600 hover:underline mt-1"
           >
             Reply
           </button>
         )}
 
-        {/* Show replies */}
-        {reps.length > 0 ? (
-          reps.map(r => <Comment key={r.id} c={r} depth={depth + 1} parentId={c.id} />)
-        ) : (
-          reps.length === 0 && replies[c.id] !== undefined && (
-            <p className="text-xs text-gray-400 ml-4">No replies yet.</p>
-          )
+        {/* Toggle replies */}
+        {reps.length > 0 && (
+          <button
+            onClick={() => setExpanded(prev => ({ ...prev, [c.id]: !prev[c.id] }))}
+            className="text-xs text-gray-500 hover:underline mt-1"
+          >
+            {isExpanded ? 'Hide' : `Show ${reps.length}`} {reps.length === 1 ? 'reply' : 'replies'}
+          </button>
         )}
-        {/* Load replies button */}
+
+        {/* Replies */}
+        {isExpanded && reps.map(r => <Comment key={r.id} c={r} depth={depth + 1} />)}
+
+        {/* Load replies */}
         {replies[c.id] === undefined && (
           <button
             onClick={() => loadReplies(c.id)}
@@ -225,9 +234,11 @@ const TeamFeed = ({ teamData, year }) => {
     );
   };
 
+  if (loading) return <p className="p-4 text-gray-500">Loading...</p>;
+
   return (
     <div className="h-[300px] overflow-auto bg-white rounded-lg p-4 text-sm">
-      {/* New comment */}
+      {/* GLOBAL COMMENT BOX ONLY */}
       <div className="mb-4 space-y-2">
         {isSignedIn ? (
           <div className="text-xs font-medium text-green-700 bg-green-50 px-2 py-1 rounded">
@@ -242,35 +253,27 @@ const TeamFeed = ({ teamData, year }) => {
           />
         )}
         <textarea
-          placeholder={replyingTo ? 'Write a reply...' : 'Add a comment...'}
+          placeholder="Add a comment..."
           value={newComment}
           onChange={e => setNewComment(e.target.value)}
           className="border rounded p-2 w-full text-sm resize-none h-20"
           onKeyDown={e => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
-              replyingTo ? postReply(replyingTo) : postComment();
+              postComment();
             }
           }}
         />
         <button
-          onClick={() => (replyingTo ? postReply(replyingTo) : postComment())}
+          onClick={postComment}
           disabled={!newComment.trim()}
           className="bg-[#235347] hover:bg-[#1a3d32] text-white px-4 py-1.5 rounded text-sm disabled:opacity-50 transition"
         >
-          {replyingTo ? 'Post Reply' : 'Post Comment'}
+          Post Comment
         </button>
-        {replyingTo && (
-          <button
-            onClick={() => { setReplyingTo(null); setNewComment(''); }}
-            className="ml-2 text-xs text-gray-600"
-          >
-            Cancel
-          </button>
-        )}
       </div>
 
-      {/* Comments list */}
+      {/* Comments */}
       <div className="space-y-4">
         {comments.length === 0 ? (
           <p className="text-gray-400 text-center py-8">No comments yet. Be the first!</p>
