@@ -95,32 +95,32 @@ const commentsDb = new sqlite3.Database(commentsDbPath, (err) => {
 app.use(cors());
 app.use(express.json());
 
-// === TEMP: UPLOAD comments.db (REMOVE AFTER USE) ===
-app.post('/api/upload-comments', (req, res) => {
-  // SECURITY: Only allow with secret key
-  if (req.headers['x-admin-key'] !== process.env.ADMIN_KEY) {
-    return res.status(403).json({ error: 'Forbidden' });
-  }
+// // === TEMP: UPLOAD comments.db (REMOVE AFTER USE) ===
+// app.post('/api/upload-comments', (req, res) => {
+//   // SECURITY: Only allow with secret key
+//   if (req.headers['x-admin-key'] !== process.env.ADMIN_KEY) {
+//     return res.status(403).json({ error: 'Forbidden' });
+//   }
 
-  const busboy = Busboy({ headers: req.headers });
-  let uploaded = false;
+//   const busboy = Busboy({ headers: req.headers });
+//   let uploaded = false;
 
-  busboy.on('file', (fieldname, file, filename) => {
-    const savePath = '/opt/render/project/data/db/comments.db';
-    file.pipe(fs.createWriteStream(savePath));
-    uploaded = true;
-  });
+//   busboy.on('file', (fieldname, file, filename) => {
+//     const savePath = '/opt/render/project/data/db/comments.db';
+//     file.pipe(fs.createWriteStream(savePath));
+//     uploaded = true;
+//   });
 
-  busboy.on('finish', () => {
-    if (!uploaded) return res.status(400).json({ error: 'No file uploaded' });
+//   busboy.on('finish', () => {
+//     if (!uploaded) return res.status(400).json({ error: 'No file uploaded' });
 
-    res.json({ success: true, message: 'DB updated. Restarting in 3s...' });
-    // Auto-restart server to reload new DB
-    setTimeout(() => process.exit(0), 3000);
-  });
+//     res.json({ success: true, message: 'DB updated. Restarting in 3s...' });
+//     // Auto-restart server to reload new DB
+//     setTimeout(() => process.exit(0), 3000);
+//   });
 
-  req.pipe(busboy);
-});
+//   req.pipe(busboy);
+// });
 
 /* -------------------------------------------------------------
    COMMENTS & UPVOTES API – use commentsDb
