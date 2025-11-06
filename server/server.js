@@ -50,11 +50,11 @@ const db = new sqlite3.Database(dbPath, (err) => {
    ------------------------------------------------------------- */
 const commentsDbPath = path.join(path.dirname(dbPath), 'comments.db');
 
-// Create file + tables **only the first time**
+// === FORCE CREATE comments.db IF MISSING (ONE-TIME) ===
 if (!fs.existsSync(commentsDbPath)) {
-  console.log('Creating new comments.db …');
-  const initDb = new sqlite3.Database(commentsDbPath);
-  const initSql = `
+  console.log('comments.db not found – creating now...');
+  const tempDb = new sqlite3.Database(commentsDbPath);
+  const createSql = `
     CREATE TABLE comments (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       postId TEXT NOT NULL,
@@ -68,24 +68,30 @@ if (!fs.existsSync(commentsDbPath)) {
       FOREIGN KEY (commentId) REFERENCES comments (id) ON DELETE CASCADE
     );
   `;
-  initDb.exec(initSql, (err) => {
-    if (err) console.error('Comments DB init error:', err);
-    else console.log('comments.db tables created');
-    initDb.close();
+  tempDb.exec(createSql, (err) => {
+    if (err) {
+      console.error('Failed to create comments.db:', err);
+    } else {
+      console.log('comments.db created successfully');
+    }
+    tempDb.close();
   });
 }
 
 // Open persistent connection
 const commentsDb = new sqlite3.Database(commentsDbPath, (err) => {
-  if (err) console.error('Comments DB connection error:', err);
-  else console.log('Connected to persistent comments DB');
+  if (err) {
+    console.error('Comments DB connection error:', err);
+  } else {
+    console.log('Connected to persistent comments DB');
+  }
 });
 
 /* -------------------------------------------------------------
    MIDDLEWARE
    ------------------------------------------------------------- */
 app.use(cors());
-app.use(express.json());   // <-- required for POST bodies
+app.use(express.json()); // <-- required for POST bodies
 
 /* -------------------------------------------------------------
    COMMENTS & UPVOTES API – use commentsDb
