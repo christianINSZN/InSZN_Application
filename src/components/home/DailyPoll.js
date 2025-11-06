@@ -1,3 +1,4 @@
+// DailyPoll.jsx
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@clerk/clerk-react';
 
@@ -24,13 +25,13 @@ const DailyPoll = () => {
   };
 
   const checkVoted = (pollId) => {
+    // Check server if user has voted
     fetch(`${apiUrl}/api/poll/vote`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pollId, optionIndex: -1, userId: user.id }),
-    }).catch(() => {
-      // ignore — just checking
-    }).then(() => setHasVoted(true));
+    }).catch(() => {})
+      .then(() => setHasVoted(true));
   };
 
   const vote = () => {
@@ -48,7 +49,7 @@ const DailyPoll = () => {
     })
       .then(() => {
         setHasVoted(true);
-        fetchPoll();
+        fetchPoll(); // Refresh tally
       });
   };
 
