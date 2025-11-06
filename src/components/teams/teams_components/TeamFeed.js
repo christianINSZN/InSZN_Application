@@ -8,11 +8,9 @@ const TeamFeed = ({ teamData, year }) => {
   const [replies, setReplies] = useState({});
   const [expanded, setExpanded] = useState({});
   const [replyingTo, setReplyingTo] = useState(null);
-  const [newComment, setNewComment] = useState('');
+  const [globalComment, setGlobalComment] = useState(''); // top-level
   const [author, setAuthor] = useState('Anonymous');
   const [loading, setLoading] = useState(true);
-
-  const textareaRef = useRef(null);
 
   const postId = `/teams/${teamData.id}/${year}`;
   const apiUrl = process.env.REACT_APP_API_URL;
@@ -42,12 +40,12 @@ const TeamFeed = ({ teamData, year }) => {
       .then(data => setReplies(prev => ({ ...prev, [commentId]: data || [] })));
   };
 
-  // Post comment
+  // Post top-level
   const postComment = () => {
-    if (!newComment.trim()) return;
+    if (!globalComment.trim()) return;
     const payload = {
       postId,
-      content: newComment.trim(),
+      content: globalComment.trim(),
       authorName: author,
       authorClerkId: isSignedIn ? user.id : null,
     };
@@ -59,17 +57,17 @@ const TeamFeed = ({ teamData, year }) => {
       .then(r => r.json())
       .then(c => {
         setComments([c, ...comments]);
-        setNewComment('');
+        setGlobalComment('');
       });
   };
 
   // Post reply
-  const postReply = (parentId) => {
-    if (!newComment.trim()) return;
+  const postReply = (parentId, localText, setLocalText) => {
+    if (!localText.trim()) return;
     const payload = {
       postId,
       parentId,
-      content: newComment.trim(),
+      content: localText.trim(),
       authorName: author,
       authorClerkId: isSignedIn ? user.id : null,
     };
@@ -84,7 +82,7 @@ const TeamFeed = ({ teamData, year }) => {
           ...prev,
           [parentId]: [...(prev[parentId] || []), r],
         }));
-        setNewComment('');
+        setLocalText('');
         setReplyingTo(null);
       });
   };
@@ -131,18 +129,13 @@ const TeamFeed = ({ teamData, year }) => {
       });
   };
 
-  // Comment component
+  // Comment component with LOCAL reply state
   const Comment = ({ c, depth = 0 }) => {
+    const [localReply, setLocalReply] = useState('');
     const isOwner = isSignedIn && c.authorClerkId === user?.id;
     const reps = replies[c.id] || [];
     const isExpanded = expanded[c.id];
     const showReplyBox = replyingTo === c.id;
-
-    useEffect(() => {
-      if (showReplyBox && textareaRef.current) {
-        textareaRef.current.focus();
-      }
-    }, [showReplyBox]);
 
     return (
       <div className={`${depth > 0 ? 'ml-8 border-l-2 border-gray-200 pl-4' : ''} pb-3`}>
@@ -173,26 +166,28 @@ const TeamFeed = ({ teamData, year }) => {
 
         <p className="mt-1 text-gray-800">{c.content}</p>
 
-        {/* Reply form - ONLY ONE */}
+        {/* Reply form - LOCAL STATE */}
         {showReplyBox ? (
           <div className="mt-2">
             <textarea
-              ref={textareaRef}
               placeholder="Write a reply..."
-              value={newComment}
-              onChange={e => setNewComment(e.target.value)}
+              value={localReply}
+              onChange={e => setLocalReply(e.target.value)}
               className="border rounded p-2 w-full text-sm resize-none h-16"
             />
             <div className="flex gap-2 mt-1">
               <button
-                onClick={() => postReply(c.id)}
-                disabled={!newComment.trim()}
+                onClick={() => postReply(c.id, localReply, setLocalReply)}
+                disabled={!localReply.trim()}
                 className="bg-[#235347] text-white px-3 py-1 rounded text-xs disabled:opacity-50"
               >
                 Post Reply
               </button>
               <button
-                onClick={() => { setReplyingTo(null); setNewComment(''); }}
+                onClick={() => {
+                  setReplyingTo(null);
+                  setLocalReply('');
+                }}
                 className="text-xs text-gray-600"
               >
                 Cancel
@@ -201,7 +196,7 @@ const TeamFeed = ({ teamData, year }) => {
           </div>
         ) : (
           <button
-            onClick={() => { setReplyingTo(c.id); setNewComment(''); }}
+            onClick={() => setReplyingTo(c.id)}
             className="text-xs text-blue-600 hover:underline mt-1"
           >
             Reply
@@ -238,7 +233,7 @@ const TeamFeed = ({ teamData, year }) => {
 
   return (
     <div className="h-[300px] overflow-auto bg-white rounded-lg p-4 text-sm">
-      {/* GLOBAL COMMENT BOX ONLY */}
+      {/* GLOBAL COMMENT BOX */}
       <div className="mb-4 space-y-2">
         {isSignedIn ? (
           <div className="text-xs font-medium text-green-700 bg-green-50 px-2 py-1 rounded">
@@ -254,8 +249,8 @@ const TeamFeed = ({ teamData, year }) => {
         )}
         <textarea
           placeholder="Add a comment..."
-          value={newComment}
-          onChange={e => setNewComment(e.target.value)}
+          value={globalComment}
+          onChange={e => setGlobalComment(e.target.value)}
           className="border rounded p-2 w-full text-sm resize-none h-20"
           onKeyDown={e => {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -266,7 +261,7 @@ const TeamFeed = ({ teamData, year }) => {
         />
         <button
           onClick={postComment}
-          disabled={!newComment.trim()}
+          disabled={!globalComment.trim()}
           className="bg-[#235347] hover:bg-[#1a3d32] text-white px-4 py-1.5 rounded text-sm disabled:opacity-50 transition"
         >
           Post Comment
