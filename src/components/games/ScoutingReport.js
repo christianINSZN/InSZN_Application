@@ -1,3 +1,4 @@
+// ScoutingReport.jsx – Live up/down votes on Spread & O/U
 import React, { useState, useEffect, useRef } from 'react';
 import { useClerk } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
@@ -11,12 +12,20 @@ const ScoutingReport = ({ matchup, onClose, year }) => {
   const [homeTeamRecord, setHomeTeamRecord] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showScoutingReport, setShowScoutingReport] = useState(true);
   const modalRef = useRef(null);
+
+  // Vote state
+  const [spreadVotes, setSpreadVotes] = useState({ up: 0, down: 0 });
+  const [ouVotes, setOuVotes] = useState({ up: 0, down: 0 });
+  const [userVote, setUserVote] = useState({ spread: 0, ou: 0 });
+
   const subscriptionPlan = user?.publicMetadata?.subscriptionPlan;
   const isSubscribed = subscriptionPlan === 'pro' || subscriptionPlan === 'premium' || !subscriptionPlan;
 
   const formatRecord = (wins, losses, ties) => `${wins}-${losses}${ties > 0 ? `-${ties}` : ''}`;
 
+  // Fetch team records
   useEffect(() => {
     const fetchRecords = async () => {
       if (!year || !matchup?.awayId || !matchup?.homeId) {
@@ -49,6 +58,42 @@ const ScoutingReport = ({ matchup, onClose, year }) => {
     };
     fetchRecords();
   }, [year, matchup?.awayId, matchup?.homeId]);
+
+  // Fetch live votes
+  useEffect(() => {
+    if (!matchup?.id) return;
+    fetchVotes();
+  }, [matchup?.id]);
+
+  const fetchVotes = async () => {
+    try {
+      const r = await fetch(`${process.env.REACT_APP_API_URL}/api/scouting/votes/${matchup.id}`);
+      const data = await r.json();
+      setSpreadVotes(data.spread);
+      setOuVotes(data.ou);
+    } catch (err) {
+      console.error('Vote fetch error:', err);
+    }
+  };
+
+  const castVote = async (type, value) => {
+    if (!isSubscribed) return;
+    try {
+      await fetch(`${process.env.REACT_APP_API_URL}/api/scouting/vote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          matchupId: matchup.id,
+          voteType: type,
+          voteValue: value,
+          userId: user?.id || null,
+        }),
+      });
+      fetchVotes();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const handleOverlayClick = (e) => {
     if (modalRef.current && !modalRef.current.contains(e.target)) {
@@ -117,9 +162,19 @@ const ScoutingReport = ({ matchup, onClose, year }) => {
                           <td className="py-2 px-4 font-bold">Spread: Coming Soon {matchup?.awayTeamName}</td>
                           <td className="py-2 px-4 text-right">
                             <div className="flex items-center justify-end gap-1">
-                              <button className="w-5 h-5 text-gray-400 hover:text-green-500 p-0">+</button>
-                              <span className="text-xs font-bold text-green-600">0</span>
-                              <button className="w-5 h-5 text-gray-400 hover:text-red-500 p-0">−</button>
+                              <button
+                                onClick={() => castVote('spread', 1)}
+                                className="w-5 h-5 text-gray-400 hover:text-green-500 p-0"
+                              >
+                                +
+                              </button>
+                              <span className="text-xs font-bold text-green-600">{spreadVotes.up - spreadVotes.down}</span>
+                              <button
+                                onClick={() => castVote('spread', -1)}
+                                className="w-5 h-5 text-gray-400 hover:text-red-500 p-0"
+                              >
+                                −
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -127,9 +182,19 @@ const ScoutingReport = ({ matchup, onClose, year }) => {
                           <td className="py-2 px-4 font-bold">O/U: Coming Soon</td>
                           <td className="py-2 px-4 text-right">
                             <div className="flex items-center justify-end gap-1">
-                              <button className="w-5 h-5 text-gray-400 hover:text-green-500 p-0">+</button>
-                              <span className="text-xs font-bold text-green-600">0</span>
-                              <button className="w-5 h-5 text-gray-400 hover:text-red-500 p-0">−</button>
+                              <button
+                                onClick={() => castVote('ou', 1)}
+                                className="w-5 h-5 text-gray-400 hover:text-green-500 p-0"
+                              >
+                                +
+                              </button>
+                              <span className="text-xs font-bold text-green-600">{ouVotes.up - ouVotes.down}</span>
+                              <button
+                                onClick={() => castVote('ou', -1)}
+                                className="w-5 h-5 text-gray-400 hover:text-red-500 p-0"
+                              >
+                                −
+                              </button>
                             </div>
                           </td>
                         </tr>

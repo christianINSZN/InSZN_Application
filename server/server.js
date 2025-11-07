@@ -469,6 +469,82 @@ app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), asyn
   }
 });
 
+/* -------------------------------------------------------------
+   SCOUTING REPORT VOTES – live up/down on spread & over/under
+   ------------------------------------------------------------- */
+
+app.post('/api/scouting/vote', (req, res) => {
+  const { matchupId, voteType, voteValue, userId } = req.body; // voteType: 'spread'|'ou', voteValue: 1|-1
+  if (!matchupId || !voteType || !['spread', 'ou'].includes(voteType) || ![-1, 1].includes(voteValue)) {
+    return res.status(400).json({ error: 'Invalid data' });
+  }
+
+  const table = 'scouting_votes';
+  const key = { matchupId, voteType, userId: userId || null };
+
+  commentsDb.get(
+    `SELECT voteValue FROM ${table} WHERE matchupId = ? AND voteType = ? AND userClerkId ${userId ? '=' : 'IS'} ?`,
+    [matchupId, voteType, userId || null],
+    (err, row) => {
+      if (err) return res.status(500).json({ error: err.message });
+
+      if (row) {
+        if (row.voteValue === voteValue) {
+          // Same vote → remove
+          commentsDb.run(
+            `DELETE FROM ${table} WHERE matchupId = ? AND voteType = ? AND userClerkId ${userId ? '=' : 'IS'} ?`,
+            [matchupId, voteType, userId || null],
+            function (err) {
+              if (err) return res.status(500).json({ error: err.message });
+              res.json({ success: true, action: 'removed' });
+            }
+          );
+        } else {
+          // Flip vote
+          commentsDb.run(
+            `UPDATE ${table} SET voteValue = ? WHERE matchupId = ? AND voteType = ? AND userClerkId ${userId ? '=' : 'IS'} ?`,
+            [voteValue, matchupId, voteType, userId || null],
+            function (err) {
+              if (err) return res.status(500).json({ error: err.message });
+              res.json({ success: true, action: 'flipped' });
+            }
+          );
+        }
+      } else {
+        // New vote
+        commentsDb.run(
+          `INSERT INTO ${table} (matchupId, voteType, voteValue, userClerkId) VALUES (?, ?, ?, ?)`,
+          [matchupId, voteType, voteValue, userId || null],
+          function (err) {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({ success: true, action: 'added' });
+          }
+        );
+      }
+    }
+  );
+});
+
+app.get('/api/scouting/votes/:matchupId', (req, res) => {
+  const { matchupId } = req.params;
+  commentsDb.all(
+    `SELECT voteType, voteValue, COUNT(*) as count 
+     FROM scouting_votes 
+     WHERE matchupId = ? 
+     GROUP BY voteType, voteValue`,
+    [matchupId],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: err.message });
+      const tally = { spread: { up: 0, down: 0 }, ou: { up: 0, down: 0 } };
+      rows.forEach(r => {
+        if (r.voteType === 'spread') tally.spread[r.voteValue === 1 ? 'up' : 'down'] = r.count;
+        if (r.voteType === 'ou') tally.ou[r.voteValue === 1 ? 'up' : 'down'] = r.count;
+      });
+      res.json(tally);
+    }
+  );
+});
+
 // Apply JSON parsing for other routes
 app.use(express.json());
 
