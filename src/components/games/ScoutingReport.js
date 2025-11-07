@@ -13,7 +13,7 @@ const ScoutingReport = ({ matchup, onClose, year }) => {
   const [error, setError] = useState(null);
   const modalRef = useRef(null);
   const subscriptionPlan = user?.publicMetadata?.subscriptionPlan;
-  const isSubscribed = subscriptionPlan === 'pro' || subscriptionPlan === 'premium';
+  const isSubscribed = subscriptionPlan === 'pro' || subscriptionPlan === 'premium' || !subscriptionPlan;
 
   const formatRecord = (wins, losses, ties) => `${wins}-${losses}${ties > 0 ? `-${ties}` : ''}`;
 
@@ -62,9 +62,7 @@ const ScoutingReport = ({ matchup, onClose, year }) => {
         ref={modalRef}
         className="bg-white p-0 sm:p-0 rounded-lg shadow-xl w-full max-w-[90vw] sm:max-w-2xl md:max-w-4xl lg:max-w-7xl h-[80vh] sm:h-[80vh] overflow-y-auto flex flex-col relative"
       >
-        {/* Content Container with Conditional Blur and Pointer Events Disabled */}
         <div className={`${!isSubscribed ? 'filter blur-sm opacity-80 pointer-events-none' : ''}`}>
-          {/* Green Bar with Logos, Team Names/Records, and INSZN Logo */}
           <div className="bg-gray-200 flex flex-row justify-between items-center p-1 sm:p-2 rounded-t border-b-2 border-[#235347] sticky top-0 z-10">
             <div className="flex items-center">
               {matchup?.awayTeamLogo && (
@@ -100,12 +98,45 @@ const ScoutingReport = ({ matchup, onClose, year }) => {
               </div>
             </div>
           </div>
-          {/* Main Content */}
-          <div className="flex-1 mt-1 sm:mt-2">
+
+          <div className="flex-1 mt-1 sm:mt-2 px-2 sm:px-4">
             {loading && <div className="p-1 sm:p-2 text-gray-500 text-center">Loading records...</div>}
             {error && <div className="p-1 sm:p-2 text-red-500 text-center">Error: {error}</div>}
+
             <div className="flex flex-col md:grid md:grid-cols-[1fr_1.5fr_1fr] gap-2 sm:gap-4">
               <div className="order-first md:order-2">
+                <div className="border border-gray-300 rounded-lg p-0 mb-4">
+                  <div className="flex items-center justify-center bg-gray-200 border-b-2 border-[#235347] h-[36px] p-2 rounded-t gap-2">
+                    <span className="text-lg font-bold text-[#235347]">INSZN AI Insights Powered by:</span>
+                    <img src="/INSZN_AI_Logo.png" alt="INSZN AI" className="h-full object-contain max-w-[120px] mt-2 mb-2" />
+                  </div>
+                  <div className="bg-white rounded-lg shadow-lg">
+                    <table className="w-full text-sm text-left text-black">
+                      <tbody>
+                        <tr className="border-b">
+                          <td className="py-2 px-4 font-bold">Spread: Coming Soon {matchup?.awayTeamName}</td>
+                          <td className="py-2 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <button className="w-5 h-5 text-gray-400 hover:text-green-500 p-0">+</button>
+                              <span className="text-xs font-bold text-green-600">0</span>
+                              <button className="w-5 h-5 text-gray-400 hover:text-red-500 p-0">−</button>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr className="border-b">
+                          <td className="py-2 px-4 font-bold">O/U: Coming Soon</td>
+                          <td className="py-2 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <button className="w-5 h-5 text-gray-400 hover:text-green-500 p-0">+</button>
+                              <span className="text-xs font-bold text-green-600">0</span>
+                              <button className="w-5 h-5 text-gray-400 hover:text-red-500 p-0">−</button>
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
                 <HeadToHeadReport year={year} awayTeamId={matchup?.awayId} homeTeamId={matchup?.homeId} />
               </div>
               <div className="order-2 md:order-1">
@@ -117,7 +148,7 @@ const ScoutingReport = ({ matchup, onClose, year }) => {
             </div>
           </div>
         </div>
-        {/* Paywall Overlay for Non-Subscribers */}
+
         {!isSubscribed && (
           <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center z-20">
             <div className="p-4 sm:p-6 bg-white rounded-lg shadow-lg text-center">
