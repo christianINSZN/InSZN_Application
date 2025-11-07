@@ -148,7 +148,7 @@ const GameRecap = ({ matchup, gameId, year, onClose = () => {} }) => {
             <div className="p-1 sm:p-2 text-gray-500 text-center">Loading game recap...</div>
           )}
           {error && (
-            <div className="p-1 sm:p-2 text-red-500 text-center">Error: {error}</div>
+            <div className="p-1 sm:p-2 text-black text-center">External Data Provider Complication in Populating Game Recep</div>
           )}
           <div className="flex flex-col md:grid md:grid-cols-[1fr_1.5fr_1fr] gap-2 sm:gap-4">
             {/* Head-to-Head Metrics (Top on Mobile) */}
