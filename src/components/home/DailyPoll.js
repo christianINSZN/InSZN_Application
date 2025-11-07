@@ -1,4 +1,4 @@
-// PollWidget.jsx – Guests can vote, results show after
+// PollWidget.jsx – Guests vote once (localStorage), results persist
 import React, { useState, useEffect } from 'react';
 
 const PollWidget = ({ slug }) => {
@@ -8,7 +8,14 @@ const PollWidget = ({ slug }) => {
   const [loading, setLoading] = useState(true);
   const apiUrl = process.env.REACT_APP_API_URL;
 
+  const STORAGE_KEY = `poll_${slug}_voted`;
+
   useEffect(() => {
+    // Check if guest has voted before
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved === 'true') {
+      setHasVoted(true);
+    }
     fetchPoll();
   }, [slug]);
 
@@ -39,6 +46,7 @@ const PollWidget = ({ slug }) => {
         }),
       });
       setHasVoted(true);
+      localStorage.setItem(STORAGE_KEY, 'true'); // remember
       fetchPoll(); // refresh tally
     } catch (err) {
       console.error(err);
