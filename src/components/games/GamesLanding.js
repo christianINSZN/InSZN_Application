@@ -117,7 +117,7 @@ function GamesComponent({ year = '2025' }) {
 
   const handleGameRecapClick = (game) => {
     setSelectedMatchup({
-      id: matchup.id,
+      id: game.id,
       awayId: game.awayId,
       homeId: game.homeId,
       awayTeamName: game.awayTeam,
