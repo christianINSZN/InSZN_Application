@@ -1,4 +1,4 @@
-// ScoutingReport.jsx – Live up/down votes on Spread & O/U
+// ScoutingReport.jsx – FULL FILE WITH DEBUG LOGS
 import React, { useState, useEffect, useRef } from 'react';
 import { useClerk } from '@clerk/clerk-react';
 import { Link } from 'react-router-dom';
@@ -18,7 +18,7 @@ const ScoutingReport = ({ matchup, onClose, year }) => {
   // Vote state
   const [spreadVotes, setSpreadVotes] = useState({ up: 0, down: 0 });
   const [ouVotes, setOuVotes] = useState({ up: 0, down: 0 });
-  const [userVote, setUserVote] = useState({ spread: 0, ou: 0 });
+  const [voting, setVoting] = useState(false);
 
   const subscriptionPlan = user?.publicMetadata?.subscriptionPlan;
   const isSubscribed = subscriptionPlan === 'pro' || subscriptionPlan === 'premium' || !subscriptionPlan;
@@ -61,37 +61,59 @@ const ScoutingReport = ({ matchup, onClose, year }) => {
 
   // Fetch live votes
   useEffect(() => {
-    if (!matchup?.id) return;
+    if (!matchup?.id) {
+      console.error('matchup.id is MISSING!', matchup);
+      return;
+    }
     fetchVotes();
   }, [matchup?.id]);
 
   const fetchVotes = async () => {
     try {
       const r = await fetch(`${process.env.REACT_APP_API_URL}/api/scouting/votes/${matchup.id}`);
+      if (!r.ok) throw new Error(`Votes fetch failed: ${r.status}`);
       const data = await r.json();
-      setSpreadVotes(data.spread);
-      setOuVotes(data.ou);
+      console.log('Fetched votes:', data);
+      setSpreadVotes(data.spread || { up: 0, down: 0 });
+      setOuVotes(data.ou || { up: 0, down: 0 });
     } catch (err) {
       console.error('Vote fetch error:', err);
     }
   };
 
   const castVote = async (type, value) => {
-    if (!isSubscribed) return;
+    if (!isSubscribed || voting) return;
+    if (!matchup?.id) {
+      console.error('Cannot vote: matchup.id is missing!', matchup);
+      return;
+    }
+
+    const payload = {
+      matchupId: matchup.id,
+      voteType: type,
+      voteValue: value,
+      userId: user?.id || null,
+    };
+    console.log('Sending vote:', payload); // ← DEBUG
+
+    setVoting(true);
     try {
-      await fetch(`${process.env.REACT_APP_API_URL}/api/scouting/vote`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/scouting/vote`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          matchupId: matchup.id,
-          voteType: type,
-          voteValue: value,
-          userId: user?.id || null,
-        }),
+        body: JSON.stringify(payload),
       });
+      if (!response.ok) {
+        const err = await response.json();
+        console.error('Vote failed:', err);
+        throw new Error(err.error || 'Vote failed');
+      }
+      console.log('Vote success!');
       fetchVotes();
     } catch (err) {
-      console.error(err);
+      console.error('Vote error:', err);
+    } finally {
+      setVoting(false);
     }
   };
 
@@ -164,14 +186,16 @@ const ScoutingReport = ({ matchup, onClose, year }) => {
                             <div className="flex items-center justify-end gap-1">
                               <button
                                 onClick={() => castVote('spread', 1)}
-                                className="w-5 h-5 text-gray-400 hover:text-green-500 p-0"
+                                disabled={voting}
+                                className="w-5 h-5 text-gray-400 hover:text-green-500 p-0 disabled:opacity-50"
                               >
                                 +
                               </button>
                               <span className="text-xs font-bold text-green-600">{spreadVotes.up - spreadVotes.down}</span>
                               <button
                                 onClick={() => castVote('spread', -1)}
-                                className="w-5 h-5 text-gray-400 hover:text-red-500 p-0"
+                                disabled={voting}
+                                className="w-5 h-5 text-gray-400 hover:text-red-500 p-0 disabled:opacity-50"
                               >
                                 −
                               </button>
@@ -184,14 +208,16 @@ const ScoutingReport = ({ matchup, onClose, year }) => {
                             <div className="flex items-center justify-end gap-1">
                               <button
                                 onClick={() => castVote('ou', 1)}
-                                className="w-5 h-5 text-gray-400 hover:text-green-500 p-0"
+                                disabled={voting}
+                                className="w-5 h-5 text-gray-400 hover:text-green-500 p-0 disabled:opacity-50"
                               >
                                 +
                               </button>
                               <span className="text-xs font-bold text-green-600">{ouVotes.up - ouVotes.down}</span>
                               <button
                                 onClick={() => castVote('ou', -1)}
-                                className="w-5 h-5 text-gray-400 hover:text-red-500 p-0"
+                                disabled={voting}
+                                className="w-5 h-5 text-gray-400 hover:text-red-500 p-0 disabled:opacity-50"
                               >
                                 −
                               </button>

@@ -67,6 +67,7 @@ const WeeklyGames = ({ year = '2025', week = 11 }) => {
 
   const openScoutingReport = (game) => {
     setSelectedMatchup({
+      id: game.id,
       awayId: game.awayId,
       homeId: game.homeId,
       awayTeamName: game.awayTeam,
