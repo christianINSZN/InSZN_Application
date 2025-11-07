@@ -104,6 +104,7 @@ function GamesComponent({ year = '2025' }) {
 
   const handleScoutingReportClick = (matchup) => {
     setSelectedMatchup({
+      id: matchup.id,
       awayId: matchup.awayId,
       homeId: matchup.homeId,
       awayTeamName: matchup.awayTeam,
@@ -116,6 +117,7 @@ function GamesComponent({ year = '2025' }) {
 
   const handleGameRecapClick = (game) => {
     setSelectedMatchup({
+      id: matchup.id,
       awayId: game.awayId,
       homeId: game.homeId,
       awayTeamName: game.awayTeam,
