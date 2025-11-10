@@ -89,7 +89,7 @@ elo_by_week = {}
 K = 32
 current_elo = {}
 for week in sorted(games["week"].unique()):
-    week_games = games[(games["week"] == week) & (games["completed"] == 1)]
+    week_games = games[(games["week"] == week)]
     points_lookup = stats.set_index(["game_id", "team_id"])["points"].to_dict()
     snapshot = current_elo.copy()
     for _, g in week_games.iterrows():
