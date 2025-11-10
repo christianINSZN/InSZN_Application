@@ -1,5 +1,5 @@
 // src/components/games/GamesComponent.js
-import React, { useEffect, useMemo, useState, memo } from 'react';
+import React, { useEffect, useState, memo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import ScoutingReport from './ScoutingReport';
 import GameRecap from './GameRecap';
@@ -16,7 +16,8 @@ function GamesComponent({ year = '2025' }) {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [gamesData, setGamesData] = useState([]);
-  const [activeWeek, setActiveWeek] = useState(11); // HERE SET WEEK
+  const [predictions, setPredictions] = useState({});
+  const [activeWeek, setActiveWeek] = useState(11);
   const [activeTab, setActiveTab] = useState('All');
   const [showScoutingReport, setShowScoutingReport] = useState(false);
   const [showGameRecap, setShowGameRecap] = useState(false);
@@ -31,16 +32,13 @@ function GamesComponent({ year = '2025' }) {
         headers: { 'Content-Type': 'application/json' },
       })
         .then(response => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
           return response.text();
         })
         .then(text => {
           if (isMounted) {
             try {
               const data = JSON.parse(text);
-              console.log('Raw gamesData:', data);
               const uniqueGames = [];
               const seenIds = new Set();
               for (const game of data) {
@@ -59,7 +57,6 @@ function GamesComponent({ year = '2025' }) {
                       (game.homeClassification === 'fbs' || game.awayClassification === 'fbs')
                   )
                 : [];
-              console.log('Filtered validData:', validData);
               setGamesData(validData);
             } catch (e) {
               console.error('JSON parsing error:', e.message, 'Raw response:', text);
@@ -75,10 +72,19 @@ function GamesComponent({ year = '2025' }) {
           }
         });
     }
-    return () => {
-      isMounted = false;
-    };
+    return () => { isMounted = false; };
   }, [isLoading, year]);
+
+  useEffect(() => {
+    fetch(`${process.env.REACT_APP_API_URL}/api/teams_games_predictions`)
+      .then(r => r.json())
+      .then(data => {
+        const predMap = {};
+        data.forEach(p => { predMap[p.game_id] = p; });
+        setPredictions(predMap);
+      })
+      .catch(() => setPredictions({}));
+  }, [year]);
 
   if (isLoading) {
     return <div className="p-2 sm:p-4"><p className="text-black text-base sm:text-lg">Loading games...</p></div>;
@@ -99,8 +105,6 @@ function GamesComponent({ year = '2025' }) {
     }
     return weekMatch && conferenceMatch;
   });
-
-  console.log('Filtered games:', filteredGames);
 
   const handleScoutingReportClick = (matchup) => {
     setSelectedMatchup({
@@ -140,14 +144,12 @@ function GamesComponent({ year = '2025' }) {
     setSelectedGameId(null);
   };
 
-  // NEW: Format "Fri - 6:00PM ET" or "Fri - TBD"
   const formatGameTime = (game) => {
     if (game.startTimeTBD === 1) {
       const date = new Date(game.startDate);
       const weekday = date.toLocaleString('en-US', { weekday: 'short', timeZone: 'America/New_York' });
       return `${weekday} - TBD`;
     }
-
     const date = new Date(game.startDate);
     const options = {
       weekday: 'short',
@@ -165,12 +167,9 @@ function GamesComponent({ year = '2025' }) {
 
   return (
     <div className="p-2 sm:p-4 shadow-xl rounded-lg mt-0 sm:mt-12">
-      {/* Year + Week Controls */}
       <div className="mb-4 sm:mb-6 mt-3 flex flex-col sm:flex-row items-end gap-4 sm:gap-6 bg-gray-200 p-2 sm:p-4 rounded-lg shadow-xl">
         <div className="w-full">
-          <label htmlFor="yearSelect" className="block text-sm sm:text-base font-medium text-gray-700 mb-1">
-            Year
-          </label>
+          <label htmlFor="yearSelect" className="block text-sm sm:text-base font-medium text-gray-700 mb-1">Year</label>
           <select
             id="yearSelect"
             value={year}
@@ -188,11 +187,7 @@ function GamesComponent({ year = '2025' }) {
               onChange={(e) => setActiveWeek(parseInt(e.target.value))}
               className="w-full p-2 border border-gray-300 rounded text-black text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-[#235347]"
             >
-              {weeks.map(week => (
-                <option key={week} value={week}>
-                  {week}
-                </option>
-              ))}
+              {weeks.map(week => <option key={week} value={week}>{week}</option>)}
             </select>
           </div>
           <div className="hidden sm:block">
@@ -215,7 +210,6 @@ function GamesComponent({ year = '2025' }) {
         </div>
       </div>
 
-      {/* CONFERENCE TABS */}
       <div className="border-b border-gray-300 mb-4 sm:mb-6">
         <div className="overflow-x-auto whitespace-nowrap py-2">
           <ul className="flex gap-2 sm:gap-4 px-4 min-w-max">
@@ -235,21 +229,21 @@ function GamesComponent({ year = '2025' }) {
         </div>
       </div>
 
-      {/* Games Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 p-2 sm:p-4">
         {filteredGames.map((game, index) => {
           const homeWins = game.homePoints !== null && game.awayPoints !== null && game.homePoints > game.awayPoints;
           const awayWins = game.awayPoints !== null && game.homePoints !== null && game.awayPoints > game.homePoints;
           const isFBSMatchup = conferences.includes(game.homeConference) && conferences.includes(game.awayConference);
           const isClickable = game.completed === 1;
+          const pred = predictions[game.id];
+          const homeProb = pred?.home_win_prob != null ? (100 * pred.home_win_prob).toFixed(0) + '%' : '';
+          const awayProb = pred?.home_win_prob != null ? (100 * (1 - pred.home_win_prob)).toFixed(0) + '%' : '';
+          const homeSpread = pred?.home_spread != null ? pred.home_spread.toFixed(1) : '';
 
           const handleContainerClick = (e) => {
             if (e.target.tagName === 'A' || e.target.closest('a')) return;
-            if (isClickable) {
-              navigate(`/games/recap/${game.id}`);
-            }
+            if (isClickable) navigate(`/games/recap/${game.id}`);
           };
-
           const formattedTime = formatGameTime(game);
 
           return (
@@ -263,17 +257,18 @@ function GamesComponent({ year = '2025' }) {
               <div className="flex justify-between items-center min-h-[1.5rem]">
                 <div className="text-xs sm:text-sm text-gray-600">
                   {formattedTime}
+                  {pred && (
+                    <span className="ml-2 font-medium">
+                      [{game.homeTeam}: {homeSpread.startsWith('-') ? `${homeSpread}]` : `+${homeSpread}]`}
+                    </span>
+                  )}
                 </div>
                 {game.completed === 0 ? (
                   isFBSMatchup ? (
                     <div>
                       <Link
                         to="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleScoutingReportClick(game);
-                        }}
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleScoutingReportClick(game); }}
                         className="text-blue-500 hover:text-blue-700 underline text-xs sm:text-sm"
                       >
                         Scouting Report
@@ -284,11 +279,7 @@ function GamesComponent({ year = '2025' }) {
                   <div>
                     <Link
                       to="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleGameRecapClick(game);
-                      }}
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleGameRecapClick(game); }}
                       className="text-blue-500 hover:text-blue-700 underline text-xs sm:text-sm"
                     >
                       Game Summary
@@ -307,6 +298,13 @@ function GamesComponent({ year = '2025' }) {
                     >
                       {game.awayTeam}
                     </Link>
+                    {awayProb && (
+                      <span className={`ml-1 text-xs font-medium ${
+                        parseFloat(awayProb) > 50 ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        ({awayProb})
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center">
                     {game.homeTeamLogo && <img src={game.homeTeamLogo} alt={`${game.homeTeam} logo`} className="w-6 h-6 sm:w-5 h-5 mr-1 sm:mr-2" />}
@@ -317,11 +315,18 @@ function GamesComponent({ year = '2025' }) {
                     >
                       {game.homeTeam}
                     </Link>
+                    {homeProb && (
+                      <span className={`ml-1 text-xs font-medium ${
+                        parseFloat(homeProb) > 50 ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        ({homeProb})
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="text-sm sm:text-base text-right">
-                  <div>{awayWins ? <span className="font-bold">{game.awayPoints ?? '-'}</span> : game.awayPoints ?? '-'}</div>
-                  <div>{homeWins ? <span className="font-bold">{game.homePoints ?? '-'}</span> : game.homePoints ?? '-'}</div>
+                  <div>{awayWins ? <span className="font-bold">{game.awayPoints ?? '-'}</span> : (game.awayPoints ?? '-')}</div>
+                  <div>{homeWins ? <span className="font-bold">{game.homePoints ?? '-'}</span> : (game.homePoints ?? '-')}</div>
                 </div>
               </div>
             </div>
@@ -329,21 +334,11 @@ function GamesComponent({ year = '2025' }) {
         })}
       </div>
 
-      {/* Modals */}
       {showScoutingReport && selectedMatchup && (
-        <ScoutingReport
-          matchup={selectedMatchup}
-          onClose={handleCloseScoutingReport}
-          year={year}
-        />
+        <ScoutingReport matchup={selectedMatchup} onClose={handleCloseScoutingReport} year={year} />
       )}
       {showGameRecap && selectedMatchup && selectedGameId && (
-        <GameRecap
-          matchup={selectedMatchup}
-          gameId={selectedGameId}
-          year={year}
-          onClose={handleCloseGameRecap}
-        />
+        <GameRecap matchup={selectedMatchup} gameId={selectedGameId} year={year} onClose={handleCloseGameRecap} />
       )}
     </div>
   );
