@@ -8,7 +8,7 @@ const TeamAReport = ({ teamName, teamId, year }) => {
   const [performers, setPerformers] = useState({ topPasser: null, topRusher: null, topReceiver: null });
   const [performersLoading, setPerformersLoading] = useState(true);
   const [performersError, setPerformersError] = useState(null);
-  const week = '11';
+  const week = '12';
 
   useEffect(() => {
     const fetchRankings = async () => {

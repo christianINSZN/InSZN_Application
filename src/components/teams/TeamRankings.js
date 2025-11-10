@@ -9,7 +9,7 @@ const conferences = [
   'Pac-12', 'SEC', 'Sun Belt'
 ];
 
-function TeamsRankings({ year = '2025', week = '11' }) {
+function TeamsRankings({ year = '2025', week = '12' }) {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);

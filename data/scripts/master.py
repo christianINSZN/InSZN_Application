@@ -92,10 +92,10 @@ script_order = [
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/populate/teamsGrades/populate_teams_ratings.py", #no need for all teams
 
     # Homepage Updates
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/weeklyReports/players_epa_qb.py",
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/weeklyReports/players_epa_rb.py",
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/weeklyReports/players_epa_te.py",
-    # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/weeklyReports/players_epa_wr.py",
+    "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/weeklyReports/players_epa_qb.py",
+    "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/weeklyReports/players_epa_rb.py",
+    "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/weeklyReports/players_epa_te.py",
+    "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/weeklyReports/players_epa_wr.py",
 
     # Homepage Updates  
     # "/Users/christianberry/Desktop/Perennial Data/perennial-data-app/data/scripts/weeklyReports/teams_rankings.py", # Do this in terminal bc update week in script at bottom 
