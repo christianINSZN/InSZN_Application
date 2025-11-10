@@ -260,7 +260,7 @@ function GamesComponent({ year = '2025' }) {
             className="sr-only peer"
           />
           <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#235347]"></div>
-          <span className="ms-3 text-sm font-medium text-gray-700">Show Win %</span>
+          <span className="ms-3 text-sm font-medium text-gray-700">Show INSZN AI Win Prediction %</span>
         </label>
       </div>
 
