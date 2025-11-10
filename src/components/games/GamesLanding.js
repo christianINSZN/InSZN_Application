@@ -298,7 +298,7 @@ function GamesComponent({ year = '2025' }) {
                     <span className="ml-2 font-medium">
                       [{game.homeTeam}: {homeSpread !== null 
                         ? (homeSpread.startsWith('-') ? `${homeSpread}]` : `+${homeSpread}]`)
-                        : 'TBD]'}
+                        : 'TBD'}
                       ]
                     </span>
                   )}
