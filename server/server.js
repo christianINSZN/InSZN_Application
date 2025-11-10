@@ -2310,6 +2310,14 @@ app.get('/api/team_game_stats/:gameId', (req, res) => {
   );
 });
 
+// Backend endpoint
+app.get('/api/teams_games_predictions', (req, res) => {
+  db.all('SELECT * FROM Teams_Games_Predictions', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
+});
+
 // Portal Endpoint
 app.get('/api/players_portal', (req, res) => {
   db.all('SELECT * FROM Players_TransferPortal', [], (err, rows) => {
