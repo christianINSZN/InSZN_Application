@@ -108,13 +108,13 @@ for week in sorted(games["week"].unique()):
     elo_by_week[week] = snapshot
 
 # === TRAIN & PREDICT (PER TARGET WEEK) ===
-for target_week in range(3, 13):
+for target_week in range(3, 13):  # ← Includes Week 12
     print(f"\n=== PREDICTING WEEK {target_week} ===")
 
     # 1. Only completed games BEFORE target week
     train_games = games[(games["week"] < target_week) & (games["completed"] == 1)]
     if train_games.empty:
-        print("  No training games")
+        print(" No training games")
         continue
     train_game_ids = train_games["id"].tolist()
 
@@ -141,7 +141,7 @@ for target_week in range(3, 13):
     hist = hist.merge(games[["id", "week", "home_spread"]], left_on="game_id", right_on="id")
     hist = hist[hist["points_h"].notna() & hist["points_a"].notna()]
     if hist.empty:
-        print("  No completed matchups")
+        print(" No completed matchups")
         continue
 
     # ELO (pre-game)
@@ -166,14 +166,13 @@ for target_week in range(3, 13):
         if diff.notna().sum() > 0:
             X_list.append(diff.rename(col))
     if not X_list:
-        print("  No valid features")
+        print(" No valid features")
         continue
     X = pd.concat(X_list, axis=1)
     X.columns = X.columns.astype(str)
     X = X.apply(pd.to_numeric, errors='coerce')
-
     if X.shape[1] == 0:
-        print("  No numeric features")
+        print(" No numeric features")
         continue
 
     y = (hist["points_h"] > hist["points_a"]).astype(int)
@@ -217,19 +216,37 @@ for target_week in range(3, 13):
     # === PREDICT TARGET WEEK ===
     week_games = games[games["week"] == target_week]
     week_stats = stats[stats["game_id"].isin(week_games["id"])]
-    if week_stats.empty: continue
-    home_w = week_stats[week_stats["homeAway"] == "home"]
-    away_w = week_stats[week_stats["homeAway"] == "away"]
-    week_pairs = home_w.merge(away_w, on="game_id", suffixes=("_h", "_a"))
-    week_pairs = week_pairs.merge(games[["id", "home_spread"]], left_on="game_id", right_on="id")
+
+    # -------------------------------------------------
+    # FUTURE-WEEK HANDLING (no stats yet)
+    # -------------------------------------------------
+    is_future = week_stats.empty
+    if is_future:
+        print("  --> Future week: no stats – predictions only")
+    else:
+        print("  --> Completed week: full evaluation")
+
+    # Build week_pairs
+    if is_future:
+        # Use games table directly
+        week_pairs = week_games[["id", "homeId", "awayId", "home_spread"]].copy()
+        week_pairs.rename(columns={"id": "game_id", "homeId": "home_team_id", "awayId": "away_team_id"}, inplace=True)
+        week_pairs["team_id_h"] = week_pairs["home_team_id"].map(team_id_map)
+        week_pairs["team_id_a"] = week_pairs["away_team_id"].map(team_id_map)
+    else:
+        home_w = week_stats[week_stats["homeAway"] == "home"]
+        away_w = week_stats[week_stats["homeAway"] == "away"]
+        week_pairs = home_w.merge(away_w, on="game_id", suffixes=("_h", "_a"))
+        week_pairs = week_pairs.merge(games[["id", "home_spread"]], left_on="game_id", right_on="id", how="left")
 
     week_correct = week_total = 0
     week_probs = []
     week_actual = []
 
     for _, row in week_pairs.iterrows():
-        h_id = row["team_id_h"]
-        a_id = row["team_id_a"]
+        h_id = row["team_id_h"] if "team_id_h" in row else row["home_team_id"]
+        a_id = row["team_id_a"] if "team_id_a" in row else row["away_team_id"]
+
         h_avg = get_team_avg(h_id, target_week)
         a_avg = get_team_avg(a_id, target_week)
         if h_avg.isna().all().all() or a_avg.isna().all().all():
@@ -264,33 +281,43 @@ for target_week in range(3, 13):
         spread = row["home_spread"]
         if pd.notna(spread):
             if spread > 7:  # Home is big underdog
-                prob_home = prob_home ** 1.3  # PUNISH underdog
+                prob_home = prob_home ** 1.3
             elif spread < -7:  # Home is big favorite
-                prob_home = 1 - (1 - prob_home) ** 1.3  # BOOST favorite
+                prob_home = 1 - (1 - prob_home) ** 1.3
 
-        # === CAP EXTREMES ===
         prob_home = np.clip(prob_home, 0.05, 0.95)
 
         pred = "home" if prob_home > 0.5 else "away"
-        actual = "home" if row["points_h"] > row["points_a"] else "away" if row["points_h"] < row["points_a"] else "tie"
-        correct = 1 if pred == actual else 0  # ← ONLY LOGIC NEEDED
+
+        if is_future:
+            actual = None
+            correct = None
+        else:
+            actual = ("home" if row["points_h"] > row["points_a"] else
+                      "away" if row["points_h"] < row["points_a"] else "tie")
+            correct = 1 if pred == actual else 0
 
         all_predictions.append((
             int(row["game_id"]), int(h_id), int(a_id),
             round(prob_home, 4), pred, actual, correct,
             row["home_spread"] if pd.notna(row["home_spread"]) else None
         ))
-        week_correct += correct
-        week_total += 1
-        week_probs.append(prob_home)
-        week_actual.append(1 if row["points_h"] > row["points_a"] else 0)
 
-    win_rate = week_correct / week_total if week_total else 0
-    brier = brier_score_loss(week_actual, week_probs) if len(week_probs) > 1 else 0
-    logloss = log_loss(week_actual, week_probs) if len(set(week_actual)) > 1 else 0
+        if not is_future:
+            week_correct += correct
+            week_total += 1
+            week_probs.append(prob_home)
+            week_actual.append(1 if row["points_h"] > row["points_a"] else 0)
 
-    weekly_results.append({"week": target_week, "games": week_total, "win_rate": win_rate, "brier": brier, "logloss": logloss})
-    print(f" Games: {week_total} | Acc: {win_rate:.1%} | Brier: {brier:.3f} | LogLoss: {logloss:.3f}")
+    if not is_future:
+        win_rate = week_correct / week_total if week_total else 0
+        brier = brier_score_loss(week_actual, week_probs) if len(week_probs) > 1 else 0
+        logloss = log_loss(week_actual, week_probs) if len(set(week_actual)) > 1 else 0
+        weekly_results.append({"week": target_week, "games": week_total,
+                               "win_rate": win_rate, "brier": brier, "logloss": logloss})
+        print(f" Games: {week_total} | Acc: {win_rate:.1%} | Brier: {brier:.3f} | LogLoss: {logloss:.3f}")
+    else:
+        print(f"  --> {len(week_pairs)} future-game predictions inserted (no metrics)")
 
 # === SAVE ===
 cursor.executemany("""
@@ -302,12 +329,13 @@ conn.close()
 
 # === SUMMARY ===
 print("\n" + "="*70)
-print("WEEKLY RESULTS")
+print("WEEKLY RESULTS (completed weeks only)")
 print("="*70)
 for r in weekly_results:
     print(f"Week {r['week']:2d}: {r['games']:3d} games | Acc: {r['win_rate']:.1%} | Brier: {r['brier']:.3f} | LogLoss: {r['logloss']:.3f}")
+
 total = sum(r["games"] for r in weekly_results)
-overall_acc = sum(r["win_rate"] * r["games"] for r in weekly_results) / total
-overall_brier = sum(r["brier"] * r["games"] for r in weekly_results) / total
-overall_logloss = sum(r["logloss"] * r["games"] for r in weekly_results) / total
-print(f"\nOVERALL: {total} games | Acc: {overall_acc:.1%} | Brier: {overall_brier:.3f} | LogLoss: {overall_logloss:.3f}")
+overall_acc = sum(r["win_rate"] * r["games"] for r in weekly_results) / total if total else 0
+overall_brier = sum(r["brier"] * r["games"] for r in weekly_results) / total if total else 0
+overall_logloss = sum(r["logloss"] * r["games"] for r in weekly_results) / total if total else 0
+print(f"\nOVERALL (completed): {total} games | Acc: {overall_acc:.1%} | Brier: {overall_brier:.3f} | LogLoss: {overall_logloss:.3f}")
