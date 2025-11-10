@@ -273,7 +273,9 @@ function GamesComponent({ year = '2025' }) {
           const pred = predictions[game.id];
           const homeProb = pred?.home_win_prob != null ? (100 * pred.home_win_prob).toFixed(0) + '%' : '';
           const awayProb = pred?.home_win_prob != null ? (100 * (1 - pred.home_win_prob)).toFixed(0) + '%' : '';
-          const homeSpread = pred?.home_spread != null ? pred.home_spread.toFixed(1) : '';
+          const homeSpread = pred?.home_spread != null 
+            ? pred.home_spread.toFixed(1)
+            : null;
 
           const handleContainerClick = (e) => {
             if (e.target.tagName === 'A' || e.target.closest('a')) return;
@@ -292,9 +294,12 @@ function GamesComponent({ year = '2025' }) {
               <div className="flex justify-between items-center min-h-[1.5rem]">
                 <div className="text-xs sm:text-sm text-gray-600">
                   {formattedTime}
-                  {pred && showProbabilities && (
+                  {showProbabilities && (
                     <span className="ml-2 font-medium">
-                      [{game.homeTeam}: {homeSpread.startsWith('-') ? `${homeSpread}]` : `+${homeSpread}]`}
+                      [{game.homeTeam}: {homeSpread !== null 
+                        ? (homeSpread.startsWith('-') ? `${homeSpread}]` : `+${homeSpread}]`)
+                        : 'TBD]'}
+                      ]
                     </span>
                   )}
                 </div>
