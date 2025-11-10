@@ -1,6 +1,7 @@
 // src/components/games/GamesComponent.js
 import React, { useEffect, useState, memo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useClerk } from '@clerk/clerk-react';
 import ScoutingReport from './ScoutingReport';
 import GameRecap from './GameRecap';
 
@@ -14,6 +15,7 @@ const weeks = Array.from({ length: 15 }, (_, i) => i + 1);
 
 function GamesComponent({ year = '2025' }) {
   const navigate = useNavigate();
+  const { user } = useClerk();
   const [isLoading, setIsLoading] = useState(true);
   const [gamesData, setGamesData] = useState([]);
   const [predictions, setPredictions] = useState({});
@@ -23,6 +25,16 @@ function GamesComponent({ year = '2025' }) {
   const [showGameRecap, setShowGameRecap] = useState(false);
   const [selectedMatchup, setSelectedMatchup] = useState(null);
   const [selectedGameId, setSelectedGameId] = useState(null);
+  const [showProbabilities, setShowProbabilities] = useState(false);
+  const [showSubscribeModal, setShowSubscribeModal] = useState(false);
+
+  const subscriptionPlan = user?.publicMetadata?.subscriptionPlan;
+  const isProOrPremium = subscriptionPlan === 'pro' || subscriptionPlan === 'premium';
+
+  // Initialize showProbabilities based on user plan
+  useEffect(() => {
+    setShowProbabilities(isProOrPremium);
+  }, [isProOrPremium]);
 
   useEffect(() => {
     let isMounted = true;
@@ -85,6 +97,15 @@ function GamesComponent({ year = '2025' }) {
       })
       .catch(() => setPredictions({}));
   }, [year]);
+
+  const handleToggleClick = (e) => {
+    if (!isProOrPremium) {
+      e.preventDefault();
+      setShowSubscribeModal(true);
+    } else {
+      setShowProbabilities(e.target.checked);
+    }
+  };
 
   if (isLoading) {
     return <div className="p-2 sm:p-4"><p className="text-black text-base sm:text-lg">Loading games...</p></div>;
@@ -229,6 +250,20 @@ function GamesComponent({ year = '2025' }) {
         </div>
       </div>
 
+      {/* Win Probability Toggle */}
+      <div className="flex justify-end mb-4 px-4">
+        <label className="flex items-center cursor-pointer" onClick={handleToggleClick}>
+          <input
+            type="checkbox"
+            checked={isProOrPremium ? showProbabilities : false}
+            readOnly
+            className="sr-only peer"
+          />
+          <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#235347]"></div>
+          <span className="ms-3 text-sm font-medium text-gray-700">Show Win %</span>
+        </label>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 p-2 sm:p-4">
         {filteredGames.map((game, index) => {
           const homeWins = game.homePoints !== null && game.awayPoints !== null && game.homePoints > game.awayPoints;
@@ -257,7 +292,7 @@ function GamesComponent({ year = '2025' }) {
               <div className="flex justify-between items-center min-h-[1.5rem]">
                 <div className="text-xs sm:text-sm text-gray-600">
                   {formattedTime}
-                  {pred && (
+                  {pred && showProbabilities && (
                     <span className="ml-2 font-medium">
                       [{game.homeTeam}: {homeSpread.startsWith('-') ? `${homeSpread}]` : `+${homeSpread}]`}
                     </span>
@@ -298,7 +333,7 @@ function GamesComponent({ year = '2025' }) {
                     >
                       {game.awayTeam}
                     </Link>
-                    {awayProb && (
+                    {showProbabilities && awayProb && (
                       <span className={`ml-1 text-xs font-medium ${
                         parseFloat(awayProb) > 50 ? 'text-green-600' : 'text-red-600'
                       }`}>
@@ -315,7 +350,7 @@ function GamesComponent({ year = '2025' }) {
                     >
                       {game.homeTeam}
                     </Link>
-                    {homeProb && (
+                    {showProbabilities && homeProb && (
                       <span className={`ml-1 text-xs font-medium ${
                         parseFloat(homeProb) > 50 ? 'text-green-600' : 'text-red-600'
                       }`}>
@@ -333,6 +368,31 @@ function GamesComponent({ year = '2025' }) {
           );
         })}
       </div>
+
+      {/* Subscribe Modal */}
+      {showSubscribeModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowSubscribeModal(false)}>
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">INSZN Insider Required</h3>
+            <p className="text-sm text-gray-600 mb-4">Win probabilities are exclusive to INSZN Insider subscribers.</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowSubscribeModal(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <Link
+                to="/subscribe"
+                onClick={() => setShowSubscribeModal(false)}
+                className="flex-1 px-4 py-2 bg-[#235347] text-white rounded hover:bg-[#1b3e32] text-center"
+              >
+                Subscribe Now
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showScoutingReport && selectedMatchup && (
         <ScoutingReport matchup={selectedMatchup} onClose={handleCloseScoutingReport} year={year} />
