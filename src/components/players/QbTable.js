@@ -237,7 +237,7 @@ const QbTable = ({
                       )}
                       {qbTableInstance.getState().sorting.find(s => s.id === column.id) && (
                         <span className="ml-1">
-                          {qbTableInstance.getState().sorting.find(s => s.id === column.id).desc ? ' Down Arrow' : ' Up Arrow'}
+                          {qbTableInstance.getState().sorting.find(s => s.id === column.id).desc ? ' ▼' : ' ▲'}
                         </span>
                       )}
                     </div>
