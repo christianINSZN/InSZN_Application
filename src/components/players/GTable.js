@@ -2,7 +2,52 @@ import React, { useMemo, useState, memo } from 'react';
 import { useReactTable, getCoreRowModel, getSortedRowModel, createColumnHelper, flexRender } from '@tanstack/react-table';
 import { Link } from 'react-router-dom';
 
-const GTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTeamName, year }) => {
+const TEAM_TO_CONFERENCE = {
+  alabama: "SEC", arkansas: "SEC", auburn: "SEC", florida: "SEC", georgia: "SEC",
+  kentucky: "SEC", lsu: "SEC", 'ole miss': "SEC", 'mississippi state': "SEC",
+  missouri: "SEC", 'south carolina': "SEC", tennessee: "SEC", texas: "SEC",
+  'texas a&m': "SEC", vanderbilt: "SEC", oklahoma: "SEC",
+  michigan: "Big Ten", 'ohio state': "Big Ten", 'penn state': "Big Ten", oregon: "Big Ten",
+  washington: "Big Ten", usc: "Big Ten", ucla: "Big Ten", wisconsin: "Big Ten",
+  iowa: "Big Ten", nebraska: "Big Ten", minnesota: "Big Ten", illinois: "Big Ten",
+  northwestern: "Big Ten", purdue: "Big Ten", indiana: "Big Ten", 'michigan state': "Big Ten",
+  rutgers: "Big Ten", maryland: "Big Ten",
+  clemson: "ACC", 'florida state': "ACC", miami: "ACC", 'north carolina': "ACC",
+  'virginia tech': "ACC", louisville: "ACC", 'nc state': "ACC", pittsburgh: "ACC",
+  smu: "ACC", stanford: "ACC", california: "ACC", syracuse: "ACC", 'georgia tech': "ACC",
+  virginia: "ACC", 'wake forest': "ACC", 'boston college': "ACC", duke: "ACC",
+  baylor: "Big 12", tcu: "Big 12", 'texas tech': "Big 12", 'oklahoma state': "Big 12",
+  'kansas state': "Big 12", kansas: "Big 12", 'iowa state': "Big 12", 'west virginia': "Big 12",
+  houston: "Big 12", ucf: "Big 12", cincinnati: "Big 12", byu: "Big 12", utah: "Big 12",
+  'arizona state': "Big 12", arizona: "Big 12", colorado: "Big 12",
+  'notre dame': "FBS Independents", uconn: "FBS Independents", umass: "FBS Independents",
+  'boise state': "Mountain West", 'san diego state': "Mountain West", 'fresno state': "Mountain West",
+  unlv: "Mountain West", 'colorado state': "Mountain West", 'air force': "Mountain West",
+  wyoming: "Mountain West", 'utah state': "Mountain West", 'san josé state': "Mountain West",
+  nevada: "Mountain West", 'new mexico': "Mountain West", hawaii: "Mountain West",
+  memphis: "American Athletic", tulane: "American Athletic", 'south florida': "American Athletic",
+  'east carolina': "American Athletic", tulsa: "American Athletic", navy: "American Athletic",
+  charlotte: "American Athletic", rice: "American Athletic", 'north texas': "American Athletic",
+  utsa: "American Athletic", 'florida atlantic': "American Athletic", temple: "American Athletic",
+  uab: "American Athletic", army: "American Athletic",
+  'app state': "Sun Belt", 'georgia southern': "Sun Belt", 'james madison': "Sun Belt",
+  marshall: "Sun Belt", 'coastal carolina': "Sun Belt", 'old dominion': "Sun Belt",
+  'texas state': "Sun Belt", 'south alabama': "Sun Belt", troy: "Sun Belt",
+  'ul monroe': "Sun Belt", louisiana: "Sun Belt", 'arkansas state': "Sun Belt",
+  'southern miss': "Sun Belt",
+  liberty: "Conference USA", 'western kentucky': "Conference USA", 'middle tennessee': "Conference USA",
+  'louisiana tech': "Conference USA", 'sam houston': "Conference USA", fiu: "Conference USA",
+  utep: "Conference USA", 'new mexico state': "Conference USA", 'jacksonville state': "Conference USA",
+  'kennesaw state': "Conference USA",
+  toledo: "Mid-American", 'northern illinois': "Mid-American", ohio: "Mid-American",
+  'miami (oh)': "Mid-American", 'western michigan': "Mid-American", 'central michigan': "Mid-American",
+  'eastern michigan': "Mid-American", 'bowling green': "Mid-American", 'ball state': "Mid-American",
+  akron: "Mid-American", 'kent state': "Mid-American", buffalo: "Mid-American",
+  'oregon state': "Pac-12", 'washington state': "Pac-12",
+};
+
+
+const GTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTeamName, filterConference, year }) => {
   const [showAllColumns, setShowAllColumns] = useState(false);
   const [showGRzTooltip, setShowGRzTooltip] = useState(false);
 
@@ -101,14 +146,30 @@ const GTable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterTea
     }),
   ], [navigate, year]);
 
-  const gTableData = useMemo(() => {
-    return data.filter(player =>
+const gTableData = useMemo(() => {
+  return data.filter(player => {
+    const gamesPlayed = player.player_game_count || 0;
+    const nameMatch = !filterPlayerName || player.name.toLowerCase().includes(filterPlayerName.toLowerCase());
+    const teamMatch = !filterTeamName ||
+      (player.team && player.team.toLowerCase().includes(filterTeamName.toLowerCase())) ||
+      (player.school && player.school.toLowerCase().includes(filterTeamName.toLowerCase()));
+    
+    // ← ADD THIS LINE
+    const conferenceMatch = !filterConference || 
+      TEAM_TO_CONFERENCE[player.team?.toLowerCase()] === filterConference;
+
+    const yearMatch = String(player.year) === String(year);
+
+    return (
       player.position === 'G' &&
-      (player.player_game_count || 0) >= filterGamesPlayed &&
-      (!filterPlayerName || player.name.toLowerCase().includes(filterPlayerName.toLowerCase())) &&
-      (!filterTeamName || (player.team && player.team.toLowerCase().includes(filterTeamName.toLowerCase())) || (player.school && player.school.toLowerCase().includes(filterTeamName.toLowerCase())))
+      gamesPlayed >= filterGamesPlayed &&
+      nameMatch &&
+      teamMatch &&
+      conferenceMatch &&   // ← AND THIS
+      yearMatch
     );
-  }, [data, filterGamesPlayed, filterPlayerName, filterTeamName]);
+  });
+}, [data, filterGamesPlayed, filterPlayerName, filterTeamName, filterConference, year]); // ← added filterConference
 
   const gTableInstance = useReactTable({
     data: gTableData,
