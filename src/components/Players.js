@@ -142,6 +142,8 @@ const TEAM_TO_CONFERENCE = {
   'new mexico state': "Conference USA",
   'jacksonville state': "Conference USA",
   'kennesaw state': "Conference USA",
+  'delaware': "Conference USA",
+  'missouri state': "Conference USA",
 
   toledo: "Mid-American",
   'northern illinois': "Mid-American",
@@ -292,17 +294,19 @@ function PlayersComponent() {
           <label htmlFor="conferenceFilter" className="block text-sm font-medium text-gray-700">
             Filter by Conference
           </label>
-          <input
-            list="conferences"
+          <select
             id="conferenceFilter"
             value={filterConference}
             onChange={(e) => setFilterConference(e.target.value)}
-            className="w-full p-2 border rounded text-sm"
-            placeholder="All Conferences"
-          />
-          <datalist id="conferences">
-            {uniqueConferences.map((c, i) => <option key={i} value={c} />)}
-          </datalist>
+            className="w-full p-2 border rounded text-sm bg-white"
+          >
+            <option value="">All Conferences</option>
+            {uniqueConferences.map((conf) => (
+              <option key={conf} value={conf}>
+                {conf}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="w-full sm:w-auto sm:flex-1">

@@ -43,7 +43,8 @@ const TEAM_TO_CONFERENCE = {
   'miami (oh)': "Mid-American", 'western michigan': "Mid-American", 'central michigan': "Mid-American",
   'eastern michigan': "Mid-American", 'bowling green': "Mid-American", 'ball state': "Mid-American",
   akron: "Mid-American", 'kent state': "Mid-American", buffalo: "Mid-American",
-  'oregon state': "Pac-12", 'washington state': "Pac-12",
+  'oregon state': "Pac-12", 'washington state': "Pac-12",  'delaware': "Conference USA",
+  'missouri state': "Conference USA",
 };
 
 
@@ -176,6 +177,7 @@ const LBETable = ({ data, navigate, filterGamesPlayed, filterPlayerName, filterT
       );
     });
   }, [data, filterGamesPlayed, filterPlayerName, filterTeamName, filterConference, year]); // ← added filterConference
+
   const gTableInstance = useReactTable({
     data: gTableData,
     columns: gColumns,
