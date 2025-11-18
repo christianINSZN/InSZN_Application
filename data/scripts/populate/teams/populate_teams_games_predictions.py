@@ -210,7 +210,7 @@ conn.commit()
 conn.close()
 
 print("\n" + "="*70)
-print("WEEKLY RESULTS")
+print("WEEKLY RESULTS") 
 for r in weekly_results:
     print(f"Week {r['week']:2d} — {r['games']:3d} games | Acc: {r['acc']:.1%} | Brier: {r['brier']:.3f}")
 if weekly_results:
