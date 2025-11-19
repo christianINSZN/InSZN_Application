@@ -2318,6 +2318,13 @@ app.get('/api/teams_games_predictions', (req, res) => {
   });
 });
 
+app.get('/api/teams_games_predictions_v2', (req, res) => {
+  db.all('SELECT * FROM Teams_Games_Ensemble_Predictions', [], (err, rows) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(rows);
+  });
+});
+
 // Portal Endpoint
 app.get('/api/players_portal', (req, res) => {
   db.all('SELECT * FROM Players_TransferPortal', [], (err, rows) => {
