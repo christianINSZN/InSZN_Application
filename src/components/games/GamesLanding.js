@@ -88,7 +88,7 @@ function GamesComponent({ year = '2025' }) {
   }, [isLoading, year]);
 
   useEffect(() => {
-    fetch(`${process.env.REACT_APP_API_URL}/api/teams_games_predictions`)
+    fetch(`${process.env.REACT_APP_API_URL}/api/teams_games_predictions_v2`)
       .then(r => r.json())
       .then(data => {
         const predMap = {};
@@ -271,10 +271,10 @@ function GamesComponent({ year = '2025' }) {
           const isFBSMatchup = conferences.includes(game.homeConference) && conferences.includes(game.awayConference);
           const isClickable = game.completed === 1;
           const pred = predictions[game.id];
-          const homeProb = pred?.home_win_prob != null ? (100 * pred.home_win_prob).toFixed(0) + '%' : '';
-          const awayProb = pred?.home_win_prob != null ? (100 * (1 - pred.home_win_prob)).toFixed(0) + '%' : '';
-          const homeSpread = pred?.home_spread != null 
-            ? pred.home_spread.toFixed(1)
+          const homeProb = pred?.predicted_home_win_prob != null ? (100 * pred.predicted_home_win_prob).toFixed(0) + '%' : '';
+          const awayProb = pred?.predicted_home_win_prob != null ? (100 * (1 - pred.predicted_home_win_prob)).toFixed(0) + '%' : '';
+          const homeSpread = pred?.spread != null 
+            ? pred.spread.toFixed(1)
             : null;
 
           const handleContainerClick = (e) => {
