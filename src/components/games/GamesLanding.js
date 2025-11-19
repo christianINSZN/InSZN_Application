@@ -31,7 +31,6 @@ function GamesComponent({ year = '2025' }) {
   const subscriptionPlan = user?.publicMetadata?.subscriptionPlan;
   const isProOrPremium = subscriptionPlan === 'pro' || subscriptionPlan === 'premium';
 
-  // Initialize showProbabilities based on user plan
   useEffect(() => {
     setShowProbabilities(isProOrPremium);
   }, [isProOrPremium]);
@@ -250,7 +249,6 @@ function GamesComponent({ year = '2025' }) {
         </div>
       </div>
 
-      {/* Win Probability Toggle */}
       <div className="flex justify-end mb-4 px-4">
         <label className="flex items-center cursor-pointer" onClick={handleToggleClick}>
           <input
@@ -274,6 +272,7 @@ function GamesComponent({ year = '2025' }) {
           const homeProb = pred?.predicted_home_win_prob != null ? (100 * pred.predicted_home_win_prob).toFixed(0) + '%' : '';
           const awayProb = pred?.predicted_home_win_prob != null ? (100 * (1 - pred.predicted_home_win_prob)).toFixed(0) + '%' : '';
           const homeSpread = pred?.spread != null ? pred.spread.toFixed(1) : null;
+          const hasConviction = showProbabilities && pred?.conviction != null;
 
           const handleContainerClick = (e) => {
             if (e.target.tagName === 'A' || e.target.closest('a')) return;
@@ -285,9 +284,9 @@ function GamesComponent({ year = '2025' }) {
           return (
             <div
               key={game.id || index}
-              className={`p-2 sm:p-4 shadow-xl rounded-lg bg-white border border-gray-200 h-28 flex flex-col justify-between ${
+              className={`p-2 sm:p-4 shadow-xl rounded-lg bg-white border border-gray-200 flex flex-col justify-between ${
                 isClickable ? 'cursor-pointer hover:bg-gray-50 transition-colors' : ''
-              }`}
+              } ${hasConviction ? 'h-36' : 'h-32'}`}
               onClick={handleContainerClick}
             >
               <div className="flex justify-between items-center min-h-[1.5rem]">
@@ -327,9 +326,8 @@ function GamesComponent({ year = '2025' }) {
                 )}
               </div>
 
-              <div className="flex justify-between items-center h-full">
+              <div className="flex justify-between items-center mt-2">
                 <div className="text-sm sm:text-base text-left flex-1">
-                  {/* Away Team */}
                   <div className="flex items-center">
                     {game.awayTeamLogo && <img src={game.awayTeamLogo} alt={`${game.awayTeam} logo`} className="w-6 h-6 sm:w-5 h-5 mr-1 sm:mr-2" />}
                     <Link
@@ -346,7 +344,6 @@ function GamesComponent({ year = '2025' }) {
                     )}
                   </div>
 
-                  {/* Home Team */}
                   <div className="flex items-center mt-1">
                     {game.homeTeamLogo && <img src={game.homeTeamLogo} alt={`${game.homeTeam} logo`} className="w-6 h-6 sm:w-5 h-5 mr-1 sm:mr-2" />}
                     <Link
@@ -363,10 +360,9 @@ function GamesComponent({ year = '2025' }) {
                     )}
                   </div>
 
-                  {/* Conviction Rating */}
-                  {showProbabilities && pred?.conviction != null && (
-                    <div className="text-xs text-gray-600 mt-1 ml-8">
-                      Conviction:{' '}
+                  {hasConviction && (
+                    <div className="text-center mt-2 text-xs">
+                      <span className="text-gray-600 font-medium">Conviction: </span>
                       <span className={`font-bold ${
                         pred.conviction >= 0.70 ? 'text-green-600' :
                         pred.conviction >= 0.60 ? 'text-yellow-600' :
@@ -378,9 +374,11 @@ function GamesComponent({ year = '2025' }) {
                   )}
                 </div>
 
-                <div className="text-sm sm:text-base text-right">
+                <div className="text-sm sm:text-base text-right flex flex-col justify-center">
                   <div>{awayWins ? <span className="font-bold">{game.awayPoints ?? '-'}</span> : (game.awayPoints ?? '-')}</div>
-                  <div>{homeWins ? <span className="font-bold">{game.homePoints ?? '-'}</span> : (game.homePoints ?? '-')}</div>
+                  <div className={hasConviction ? 'mt-6' : 'mt-3'}>
+                    {homeWins ? <span className="font-bold">{game.homePoints ?? '-'}</span> : (game.homePoints ?? '-')}
+                  </div>
                 </div>
               </div>
             </div>
@@ -388,24 +386,16 @@ function GamesComponent({ year = '2025' }) {
         })}
       </div>
 
-      {/* Subscribe Modal */}
       {showSubscribeModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowSubscribeModal(false)}>
           <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-gray-900 mb-2">INSZN Insider Required</h3>
             <p className="text-sm text-gray-600 mb-4">Win probabilities are exclusive to INSZN Insider subscribers.</p>
             <div className="flex gap-3">
-              <button
-                onClick={() => setShowSubscribeModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50"
-              >
+              <button onClick={() => setShowSubscribeModal(false)} className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50">
                 Cancel
               </button>
-              <Link
-                to="/subscribe"
-                onClick={() => setShowSubscribeModal(false)}
-                className="flex-1 px-4 py-2 bg-[#235347] text-white rounded hover:bg-[#1b3e32] text-center"
-              >
+              <Link to="/subscribe" onClick={() => setShowSubscribeModal(false)} className="flex-1 px-4 py-2 bg-[#235347] text-white rounded hover:bg-[#1b3e32] text-center">
                 Subscribe Now
               </Link>
             </div>
