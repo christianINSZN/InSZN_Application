@@ -273,20 +273,19 @@ function GamesComponent({ year = '2025' }) {
           const pred = predictions[game.id];
           const homeProb = pred?.predicted_home_win_prob != null ? (100 * pred.predicted_home_win_prob).toFixed(0) + '%' : '';
           const awayProb = pred?.predicted_home_win_prob != null ? (100 * (1 - pred.predicted_home_win_prob)).toFixed(0) + '%' : '';
-          const homeSpread = pred?.spread != null 
-            ? pred.spread.toFixed(1)
-            : null;
+          const homeSpread = pred?.spread != null ? pred.spread.toFixed(1) : null;
 
           const handleContainerClick = (e) => {
             if (e.target.tagName === 'A' || e.target.closest('a')) return;
             if (isClickable) navigate(`/games/recap/${game.id}`);
           };
+
           const formattedTime = formatGameTime(game);
 
           return (
             <div
               key={game.id || index}
-              className={`p-2 sm:p-4 shadow-xl rounded-lg bg-white border border-gray-200 h-24 flex flex-col justify-between ${
+              className={`p-2 sm:p-4 shadow-xl rounded-lg bg-white border border-gray-200 h-28 flex flex-col justify-between ${
                 isClickable ? 'cursor-pointer hover:bg-gray-50 transition-colors' : ''
               }`}
               onClick={handleContainerClick}
@@ -296,7 +295,7 @@ function GamesComponent({ year = '2025' }) {
                   {formattedTime}
                   {showProbabilities && (
                     <span className="ml-2 font-medium">
-                      [{game.homeTeam}: {homeSpread !== null 
+                      [{game.homeTeam}: {homeSpread !== null
                         ? (homeSpread.startsWith('-') ? `${homeSpread}` : `+${homeSpread}`)
                         : 'TBD'}
                       ]
@@ -327,8 +326,10 @@ function GamesComponent({ year = '2025' }) {
                   </div>
                 )}
               </div>
+
               <div className="flex justify-between items-center h-full">
-                <div className="text-sm sm:text-base text-left">
+                <div className="text-sm sm:text-base text-left flex-1">
+                  {/* Away Team */}
                   <div className="flex items-center">
                     {game.awayTeamLogo && <img src={game.awayTeamLogo} alt={`${game.awayTeam} logo`} className="w-6 h-6 sm:w-5 h-5 mr-1 sm:mr-2" />}
                     <Link
@@ -339,14 +340,14 @@ function GamesComponent({ year = '2025' }) {
                       {game.awayTeam}
                     </Link>
                     {showProbabilities && awayProb && (
-                      <span className={`ml-1 text-xs font-medium ${
-                        parseFloat(awayProb) > 50 ? 'text-green-600' : 'text-red-600'
-                      }`}>
+                      <span className={`ml-1 text-xs font-medium ${parseFloat(awayProb) > 50 ? 'text-green-600' : 'text-red-600'}`}>
                         ({awayProb})
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center">
+
+                  {/* Home Team */}
+                  <div className="flex items-center mt-1">
                     {game.homeTeamLogo && <img src={game.homeTeamLogo} alt={`${game.homeTeam} logo`} className="w-6 h-6 sm:w-5 h-5 mr-1 sm:mr-2" />}
                     <Link
                       to={`/teams/${game.homeId}/${year}`}
@@ -356,14 +357,27 @@ function GamesComponent({ year = '2025' }) {
                       {game.homeTeam}
                     </Link>
                     {showProbabilities && homeProb && (
-                      <span className={`ml-1 text-xs font-medium ${
-                        parseFloat(homeProb) > 50 ? 'text-green-600' : 'text-red-600'
-                      }`}>
+                      <span className={`ml-1 text-xs font-medium ${parseFloat(homeProb) > 50 ? 'text-green-600' : 'text-red-600'}`}>
                         ({homeProb})
                       </span>
                     )}
                   </div>
+
+                  {/* Conviction Rating */}
+                  {showProbabilities && pred?.conviction != null && (
+                    <div className="text-xs text-gray-600 mt-1 ml-8">
+                      Conviction:{' '}
+                      <span className={`font-bold ${
+                        pred.conviction >= 0.70 ? 'text-green-600' :
+                        pred.conviction >= 0.60 ? 'text-yellow-600' :
+                        'text-red-600'
+                      }`}>
+                        {(pred.conviction * 100).toFixed(0)}%
+                      </span>
+                    </div>
+                  )}
                 </div>
+
                 <div className="text-sm sm:text-base text-right">
                   <div>{awayWins ? <span className="font-bold">{game.awayPoints ?? '-'}</span> : (game.awayPoints ?? '-')}</div>
                   <div>{homeWins ? <span className="font-bold">{game.homePoints ?? '-'}</span> : (game.homePoints ?? '-')}</div>
