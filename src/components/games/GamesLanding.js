@@ -29,7 +29,7 @@ function GamesComponent({ year = '2025' }) {
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
 
   const subscriptionPlan = user?.publicMetadata?.subscriptionPlan;
-  const isProOrPremium = subscriptionPlan === 'pro' || subscriptionPlan === 'premium';
+  const isProOrPremium = subscriptionPlan === 'pro' || subscriptionPlan === 'premium' || !subscriptionPlan;
 
   useEffect(() => {
     setShowProbabilities(isProOrPremium);
@@ -187,6 +187,7 @@ function GamesComponent({ year = '2025' }) {
 
   return (
     <div className="p-2 sm:p-4 shadow-xl rounded-lg mt-0 sm:mt-12">
+      {/* Year & Week Selector */}
       <div className="mb-4 sm:mb-6 mt-3 flex flex-col sm:flex-row items-end gap-4 sm:gap-6 bg-gray-200 p-2 sm:p-4 rounded-lg shadow-xl">
         <div className="w-full">
           <label htmlFor="yearSelect" className="block text-sm sm:text-base font-medium text-gray-700 mb-1">Year</label>
@@ -230,6 +231,7 @@ function GamesComponent({ year = '2025' }) {
         </div>
       </div>
 
+      {/* Conference Tabs */}
       <div className="border-b border-gray-300 mb-4 sm:mb-6">
         <div className="overflow-x-auto whitespace-nowrap py-2">
           <ul className="flex gap-2 sm:gap-4 px-4 min-w-max">
@@ -249,6 +251,7 @@ function GamesComponent({ year = '2025' }) {
         </div>
       </div>
 
+      {/* Win Probability Toggle */}
       <div className="flex justify-end mb-4 px-4">
         <label className="flex items-center cursor-pointer" onClick={handleToggleClick}>
           <input
@@ -262,7 +265,8 @@ function GamesComponent({ year = '2025' }) {
         </label>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 p-2 sm:p-4">
+      {/* Games Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-2 sm:p-4">
         {filteredGames.map((game, index) => {
           const homeWins = game.homePoints !== null && game.awayPoints !== null && game.homePoints > game.awayPoints;
           const awayWins = game.awayPoints !== null && game.homePoints !== null && game.awayPoints > game.homePoints;
@@ -284,118 +288,125 @@ function GamesComponent({ year = '2025' }) {
           return (
             <div
               key={game.id || index}
-              className={`p-2 sm:p-4 shadow-xl rounded-lg bg-white border border-gray-200 flex flex-col justify-between ${
-                isClickable ? 'cursor-pointer hover:bg-gray-50 transition-colors' : ''
-              } ${hasConviction ? 'h-36' : 'h-32'}`}
+              className={`bg-white border border-gray-200 rounded-lg shadow-xl p-4 flex flex-col ${
+                hasConviction ? 'h-40' : 'h-36'
+              } ${isClickable ? 'cursor-pointer hover:bg-gray-50 transition-colors' : ''}`}
               onClick={handleContainerClick}
             >
-              <div className="flex justify-between items-center min-h-[1.5rem]">
-                <div className="text-xs sm:text-sm text-gray-600">
+              {/* Header: Time + Link */}
+              <div className="flex justify-between items-center text-xs sm:text-sm text-gray-600 mb-2">
+                <div>
                   {formattedTime}
-                  {showProbabilities && (
+                  {showProbabilities && homeSpread !== null && (
                     <span className="ml-2 font-medium">
-                      [{game.homeTeam}: {homeSpread !== null
-                        ? (homeSpread.startsWith('-') ? `${homeSpread}` : `+${homeSpread}`)
-                        : 'TBD'}
-                      ]
+                      [{game.homeTeam}: {homeSpread.startsWith('-') ? homeSpread : `+${homeSpread}`}]
                     </span>
                   )}
                 </div>
                 {game.completed === 0 ? (
                   isFBSMatchup ? (
-                    <div>
-                      <Link
-                        to="#"
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleScoutingReportClick(game); }}
-                        className="text-blue-500 hover:text-blue-700 underline text-xs sm:text-sm"
-                      >
-                        Scouting Report
-                      </Link>
-                    </div>
-                  ) : null
-                ) : (
-                  <div>
                     <Link
                       to="#"
-                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleGameRecapClick(game); }}
-                      className="text-blue-500 hover:text-blue-700 underline text-xs sm:text-sm"
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleScoutingReportClick(game); }}
+                      className="text-blue-500 hover:text-blue-700 underline"
                     >
-                      Game Summary
+                      Scouting Report
                     </Link>
-                  </div>
+                  ) : null
+                ) : (
+                  <Link
+                    to="#"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleGameRecapClick(game); }}
+                    className="text-blue-500 hover:text-blue-700 underline"
+                  >
+                    Game Summary
+                  </Link>
                 )}
               </div>
 
-              <div className="flex justify-between items-center mt-2">
-                <div className="text-sm sm:text-base text-left flex-1">
-                  <div className="flex items-center">
-                    {game.awayTeamLogo && <img src={game.awayTeamLogo} alt={`${game.awayTeam} logo`} className="w-6 h-6 sm:w-5 h-5 mr-1 sm:mr-2" />}
+              {/* Main Content */}
+              <div className="flex-1 flex flex-col justify-center">
+                {/* Away Team */}
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center flex-1">
+                    {game.awayTeamLogo && <img src={game.awayTeamLogo} alt="" className="w-6 h-6 mr-2" />}
                     <Link
                       to={`/teams/${game.awayId}/${year}`}
                       onClick={(e) => e.stopPropagation()}
-                      className={`inline ${awayWins ? 'font-bold' : ''}`}
+                      className={`text-sm sm:text-base ${awayWins ? 'font-bold' : ''}`}
                     >
                       {game.awayTeam}
                     </Link>
                     {showProbabilities && awayProb && (
-                      <span className={`ml-1 text-xs font-medium ${parseFloat(awayProb) > 50 ? 'text-green-600' : 'text-red-600'}`}>
+                      <span className={`ml-2 text-xs font-medium ${parseFloat(awayProb) > 50 ? 'text-green-600' : 'text-red-600'}`}>
                         ({awayProb})
                       </span>
                     )}
                   </div>
+                  <div className="text-sm sm:text-base text-right w-12">
+                    {awayWins ? <strong>{game.awayPoints ?? '-'}</strong> : (game.awayPoints ?? '-')}
+                  </div>
+                </div>
 
-                  <div className="flex items-center mt-1">
-                    {game.homeTeamLogo && <img src={game.homeTeamLogo} alt={`${game.homeTeam} logo`} className="w-6 h-6 sm:w-5 h-5 mr-1 sm:mr-2" />}
+                {/* Home Team */}
+                <div className="flex justify-between items-center mt-3">
+                  <div className="flex items-center flex-1">
+                    {game.homeTeamLogo && <img src={game.homeTeamLogo} alt="" className="w-6 h-6 mr-2" />}
                     <Link
                       to={`/teams/${game.homeId}/${year}`}
                       onClick={(e) => e.stopPropagation()}
-                      className={`inline ${homeWins ? 'font-bold' : ''}`}
+                      className={`text-sm sm:text-base ${homeWins ? 'font-bold' : ''}`}
                     >
                       {game.homeTeam}
                     </Link>
                     {showProbabilities && homeProb && (
-                      <span className={`ml-1 text-xs font-medium ${parseFloat(homeProb) > 50 ? 'text-green-600' : 'text-red-600'}`}>
+                      <span className={`ml-2 text-xs font-medium ${parseFloat(homeProb) > 50 ? 'text-green-600' : 'text-red-600'}`}>
                         ({homeProb})
                       </span>
                     )}
                   </div>
-
-                  {hasConviction && (
-                    <div className="text-center mt-2 text-xs">
-                      <span className="text-gray-600 font-medium">Conviction: </span>
-                      <span className={`font-bold ${
-                        pred.conviction >= 0.70 ? 'text-green-600' :
-                        pred.conviction >= 0.60 ? 'text-yellow-600' :
-                        'text-red-600'
-                      }`}>
-                        {(pred.conviction * 100).toFixed(0)}%
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="text-sm sm:text-base text-right flex flex-col justify-center">
-                  <div>{awayWins ? <span className="font-bold">{game.awayPoints ?? '-'}</span> : (game.awayPoints ?? '-')}</div>
-                  <div className={hasConviction ? 'mt-6' : 'mt-3'}>
-                    {homeWins ? <span className="font-bold">{game.homePoints ?? '-'}</span> : (game.homePoints ?? '-')}
+                  <div className="text-sm sm:text-base text-right w-12">
+                    {homeWins ? <strong>{game.homePoints ?? '-'}</strong> : (game.homePoints ?? '-')}
                   </div>
                 </div>
+
+                {/* Conviction Rating - Centered, Full Width */}
+                {hasConviction && (
+                  <div className="text-center mt-4 pt-3 border-t border-gray-200 text-xs">
+                    <span className="text-gray-600 font-medium">Conviction: </span>
+                    <span className={`font-bold ${
+                      pred.conviction >= 0.70 ? 'text-green-600' :
+                      pred.conviction >= 0.60 ? 'text-yellow-600' :
+                      'text-red-600'
+                    }`}>
+                      {(pred.conviction * 100).toFixed(0)}%
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           );
         })}
       </div>
 
+      {/* Subscribe Modal */}
       {showSubscribeModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowSubscribeModal(false)}>
           <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full mx-4" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-gray-900 mb-2">INSZN Insider Required</h3>
             <p className="text-sm text-gray-600 mb-4">Win probabilities are exclusive to INSZN Insider subscribers.</p>
             <div className="flex gap-3">
-              <button onClick={() => setShowSubscribeModal(false)} className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50">
+              <button
+                onClick={() => setShowSubscribeModal(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50"
+              >
                 Cancel
               </button>
-              <Link to="/subscribe" onClick={() => setShowSubscribeModal(false)} className="flex-1 px-4 py-2 bg-[#235347] text-white rounded hover:bg-[#1b3e32] text-center">
+              <Link
+                to="/subscribe"
+                onClick={() => setShowSubscribeModal(false)}
+                className="flex-1 px-4 py-2 bg-[#235347] text-white rounded hover:bg-[#1b3e32] text-center"
+              >
                 Subscribe Now
               </Link>
             </div>
@@ -403,6 +414,7 @@ function GamesComponent({ year = '2025' }) {
         </div>
       )}
 
+      {/* Modals */}
       {showScoutingReport && selectedMatchup && (
         <ScoutingReport matchup={selectedMatchup} onClose={handleCloseScoutingReport} year={year} />
       )}
