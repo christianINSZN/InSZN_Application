@@ -636,24 +636,6 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
   }
 });
 
-// Helper — keep Clerk in sync
-async function updateClerkMetadata(clerkUserId, priceId, metadataToAttach) {
-  const planMap = {
-    'price_1SVdVlF6OYpAGuKxD9OKJYzD': 'pro',     // $20
-    'price_1SVcw8F6OYpAGuKxhZ0y3jrK': 'pro',     // $15 promo
-    'price_pro': 'premium',
-    'price_elite': 'elite',
-  };
-
-  const clerk = new Clerk({ apiKey: process.env.CLERK_SECRET_KEY });
-  await clerk.users.updateUserMetadata(clerkUserId, {
-    publicMetadata: {
-      subscriptionPlan: planMap[priceId] || 'pro',
-      hasActiveSubscription: true,
-      ...metadataToAttach,
-    },
-  });
-}
 
 app.get('/', (req, res) => {
   res.json({ message: 'API server is running' });
