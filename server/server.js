@@ -548,90 +548,90 @@ app.get('/api/scouting/votes/:matchupId', (req, res) => {
 // Apply JSON parsing for other routes
 app.use(express.json());
 
-// Subscription Creation Endpoint
 app.post('/api/subscriptions/create-subscription', async (req, res) => {
   const { priceId, clerkUserId, paymentMethodId, email, promoCode } = req.body;
 
   try {
-    if (!clerkUserId) throw new Error('Missing clerkUserId');
-    if (!priceId) throw new Error('Missing priceId');
+    if (!clerkUserId || !priceId || !paymentMethodId) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
 
-    // === Promo code → sales rep tracking ===
-    const salesRepMap = {
-      'MILESINSZN': 'Miles Emery',
-      'MilesINSZN': 'Miles Emery',
-      // add more reps here
-    };
+    // Promo → sales rep
+    const salesRepMap = { 'MILESINSZN': 'Miles Emery', 'MilesINSZN': 'Miles Emery' };
     const salesRep = salesRepMap[promoCode?.toUpperCase()] || null;
-
     const metadataToAttach = {
       promoCode: promoCode || null,
       referredBy: salesRep || null,
       referralDate: new Date().toISOString().split('T')[0],
     };
 
-    // === Create or reuse customer ===
+    // Create customer
     const customer = await stripe.customers.create({
       email: email || null,
       metadata: { clerkUserId, ...metadataToAttach },
     });
 
-    if (paymentMethodId) {
-      await stripe.paymentMethods.attach(paymentMethodId, { customer: customer.id });
-      await stripe.customers.update(customer.id, {
-        invoice_settings: { default_payment_method: paymentMethodId },
-      });
-    }
+    // Attach + set default payment method
+    await stripe.paymentMethods.attach(paymentMethodId, { customer: customer.id });
+    await stripe.customers.update(customer.id, {
+      invoice_settings: { default_payment_method: paymentMethodId },
+    });
 
-    // === Create subscription (incomplete until paid) ===
+    // Create subscription (will be incomplete until first invoice is paid)
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
       items: [{ price: priceId }],
       payment_behavior: 'default_incomplete',
-      payment_settings: {
-        payment_method_types: ['card'],
-        save_default_payment_method: 'on_subscription',
-      },
-      default_payment_method: paymentMethodId || null,
+      payment_settings: { payment_method_types: ['card'], save_default_payment_method: 'on_subscription' },
+      default_payment_method: paymentMethodId,
       expand: ['latest_invoice.payment_intent'],
       metadata: metadataToAttach,
     });
 
     const invoice = subscription.latest_invoice;
-    const paymentIntent = invoice?.payment_intent;
+    const paymentIntent = invoice.payment_intent;
 
-    // === TRY TO PAY AUTOMATICALLY (this is what your old code did and what made it work) ===
-    if (paymentIntent) {
-      try {
-        await stripe.invoices.pay(invoice.id, {
-          payment_method: paymentMethodId,
-        });
-
-        // Payment succeeded immediately → subscription becomes active right away
-        await updateClerkMetadata(clerkUserId, priceId, metadataToAttach);
-        return res.json({
-          status: 'active',
-          subscriptionId: subscription.id,
-        });
-
-      } catch (payError) {
-        // 3D Secure required → let frontend handle it
-        if (payError.code === 'payment_intent_authentication_required') {
-          return res.json({
-            clientSecret: paymentIntent.client_secret,
-            subscriptionId: subscription.id,
-          });
-        }
-        throw payError; // any other error
-      }
+    // THIS IS THE LINE THAT WAS MISSING — PAY THE INVOICE ON THE SERVER
+    if (paymentIntent.status === 'requires_payment_method') {
+      return res.status(500).json({ error: 'No payment method' });
     }
 
-    // No payment intent (should never happen)
-    await updateClerkMetadata(clerkUserId, priceId, metadataToAttach);
-    return res.json({ status: 'active', subscriptionId: subscription.id });
+    // AUTOMATICALLY PAY THE FIRST INVOICE (this is what your $10 version did)
+    const paidInvoice = await stripe.invoices.pay(invoice.id, {
+      payment_method: paymentMethodId,
+    });
+
+    // Update Clerk metadata immediately
+    const planMap = {
+      'price_1SVdVlF6OYpAGuKxD9OKJYzD': 'pro',
+      'price_1SVcw8F6OYpAGuKxhZ0y3jrK': 'pro',
+    };
+    const clerk = new Clerk({ apiKey: process.env.CLERK_SECRET_KEY });
+    await clerk.users.updateUserMetadata(clerkUserId, {
+      publicMetadata: {
+        subscriptionPlan: planMap[priceId] || 'pro',
+        hasActiveSubscription: true,
+        ...metadataToAttach,
+      },
+    });
+
+    // SUCCESS — subscription is now active
+    return res.json({
+      status: 'active',
+      subscriptionId: subscription.id,
+    });
 
   } catch (error) {
-    console.error('Subscription creation failed:', error);
+    console.error('Subscription error:', error);
+
+    // If 3D Secure is required, return clientSecret so frontend can handle it
+    if (error.code === 'payment_intent_authentication_required' && error.payment_intent) {
+      return res.json({
+        clientSecret: error.payment_intent.client_secret,
+        subscriptionId: error.payment_intent.metadata.subscription_id || null,
+      });
+    }
+
     res.status(500).json({ error: error.message });
   }
 });
