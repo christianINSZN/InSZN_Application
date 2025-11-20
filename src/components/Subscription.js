@@ -13,8 +13,8 @@ const SubscriptionForm = () => {
 
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [promoCode, setPromoCode] = useState('');
-  const [isValidPromo, setIsValidPromo] = useState(false);
-  const [promoError, setPromoError] = useState(null);
+  const [isValidPromo, setIsValidPromo] = useState(false);     // ← new
+  const [promoError, setPromoError] = useState(null);         // ← new
   const [step, setStep] = useState('plans');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -30,7 +30,7 @@ const SubscriptionForm = () => {
     'price_elite': 'elite',
   };
 
-  const validPromoCodes = ['JAKE2025', 'MIAINSZN', 'TYLER100', 'SARAHPRO', 'FOUNDERS', 'BETA15', 'INSIDER15'];
+  const validPromoCodes = ['MILESINSZN'];
 
   const plans = [
     {
@@ -90,6 +90,7 @@ const SubscriptionForm = () => {
       setPromoError('Please enter a promo code');
       setIsValidPromo(false);
       return;
+      return;
     }
 
     if (validPromoCodes.includes(promoCode)) {
@@ -105,11 +106,12 @@ const SubscriptionForm = () => {
     event.preventDefault();
 
     if (!stripe || !elements || !user || !selectedPlan) {
-      setError('Please sign in and select a plan.');
+      setError('Please sign in and select a plan to subscribe.');
       return;
     }
 
-    if (currentPlan && planIdToKey[selectedPlan] === currentPlan) {
+    const selectedPlanKey = planIdToKey[selectedPlan];
+    if (currentPlan && selectedPlanKey === currentPlan) {
       setError('You are already subscribed to this plan.');
       return;
     }
@@ -118,23 +120,21 @@ const SubscriptionForm = () => {
     setError(null);
 
     try {
-      const { paymentMethod, error: pmError } = await stripe.createPaymentMethod({
+      const { paymentMethod, error: paymentMethodError } = await stripe.createPaymentMethod({
         type: 'card',
         card: elements.getElement(CardElement),
-        billing_details: {
-          email: user.primaryEmailAddress?.emailAddress || 'unknown',
-        },
+        billing_details: { email: user.primaryEmailAddress?.emailAddress || 'unknown' },
       });
 
-      if (pmError) {
-        setError(pmError.message);
+      if (paymentMethodError) {
+        setError(paymentMethodError.message);
         setLoading(false);
         return;
       }
 
       const finalPriceId = isValidPromo
-        ? 'price_1SVcw8F6OYpAGuKxhZ0y3jrK'  // $15 with promo
-        : selectedPlan;                        // $20 normal
+        ? 'price_1SVcw8F6OYpAGuKxhZ0y3jrK'  // $15 promo price
+        : selectedPlan;                        // $20 normal price
 
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/subscriptions/create-subscription`, {
         method: 'POST',
@@ -157,22 +157,24 @@ const SubscriptionForm = () => {
       }
 
       if (data.clientSecret) {
-        const { error: confirmError } = await stripe.confirmCardPayment(data.clientSecret, {
+        const result = await stripe.confirmCardPayment(data.clientSecret, {
           payment_method: paymentMethod.id,
         });
 
-        if (confirmError) {
-          setError(confirmError.message);
+        if (result.error) {
+          setError(result.error.message);
+        } else if (result.paymentIntent.status === 'succeeded') {
+          alert('Subscription successful! Please refresh the page to access premium content.');
         } else {
-          alert('Subscription successful! Please refresh the page.');
+          setError('Payment processing incomplete. Please try again.');
         }
       } else if (data.status === 'active') {
-        alert('Subscription successful! Please refresh the page.');
+        alert('Subscription successful! Please refresh the page to access premium content.');
       } else {
-        setError('Something went wrong.');
+        setError(data.message || 'Something went wrong.');
       }
     } catch (err) {
-      setError(err.message || 'Payment failed');
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -181,7 +183,7 @@ const SubscriptionForm = () => {
   return (
     <div className="w-full min-h-screen bg-gray-50 py-6 px-4 sm:px-6 mt-0 sm:mt-12">
       {!user && (
-        <p className="text-center text-gray-500 mb-6">
+        <p className="text-center text-gray-500 mb-6 text-sm sm:text-base">
           Please <Link to="/sign-in" className="text-[#235347] underline">sign in</Link> to subscribe.
         </p>
       )}
@@ -189,35 +191,46 @@ const SubscriptionForm = () => {
       {step === 'plans' ? (
         <>
           <h2 className="text-xl sm:text-2xl font-bold text-[#235347] text-center mb-6">Subscription Packages</h2>
-          <div className={`flex ${isMobile ? 'flex-col gap-8' : 'flex-row gap-12'} justify-center`}>
+          <div className={`flex ${isMobile ? 'flex-col gap-4' : 'flex-row gap-12'} justify-center mb-12`}>
             {plans.map((plan) => {
-              const isSubscribed = currentPlan && planIdToKey[plan.id] === currentPlan;
+              const planKey = planIdToKey[plan.id];
+              const isUserSubscribedToThisPlan = currentPlan && planKey === currentPlan;
 
               return (
                 <div
                   key={plan.id}
-                  className={`relative border-2 rounded-lg shadow-lg p-6 cursor-pointer transition-all ${
-                    selectedPlan === plan.id
-                      ? 'border-[#235347] bg-[#235347]/5'
-                      : 'border-gray-300 hover:border-[#235347]'
-                  } ${plan.id !== 'price_1SVdVlF6OYpAGuKxD9OKJYzD' ? 'opacity-60' : ''}`}
+                  className={`relative border-2 ${
+                    selectedPlan === plan.id ? 'border-[#235347] bg-[#235347]/10' : 'border-gray-300'
+                  } rounded-lg shadow-lg ${
+                    plan.id === 'price_pro' || plan.id === 'price_elite'
+                      ? 'cursor-not-allowed'
+                      : 'cursor-pointer hover:border-[#235347] hover:bg-[#235347]/10'
+                  } transition-colors ${isMobile ? 'w-full' : 'w-1/3'}`}
                   onClick={() => handlePlanSelect(plan.id)}
                 >
                   <img
                     src={plan.bannerImage}
-                    alt={plan.name}
-                    className="mx-auto mb-4"
+                    alt={`${plan.name} Plan Banner`}
+                    className="h-auto mx-auto rounded-t-lg object-contain min-w-0 mt-5"
                     style={{ width: `${plan.bannerWidthPercent}%` }}
                   />
-                  <p className="text-2xl font-bold text-[#235347] text-center mb-8">{plan.price}</p>
-                  <ul className="space-y-2 text-sm text-gray-700">
-                    {plan.features.map((f, i) => (
-                      <li key={i}>• {f}</li>
-                    ))}
-                  </ul>
-                  {isSubscribed && (
-                    <div className="absolute inset-0 bg-white/90 flex items-center justify-center rounded-lg">
-                      <p className="text-[#235347] font-bold text-lg">Current Plan</p>
+                  <div className="p-4">
+                    <p className="text-center font-medium text-[#235347] mb-2 text-sm sm:text-base mb-10">{plan.price}</p>
+                    <ul className="list-disc list-outside pl-4 space-y-2 text-[12px] sm:text-sm text-gray-700 ml-2">
+                      {plan.features.map((feature, index) => (
+                        <li key={index}>{feature}</li>
+                      ))}
+                    </ul>
+                    {(plan.id === 'price_pro' || plan.id === 'price_elite') && (
+                      <p className="text-center font-bold text-[12px] sm:text-sm text-gray-700 mt-4">
+                        <a href="mailto:data@inszn.co" className="text-[#235347] underline">Contact Us</a>
+                      </p>
+                    )}
+                  </div>
+
+                  {isUserSubscribedToThisPlan && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 border-2 border-[#235347] rounded-lg">
+                      <p className="text-[#235347] font-semibold text-[18px] sm:text-sm">Current Subscription</p>
                     </div>
                   )}
                 </div>
@@ -226,18 +239,15 @@ const SubscriptionForm = () => {
           </div>
         </>
       ) : (
-        <div ref={paymentRef} className="max-w-lg mx-auto">
-          <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-xl p-8 border-2 border-[#235347]">
-            <h2 className="text-2xl font-bold text-[#235347] mb-6">Complete Your Subscription</h2>
-
-            <p className="text-lg mb-6">
-              Plan: <strong>{plans.find(p => p.id === selectedPlan)?.name}</strong>
-              {' '}—{' '}
-              <strong>{isValidPromo ? '$15' : '$20'}/month</strong>
+        <div ref={paymentRef} className="flex items-center justify-center">
+          <form onSubmit={handleSubmit} className="p-6 w-full sm:w-1/2 bg-white rounded-lg shadow-lg border-2 border-[#235347]">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#235347] mb-6">Enter Payment Details</h2>
+            <p className="text-gray-700 mb-4">
+              Selected Plan: {plans.find((p) => p.id === selectedPlan)?.name || 'None'}
             </p>
 
-            {/* Promo Code Input + Button */}
-            <div className="mb-8">
+            {/* Promo Code Field + Apply Button */}
+            <div className="mb-6">
               <div className="flex gap-3">
                 <input
                   type="text"
@@ -248,39 +258,39 @@ const SubscriptionForm = () => {
                     setPromoError(null);
                     setIsValidPromo(false);
                   }}
-                  className="flex-1 px-4 py-3 border rounded-lg focus:outline-none focus:border-[#235347]"
+                  className="flex-1 p-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#235347]"
                 />
                 <button
                   type="button"
                   onClick={handleApplyPromo}
-                  className="px-6 py- py-3 bg-[#235347] text-white rounded-lg hover:bg-[#1b3e32] font-medium"
+                  className="px-6 py-3 bg-[#235347] text-white rounded-lg hover:bg-[#1b3e32] text-sm font-medium"
                 >
                   Apply Code
                 </button>
               </div>
 
               {isValidPromo && (
-                <p className="text-green-600 font-bold mt-3">
-                  Promo applied! $15/month confirmed
+                <p className="text-green-600 font-semibold mt-3">
+                  Promo applied! You’re getting Insider for <strong>$15/month</strong>
                 </p>
               )}
               {promoError && (
-                <p className="text-red-500 mt-3">{promoError}</p>
+                <p className="text-red-500 mt-3 text-sm">{promoError}</p>
               )}
             </div>
 
-            <div className="p-4 border rounded-lg mb-6 bg-gray-50">
-              <CardElement options={{ style: { base: { fontSize: '16px' } } }} />
+            <div className="p-3 border border-gray-300 rounded mb-6">
+              <CardElement className="text-sm sm:text-base" />
             </div>
 
-            {error && <p className="text-red-500 mb-4">{error}</p>}
+            {error && <p className="text-red-500 mb-6 text-sm sm:text-base">{error}</p>}
 
             <button
               type="submit"
-              disabled={loading || !stripe}
-              className="w-full py-4 bg-[#235347] text-white text-lg font-semibold rounded-lg hover:bg-[#1b3e32] disabled:bg-gray-400"
+              disabled={!stripe || !user || loading || (selectedPlan && planIdToKey[selectedPlan] === currentPlan)}
+              className="px-6 py-3 bg-[#235347] text-white rounded hover:bg-[#1b3e32] disabled:bg-gray-400 text-sm sm:text-base w-full"
             >
-              {loading ? 'Processing...' : 'Complete Purchase'}
+              {loading ? 'Processing...' : 'Subscribe'}
             </button>
           </form>
         </div>
