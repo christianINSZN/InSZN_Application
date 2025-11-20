@@ -601,6 +601,7 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
     // Map price → plan key for Clerk
     const planMap = {
       'price_1SVdVlF6OYpAGuKxD9OKJYzD': 'pro',
+      'price_1SVcw8F6OYpAGuKxhZ0y3jrK': 'pro',
       'price_pro': 'premium',
       'price_elite': 'elite',
     };
