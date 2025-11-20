@@ -571,13 +571,13 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
       metadata: { clerkUserId, ...metadataToAttach },
     });
 
-    // Attach + set default payment method
+    // Attach payment method
     await stripe.paymentMethods.attach(paymentMethodId, { customer: customer.id });
     await stripe.customers.update(customer.id, {
       invoice_settings: { default_payment_method: paymentMethodId },
     });
 
-    // Create subscription (will be incomplete until first invoice is paid)
+    // Create subscription — incomplete until first invoice paid
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
       items: [{ price: priceId }],
@@ -588,53 +588,60 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
       metadata: metadataToAttach,
     });
 
+    // ←←← THIS WAS THE PROBLEM: latest_invoice could be null or string
     const invoice = subscription.latest_invoice;
-    const paymentIntent = invoice.payment_intent;
-
-    // THIS IS THE LINE THAT WAS MISSING — PAY THE INVOICE ON THE SERVER
-    if (paymentIntent.status === 'requires_payment_method') {
-      return res.status(500).json({ error: 'No payment method' });
+    if (!invoice || typeof invoice === 'string') {
+      throw new Error('Invoice not created');
     }
 
-    // AUTOMATICALLY PAY THE FIRST INVOICE (this is what your $10 version did)
-    const paidInvoice = await stripe.invoices.pay(invoice.id, {
-      payment_method: paymentMethodId,
-    });
+    const paymentIntent = invoice.payment_intent;
+    if (!paymentIntent) {
+      throw new Error('No payment intent on invoice');
+    }
 
-    // Update Clerk metadata immediately
-    const planMap = {
-      'price_1SVdVlF6OYpAGuKxD9OKJYzD': 'pro',
-      'price_1SVcw8F6OYpAGuKxhZ0y3jrK': 'pro',
-    };
-    const clerk = new Clerk({ apiKey: process.env.CLERK_SECRET_KEY });
-    await clerk.users.updateUserMetadata(clerkUserId, {
-      publicMetadata: {
-        subscriptionPlan: planMap[priceId] || 'pro',
-        hasActiveSubscription: true,
-        ...metadataToAttach,
-      },
-    });
+    // TRY TO PAY THE INVOICE AUTOMATICALLY (99% of the time this works)
+    try {
+      await stripe.invoices.pay(invoice.id, { payment_method: paymentMethodId });
 
-    // SUCCESS — subscription is now active
-    return res.json({
-      status: 'active',
-      subscriptionId: subscription.id,
-    });
+      // Payment succeeded instantly → update Clerk + return success
+      await updateClerkMetadata(clerkUserId, priceId, metadataToAttach);
+      return res.json({ status: 'active', subscriptionId: subscription.id });
+
+    } catch (payError) {
+      // Only if 3D Secure is required — return clientSecret
+      if (payError.code === 'payment_intent_authentication_required' && payError.payment_intent) {
+        return res.json({
+          clientSecret: payError.payment_intent.client_secret,
+          subscriptionId: subscription.id,
+        });
+      }
+      throw payError; // any other error
+    }
 
   } catch (error) {
     console.error('Subscription error:', error);
-
-    // If 3D Secure is required, return clientSecret so frontend can handle it
-    if (error.code === 'payment_intent_authentication_required' && error.payment_intent) {
-      return res.json({
-        clientSecret: error.payment_intent.client_secret,
-        subscriptionId: error.payment_intent.metadata.subscription_id || null,
-      });
-    }
-
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message || 'Payment failed' });
   }
 });
+
+// Keep this helper (or inline it — up to you)
+async function updateClerkMetadata(clerkUserId, priceId, metadataToAttach) {
+  const planMap = {
+    'price_1SVdVlF6OYpAGuKxD9OKJYzD': 'pro',     // $20
+    'price_1SVcw8F6OYpAGuKxhZ0y3jrK': 'pro',     // $15 promo
+    'price_pro': 'premium',
+    'price_elite': 'elite',
+  };
+
+  const clerk = new Clerk({ apiKey: process.env.CLERK_SECRET_KEY });
+  await clerk.users.updateUserMetadata(clerkUserId, {
+    publicMetadata: {
+      subscriptionPlan: planMap[priceId] || 'pro',
+      hasActiveSubscription: true,
+      ...metadataToAttach,
+    },
+  });
+}
 
 
 app.get('/', (req, res) => {
