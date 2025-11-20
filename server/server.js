@@ -556,13 +556,12 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
     if (!clerkUserId) throw new Error('Missing clerkUserId');
     if (!priceId) throw new Error('Missing priceId');
 
-    // Sales rep mapping — add as many as you need
+    // === Promo code → sales rep tracking ===
     const salesRepMap = {
-      'MilesINSZN': 'Miles Emery',
       'MILESINSZN': 'Miles Emery',
-      // add more codes → reps here
+      'MilesINSZN': 'Miles Emery',
+      // add more reps here
     };
-
     const salesRep = salesRepMap[promoCode?.toUpperCase()] || null;
 
     const metadataToAttach = {
@@ -571,7 +570,7 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
       referralDate: new Date().toISOString().split('T')[0],
     };
 
-    // Create Stripe customer
+    // === Create or reuse customer ===
     const customer = await stripe.customers.create({
       email: email || null,
       metadata: { clerkUserId, ...metadataToAttach },
@@ -584,10 +583,10 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
       });
     }
 
+    // === Create subscription (incomplete until paid) ===
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
       items: [{ price: priceId }],
-      collection_method: "charge_automatically",   // ← ADD THIS
       payment_behavior: 'default_incomplete',
       payment_settings: {
         payment_method_types: ['card'],
@@ -598,46 +597,63 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
       metadata: metadataToAttach,
     });
 
-    // Map price → plan key for Clerk
-    const planMap = {
-      'price_1SVdVlF6OYpAGuKxD9OKJYzD': 'pro',
-      'price_1SVcw8F6OYpAGuKxhZ0y3jrK': 'pro',
-      'price_pro': 'premium',
-      'price_elite': 'elite',
-    };
-    const planKey = planMap[priceId] || 'pro';
-
-    // Update Clerk publicMetadata immediately
-    const clerk = new Clerk({ apiKey: process.env.CLERK_SECRET_KEY });
-    await clerk.users.updateUserMetadata(clerkUserId, {
-      publicMetadata: {
-        subscriptionPlan: planKey,
-        hasActiveSubscription: true,
-        ...metadataToAttach, // ← sales rep tracking lives here forever
-      },
-    });
-
     const invoice = subscription.latest_invoice;
+    const paymentIntent = invoice?.payment_intent;
 
-    if (invoice?.payment_intent) {
-      return res.json({
-        clientSecret: invoice.payment_intent.client_secret,
-        subscriptionId: subscription.id,
-        status: subscription.status,
-      });
+    // === TRY TO PAY AUTOMATICALLY (this is what your old code did and what made it work) ===
+    if (paymentIntent) {
+      try {
+        await stripe.invoices.pay(invoice.id, {
+          payment_method: paymentMethodId,
+        });
+
+        // Payment succeeded immediately → subscription becomes active right away
+        await updateClerkMetadata(clerkUserId, priceId, metadataToAttach);
+        return res.json({
+          status: 'active',
+          subscriptionId: subscription.id,
+        });
+
+      } catch (payError) {
+        // 3D Secure required → let frontend handle it
+        if (payError.code === 'payment_intent_authentication_required') {
+          return res.json({
+            clientSecret: paymentIntent.client_secret,
+            subscriptionId: subscription.id,
+          });
+        }
+        throw payError; // any other error
+      }
     }
 
-    // Free trial or instant active
-    return res.json({
-      status: 'active',
-      subscriptionId: subscription.id,
-    });
+    // No payment intent (should never happen)
+    await updateClerkMetadata(clerkUserId, priceId, metadataToAttach);
+    return res.json({ status: 'active', subscriptionId: subscription.id });
 
   } catch (error) {
-    console.error('Subscription error:', error);
+    console.error('Subscription creation failed:', error);
     res.status(500).json({ error: error.message });
   }
 });
+
+// Helper — keep Clerk in sync
+async function updateClerkMetadata(clerkUserId, priceId, metadataToAttach) {
+  const planMap = {
+    'price_1SVdVlF6OYpAGuKxD9OKJYzD': 'pro',     // $20
+    'price_1SVcw8F6OYpAGuKxhZ0y3jrK': 'pro',     // $15 promo
+    'price_pro': 'premium',
+    'price_elite': 'elite',
+  };
+
+  const clerk = new Clerk({ apiKey: process.env.CLERK_SECRET_KEY });
+  await clerk.users.updateUserMetadata(clerkUserId, {
+    publicMetadata: {
+      subscriptionPlan: planMap[priceId] || 'pro',
+      hasActiveSubscription: true,
+      ...metadataToAttach,
+    },
+  });
+}
 
 app.get('/', (req, res) => {
   res.json({ message: 'API server is running' });
