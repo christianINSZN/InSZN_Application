@@ -13,8 +13,8 @@ const SubscriptionForm = () => {
 
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [promoCode, setPromoCode] = useState('');
-  const [isValidPromo, setIsValidPromo] = useState(false);     // ← new
-  const [promoError, setPromoError] = useState(null);         // ← new
+  const [isValidPromo, setIsValidPromo] = useState(false);
+  const [promoError, setPromoError] = useState(null);
   const [step, setStep] = useState('plans');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -85,11 +85,11 @@ const SubscriptionForm = () => {
     }, 200);
   };
 
+  // Fixed: removed duplicate return
   const handleApplyPromo = () => {
     if (!promoCode.trim()) {
       setPromoError('Please enter a promo code');
       setIsValidPromo(false);
-      return;
       return;
     }
 
@@ -133,8 +133,8 @@ const SubscriptionForm = () => {
       }
 
       const finalPriceId = isValidPromo
-        ? 'price_1SVcw8F6OYpAGuKxhZ0y3jrK'  // $15 promo price
-        : selectedPlan;                        // $20 normal price
+        ? 'price_1SVcw8F6OYpAGuKxhZ0y3jrK' // $15 with promo
+        : selectedPlan;                        // $20 normal
 
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/subscriptions/create-subscription`, {
         method: 'POST',
@@ -156,25 +156,30 @@ const SubscriptionForm = () => {
         return;
       }
 
+      // Fixed: proper 3D Secure handling + error visibility
       if (data.clientSecret) {
-        const result = await stripe.confirmCardPayment(data.clientSecret, {
+        const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(data.clientSecret, {
           payment_method: paymentMethod.id,
         });
 
-        if (result.error) {
-          setError(result.error.message);
-        } else if (result.paymentIntent.status === 'succeeded') {
-          alert('Subscription successful! Please refresh the page to access premium content.');
+        if (confirmError) {
+          console.error('Payment confirmation failed:', confirmError);
+          setError(confirmError.message || 'Payment failed. Please try again.');
+        } else if (paymentIntent?.status === 'succeeded') {
+          alert('Subscription successful! Welcome to INSZN Insider');
+          // Optional: redirect or refresh
+          // window.location.reload();
         } else {
-          setError('Payment processing incomplete. Please try again.');
+          setError('Payment requires additional verification. Please complete the bank popup.');
         }
       } else if (data.status === 'active') {
-        alert('Subscription successful! Please refresh the page to access premium content.');
+        alert('Subscription successful! Welcome to INSZN Insider');
       } else {
         setError(data.message || 'Something went wrong.');
       }
     } catch (err) {
-      setError(err.message);
+      console.error('Checkout error:', err);
+      setError(err.message || 'An unexpected error occurred.');
     } finally {
       setLoading(false);
     }
