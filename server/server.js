@@ -550,28 +550,41 @@ app.use(express.json());
 
 // Subscription Creation Endpoint
 app.post('/api/subscriptions/create-subscription', async (req, res) => {
-  const { priceId, clerkUserId, paymentMethodId, email } = req.body;
-  try {
-    if (!clerkUserId) {
-      throw new Error('Missing clerkUserId in request body');
-    }
-    if (!priceId) {
-      throw new Error('Missing priceId in request body');
-    }
-    console.log('Creating subscription for clerkUserId:', clerkUserId, 'with priceId:', priceId, 'paymentMethodId:', paymentMethodId, 'email:', email);
+  const { priceId, clerkUserId, paymentMethodId, email, promoCode } = req.body;
 
+  try {
+    if (!clerkUserId) throw new Error('Missing clerkUserId');
+    if (!priceId) throw new Error('Missing priceId');
+
+    // Sales rep mapping — add as many as you need
+    const salesRepMap = {
+      'JAKE2025': 'Jake Thompson',
+      'MIAINSZN': 'Mia Rodriguez',
+      'TYLER100': 'Tyler Chen',
+      'SARAHPRO': 'Sarah Patel',
+      'FOUNDERS': 'Internal / Founder',
+      // add more codes → reps here
+    };
+
+    const salesRep = salesRepMap[promoCode?.toUpperCase()] || null;
+
+    const metadataToAttach = {
+      promoCode: promoCode || null,
+      referredBy: salesRep || null,
+      referralDate: new Date().toISOString().split('T')[0],
+    };
+
+    // Create Stripe customer
     const customer = await stripe.customers.create({
-      metadata: { clerkUserId },
       email: email || null,
+      metadata: { clerkUserId, ...metadataToAttach },
     });
-    console.log('Customer created:', customer.id, 'Metadata:', customer.metadata);
 
     if (paymentMethodId) {
       await stripe.paymentMethods.attach(paymentMethodId, { customer: customer.id });
       await stripe.customers.update(customer.id, {
         invoice_settings: { default_payment_method: paymentMethodId },
       });
-      console.log('Payment method attached:', paymentMethodId);
     }
 
     const subscription = await stripe.subscriptions.create({
@@ -584,56 +597,45 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
       },
       default_payment_method: paymentMethodId || null,
       expand: ['latest_invoice.payment_intent'],
+      metadata: metadataToAttach,
     });
-    console.log('Subscription created:', subscription);
 
-    if (paymentMethodId && subscription.latest_invoice.status === 'open') {
-      try {
-        const paidInvoice = await stripe.invoices.pay(subscription.latest_invoice.id, {
-          payment_method: paymentMethodId,
-        });
-        console.log('Invoice payment attempted:', paidInvoice);
+    // Map price → plan key for Clerk
+    const planMap = {
+      'price_1SIGOHF6OYpAGuKxF2bIISDL': 'pro',
+      'price_pro': 'premium',
+      'price_elite': 'elite',
+    };
+    const planKey = planMap[priceId] || 'pro';
 
-        const updatedSubscription = await stripe.subscriptions.retrieve(subscription.id);
-        console.log('Updated subscription:', updatedSubscription);
+    // Update Clerk publicMetadata immediately
+    const clerk = new Clerk({ apiKey: process.env.CLERK_SECRET_KEY });
+    await clerk.users.updateUserMetadata(clerkUserId, {
+      publicMetadata: {
+        subscriptionPlan: planKey,
+        hasActiveSubscription: true,
+        ...metadataToAttach, // ← sales rep tracking lives here forever
+      },
+    });
 
-        // Fallback: Update Clerk metadata directly if webhook might fail
-        const plan = subscription.items.data[0]?.price.id === 'price_1SIGOHF6OYpAGuKxF2bIISDL' ? 'pro' : 'premium'; // Replace with your Price IDs
-        try {
-          const clerk = new Clerk({ apiKey: process.env.CLERK_SECRET_KEY });
-          await clerk.users.updateUserMetadata(clerkUserId, {
-            publicMetadata: { subscriptionPlan: plan },
-          });
-          console.log(`Fallback: Updated user ${clerkUserId} with subscriptionPlan: ${plan}`);
-        } catch (clerkError) {
-          console.error('Fallback Clerk metadata update failed:', clerkError);
-        }
+    const invoice = subscription.latest_invoice;
 
-        return res.json({
-          clientSecret: paidInvoice.payment_intent?.client_secret || null,
-          subscriptionId: subscription.id,
-          status: updatedSubscription.status,
-        });
-      } catch (paymentError) {
-        console.error('Invoice payment failed:', paymentError);
-        return res.status(500).json({
-          subscriptionId: subscription.id,
-          status: subscription.status,
-          clientSecret: null,
-          message: 'Invoice payment failed: ' + paymentError.message,
-        });
-      }
+    if (invoice?.payment_intent) {
+      return res.json({
+        clientSecret: invoice.payment_intent.client_secret,
+        subscriptionId: subscription.id,
+        status: subscription.status,
+      });
     }
 
-    console.warn('No payment_intent or invoice not open, subscription is incomplete:', subscription.id, 'Invoice status:', subscription.latest_invoice.status);
+    // Free trial or instant active
     return res.json({
+      status: 'active',
       subscriptionId: subscription.id,
-      status: subscription.status,
-      clientSecret: subscription.latest_invoice.payment_intent?.client_secret || null,
-      message: 'Subscription created but requires payment confirmation',
     });
+
   } catch (error) {
-    console.error('Error creating subscription:', error, 'Response:', error.response?.data);
+    console.error('Subscription error:', error);
     res.status(500).json({ error: error.message });
   }
 });
