@@ -558,11 +558,7 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
 
     // Sales rep mapping — add as many as you need
     const salesRepMap = {
-      'JAKE2025': 'Jake Thompson',
-      'MIAINSZN': 'Mia Rodriguez',
-      'TYLER100': 'Tyler Chen',
-      'SARAHPRO': 'Sarah Patel',
-      'FOUNDERS': 'Internal / Founder',
+      'MilesINSZN': 'Miles Emery',
       // add more codes → reps here
     };
 
