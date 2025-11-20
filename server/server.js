@@ -587,6 +587,7 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
       items: [{ price: priceId }],
+      collection_method: "charge_automatically",   // ← ADD THIS
       payment_behavior: 'default_incomplete',
       payment_settings: {
         payment_method_types: ['card'],
