@@ -12,8 +12,8 @@ const SubscriptionForm = () => {
   const elements = useElements();
 
   const [selectedPlan, setSelectedPlan] = useState(null);
-  const [promoCode, setPromoCode] = useState('');        // ← new
-  const [step, setStep] = useState('plans');             // 'plans', 'payment'
+  const [promoCode, setPromoCode] = useState('');
+  const [step, setStep] = useState('plans'); // 'plans', 'payment'
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -28,9 +28,12 @@ const SubscriptionForm = () => {
     'price_elite': 'elite',
   };
 
+  // Valid promo codes that unlock the $15 price
+  const validPromoCodes = ['MilesINSZN'];
+
   const plans = [
     {
-      id: 'price_1SVdVlF6OYpAGuKxD9OKJYzD',
+      id: 'price_1SVdVlF6OYpAGuKxD9OKJYzD', // normal $20/month
       name: 'Insider',
       price: '$20/month',
       features: [
@@ -111,15 +114,21 @@ const SubscriptionForm = () => {
         return;
       }
 
+      // If valid promo code → use $15 price, otherwise use normal $20 price
+      const usePromoPrice = promoCode && validPromoCodes.includes(promoCode.trim().toUpperCase());
+      const finalPriceId = usePromoPrice
+        ? 'price_1SVcw8F6OYpAGuKxhZ0y3jrK'   // $15/month promo price
+        : selectedPlan;                        // $20/month normal price
+
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/subscriptions/create-subscription`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          priceId: selectedPlan,
+          priceId: finalPriceId,
           clerkUserId: user.id,
           paymentMethodId: paymentMethod.id,
           email: user.primaryEmailAddress?.emailAddress,
-          promoCode: promoCode || null,           // ← send promo code
+          promoCode: promoCode || null,
         }),
       });
 
@@ -154,6 +163,8 @@ const SubscriptionForm = () => {
       setLoading(false);
     }
   };
+
+  const isValidPromo = promoCode && validPromoCodes.includes(promoCode.trim().toUpperCase());
 
   return (
     <div className="w-full min-h-screen bg-gray-50 py-6 px-4 sm:px-6 mt-0 sm:mt-12">
@@ -217,8 +228,9 @@ const SubscriptionForm = () => {
         <div ref={paymentRef} className="flex items-center justify-center">
           <form onSubmit={handleSubmit} className="p-6 w-full sm:w-1/2 bg-white rounded-lg shadow-lg border-2 border-[#235347]">
             <h2 className="text-xl sm:text-2xl font-bold text-[#235347] mb-6">Enter Payment Details</h2>
+
             <p className="text-gray-700 mb-4">
-              Selected Plan: {plans.find((p) => p.id === selectedPlan)?.name || 'None'}
+              Selected Plan: {plans.find(p => p.id === selectedPlan)?.name || 'None'}
             </p>
 
             {/* Promo Code Field */}
@@ -227,8 +239,15 @@ const SubscriptionForm = () => {
               placeholder="Promo code (optional)"
               value={promoCode}
               onChange={(e) => setPromoCode(e.target.value.trim().toUpperCase())}
-              className="w-full p-3 border border-gray-300 rounded-lg mb-6 text-sm focus:outline-none focus:border-[#235347]"
+              className="w-full p-3 border border-gray-300 rounded-lg mb-4 text-sm focus:outline-none focus:border-[#235347]"
             />
+
+            {/* Success message when promo is valid */}
+            {isValidPromo && (
+              <p className="text-green-600 font-semibold mb-4 -mt-2">
+                Promo applied! You’re getting Insider for <strong>$15/month</strong>
+              </p>
+            )}
 
             <div className="p-3 border border-gray-300 rounded mb-6">
               <CardElement className="text-sm sm:text-base" />
