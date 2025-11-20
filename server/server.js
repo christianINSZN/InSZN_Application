@@ -447,14 +447,14 @@ app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), asyn
           return res.status(400).send('Webhook Error: Missing clerkUserId in customer metadata');
         }
 
-        const plan = subscription.items.data[0]?.price.id === 'price_1SVcw8F6OYpAGuKxhZ0y3jrK' ? 'pro' : 'premium'; // Replace with your Price IDs
+        const plan = subscription.items.data[0]?.price.id === 'price_1SVdVlF6OYpAGuKxD9OKJYzD' ? 'pro' : 'premium'; // Replace with your Price IDs
         const clerk = new Clerk({ apiKey: process.env.CLERK_SECRET_KEY });
         await clerk.users.updateUserMetadata(retryClerkUserId, {
           publicMetadata: { subscriptionPlan: plan },
         });
         console.log(`Updated user ${retryClerkUserId} with subscriptionPlan: ${plan}`);
       } else {
-        const plan = subscription.items.data[0]?.price.id === 'price_1SVcw8F6OYpAGuKxhZ0y3jrK' ? 'pro' : 'premium'; // Replace with your Price IDs
+        const plan = subscription.items.data[0]?.price.id === 'price_1SVdVlF6OYpAGuKxD9OKJYzD' ? 'pro' : 'premium'; // Replace with your Price IDs
         const clerk = new Clerk({ apiKey: process.env.CLERK_SECRET_KEY });
         await clerk.users.updateUserMetadata(clerkUserId, {
           publicMetadata: { subscriptionPlan: plan },
@@ -598,7 +598,7 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
 
     // Map price → plan key for Clerk
     const planMap = {
-      'price_1SVcw8F6OYpAGuKxhZ0y3jrK': 'pro',
+      'price_1SVdVlF6OYpAGuKxD9OKJYzD': 'pro',
       'price_pro': 'premium',
       'price_elite': 'elite',
     };
