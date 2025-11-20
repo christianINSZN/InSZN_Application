@@ -427,41 +427,41 @@ function GamesComponent({ year = '2025' }) {
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4" onClick={() => setShowConvictionHelp(false)}>
           <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 max-h-screen overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-gray-900">Confidence Tiers & Historical Accuracy</h3>
+              <h3 className="text-xl font-bold text-gray-900">Conviction Tiers & Historical Accuracy</h3>
               <button onClick={() => setShowConvictionHelp(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
             </div>
 
             <div className="space-y-4 text-sm">
               <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                <div className="font-bold text-green-700">LOCK (80–100% Confidence)</div>
+                <div className="font-bold text-green-700">LOCK (80–100% Conviction)</div>
                 <div><strong>Historical Accuracy: 92%</strong></div>
                 <div>Extremely confident prediction — our strongest plays</div>
                 <div className="text-gray-600 text-xs mt-1">Ex: Top-5 team vs unranked opponent</div>
               </div>
 
               <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                <div className="font-bold text-green-600">HIGH (60–79% Confidence)</div>
+                <div className="font-bold text-green-600">HIGH (60–79% Conviction)</div>
                 <div><strong>Historical Accuracy: 87%</strong></div>
                 <div>Strong conviction — very reliable picks</div>
                 <div className="text-gray-600 text-xs mt-1">Ex: Ranked team favored by 10+ points</div>
               </div>
 
               <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                <div className="font-bold text-yellow-700">MEDIUM (40–59% Confidence)</div>
+                <div className="font-bold text-yellow-700">MEDIUM (40–59% Conviction)</div>
                 <div><strong>Historical Accuracy: 80%</strong></div>
                 <div>Favorable odds but not a guarantee</div>
                 <div className="text-gray-600 text-xs mt-1">Ex: Ranked team favored by 3–7 points</div>
               </div>
 
               <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
-                <div className="font-bold text-orange-700">LOW (20–39% Confidence)</div>
+                <div className="font-bold text-orange-700">LOW (20–39% Conviction)</div>
                 <div><strong>Historical Accuracy: 75%</strong></div>
                 <div>Slight edge — game could go either way</div>
                 <div className="text-gray-600 text-xs mt-1">Ex: Evenly matched conference rivals</div>
               </div>
 
               <div className="p-3 bg-red-50 rounded-lg border border-red-200">
-                <div className="font-bold text-red-700">TOSS-UP (0–19% Confidence)</div>
+                <div className="font-bold text-red-700">TOSS-UP (0–19% Conviction)</div>
                 <div><strong>Historical Accuracy: 70%</strong></div>
                 <div>Nearly 50/50 — highly unpredictable</div>
                 <div className="text-gray-600 text-xs mt-1">Ex: Game with spread less than 3 points</div>
@@ -469,7 +469,7 @@ function GamesComponent({ year = '2025' }) {
             </div>
 
             <div className="mt-6 p-4 bg-[#235347]/10 rounded-lg text-center font-semibold text-[#235347]">
-              Recommendation: For best results, focus on picks with <strong>60% or higher confidence</strong>.<br />
+              Recommendation: For best results, focus on picks with <strong>60% or higher conviction</strong>.<br />
               These games have historically been correct <strong>87% of the time</strong>.
             </div>
           </div>
