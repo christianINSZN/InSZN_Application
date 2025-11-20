@@ -571,77 +571,52 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
       metadata: { clerkUserId, ...metadataToAttach },
     });
 
-    // Attach payment method
     await stripe.paymentMethods.attach(paymentMethodId, { customer: customer.id });
     await stripe.customers.update(customer.id, {
       invoice_settings: { default_payment_method: paymentMethodId },
     });
 
-    // Create subscription — incomplete until first invoice paid
+    // CRITICAL FIX: Use 'charge_automatically' instead of 'default_incomplete'
     const subscription = await stripe.subscriptions.create({
       customer: customer.id,
       items: [{ price: priceId }],
-      payment_behavior: 'default_incomplete',
-      payment_settings: { payment_method_types: ['card'], save_default_payment_method: 'on_subscription' },
+      collection_method: 'charge_automatically',     // ← THIS IS THE KEY
+      payment_settings: {
+        payment_method_types: ['card'],
+        save_default_payment_method: 'on_subscription',
+      },
       default_payment_method: paymentMethodId,
-      expand: ['latest_invoice.payment_intent'],
       metadata: metadataToAttach,
     });
 
-    // ←←← THIS WAS THE PROBLEM: latest_invoice could be null or string
-    const invoice = subscription.latest_invoice;
-    if (!invoice || typeof invoice === 'string') {
-      throw new Error('Invoice not created');
-    }
+    // Update Clerk metadata immediately
+    const planMap = {
+      'price_1SVdVlF6OYpAGuKxD9OKJYzD': 'pro',     // $20
+      'price_1SVcw8F6OYpAGuKxhZ0y3jrK': 'pro',     // $15 promo
+      'price_pro': 'premium',
+      'price_elite': 'elite',
+    };
 
-    const paymentIntent = invoice.payment_intent;
-    if (!paymentIntent) {
-      throw new Error('No payment intent on invoice');
-    }
+    const clerk = new Clerk({ apiKey: process.env.CLERK_SECRET_KEY });
+    await clerk.users.updateUserMetadata(clerkUserId, {
+      publicMetadata: {
+        subscriptionPlan: planMap[priceId] || 'pro',
+        hasActiveSubscription: true,
+        ...metadataToAttach,
+      },
+    });
 
-    // TRY TO PAY THE INVOICE AUTOMATICALLY (99% of the time this works)
-    try {
-      await stripe.invoices.pay(invoice.id, { payment_method: paymentMethodId });
-
-      // Payment succeeded instantly → update Clerk + return success
-      await updateClerkMetadata(clerkUserId, priceId, metadataToAttach);
-      return res.json({ status: 'active', subscriptionId: subscription.id });
-
-    } catch (payError) {
-      // Only if 3D Secure is required — return clientSecret
-      if (payError.code === 'payment_intent_authentication_required' && payError.payment_intent) {
-        return res.json({
-          clientSecret: payError.payment_intent.client_secret,
-          subscriptionId: subscription.id,
-        });
-      }
-      throw payError; // any other error
-    }
+    // Success — subscription is ACTIVE immediately
+    return res.json({
+      status: 'active',
+      subscriptionId: subscription.id,
+    });
 
   } catch (error) {
-    console.error('Subscription error:', error);
+    console.error('Subscription creation failed:', error);
     res.status(500).json({ error: error.message || 'Payment failed' });
   }
 });
-
-// Keep this helper (or inline it — up to you)
-async function updateClerkMetadata(clerkUserId, priceId, metadataToAttach) {
-  const planMap = {
-    'price_1SVdVlF6OYpAGuKxD9OKJYzD': 'pro',     // $20
-    'price_1SVcw8F6OYpAGuKxhZ0y3jrK': 'pro',     // $15 promo
-    'price_pro': 'premium',
-    'price_elite': 'elite',
-  };
-
-  const clerk = new Clerk({ apiKey: process.env.CLERK_SECRET_KEY });
-  await clerk.users.updateUserMetadata(clerkUserId, {
-    publicMetadata: {
-      subscriptionPlan: planMap[priceId] || 'pro',
-      hasActiveSubscription: true,
-      ...metadataToAttach,
-    },
-  });
-}
 
 
 app.get('/', (req, res) => {
