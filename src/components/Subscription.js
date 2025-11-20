@@ -23,16 +23,16 @@ const SubscriptionForm = () => {
   const currentPlan = user?.publicMetadata?.subscriptionPlan || null;
 
   const planIdToKey = {
-    'price_1SIGOHF6OYpAGuKxF2bIISDL': 'pro',
+    'price_1SVcw8F6OYpAGuKxhZ0y3jrK': 'pro',
     'price_pro': 'premium',
     'price_elite': 'elite',
   };
 
   const plans = [
     {
-      id: 'price_1SIGOHF6OYpAGuKxF2bIISDL',
+      id: 'price_1SVcw8F6OYpAGuKxhZ0y3jrK',
       name: 'Insider',
-      price: '$10/month',
+      price: '$15/month',
       features: [
         'Full platform access',
         'Access to the private INSZN Insider forums and discussion groups',
