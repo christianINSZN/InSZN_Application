@@ -21,7 +21,6 @@ const SubscriptionForm = () => {
 
   const paymentRef = useRef(null);
   const isMobile = window.innerWidth < 640;
-
   const currentPlan = user?.publicMetadata?.subscriptionPlan || null;
 
   const planIdToKey = {
@@ -78,6 +77,10 @@ const SubscriptionForm = () => {
     const isSamePlan = currentPlan && planKey === currentPlan;
     if (planId === 'price_pro' || planId === 'price_elite' || isSamePlan) return;
 
+    if (!user) {
+      return; // Do nothing — overlay handles it
+    }
+
     setSelectedPlan(planId);
     setTimeout(() => {
       paymentRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -85,14 +88,12 @@ const SubscriptionForm = () => {
     }, 200);
   };
 
-  // Fixed: removed duplicate return
   const handleApplyPromo = () => {
     if (!promoCode.trim()) {
       setPromoError('Please enter a promo code');
       setIsValidPromo(false);
       return;
     }
-
     if (validPromoCodes.includes(promoCode)) {
       setIsValidPromo(true);
       setPromoError(null);
@@ -104,38 +105,31 @@ const SubscriptionForm = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
     if (!stripe || !elements || !user || !selectedPlan) {
       setError('Please sign in and select a plan to subscribe.');
       return;
     }
-
     const selectedPlanKey = planIdToKey[selectedPlan];
     if (currentPlan && selectedPlanKey === currentPlan) {
       setError('You are already subscribed to this plan.');
       return;
     }
-
     setLoading(true);
     setError(null);
-
     try {
       const { paymentMethod, error: paymentMethodError } = await stripe.createPaymentMethod({
         type: 'card',
         card: elements.getElement(CardElement),
         billing_details: { email: user.primaryEmailAddress?.emailAddress || 'unknown' },
       });
-
       if (paymentMethodError) {
         setError(paymentMethodError.message);
         setLoading(false);
         return;
       }
-
       const finalPriceId = isValidPromo
         ? 'price_1SVcw8F6OYpAGuKxhZ0y3jrK' // $15 with promo
-        : selectedPlan;                        // $20 normal
-
+        : selectedPlan; // $20 normal
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/subscriptions/create-subscription`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -147,28 +141,21 @@ const SubscriptionForm = () => {
           promoCode: promoCode || null,
         }),
       });
-
       const data = await response.json();
-
       if (data.error) {
         setError(data.error);
         setLoading(false);
         return;
       }
-
-      // Fixed: proper 3D Secure handling + error visibility
       if (data.clientSecret) {
         const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(data.clientSecret, {
           payment_method: paymentMethod.id,
         });
-
         if (confirmError) {
           console.error('Payment confirmation failed:', confirmError);
           setError(confirmError.message || 'Payment failed. Please try again.');
         } else if (paymentIntent?.status === 'succeeded') {
           alert('Subscription successful! Welcome to INSZN Insider');
-          // Optional: redirect or refresh
-          // window.location.reload();
         } else {
           setError('Payment requires additional verification. Please complete the bank popup.');
         }
@@ -189,7 +176,6 @@ const SubscriptionForm = () => {
     <div className="w-full min-h-screen bg-gray-50 py-6 px-4 sm:px-6 mt-0 sm:mt-12">
       {!user && (
         <p className="text-center text-gray-500 mb-6 text-sm sm:text-base">
-          Please <Link to="/sign-in" className="text-[#235347] underline">sign in</Link> to subscribe.
         </p>
       )}
 
@@ -201,6 +187,8 @@ const SubscriptionForm = () => {
               const planKey = planIdToKey[plan.id];
               const isUserSubscribedToThisPlan = currentPlan && planKey === currentPlan;
 
+              const isClickable = plan.id === 'price_1SVdVlF6OYpAGuKxD9OKJYzD' && !!user;
+
               return (
                 <div
                   key={plan.id}
@@ -209,10 +197,37 @@ const SubscriptionForm = () => {
                   } rounded-lg shadow-lg ${
                     plan.id === 'price_pro' || plan.id === 'price_elite'
                       ? 'cursor-not-allowed'
-                      : 'cursor-pointer hover:border-[#235347] hover:bg-[#235347]/10'
+                      : isClickable
+                      ? 'cursor-pointer hover:border-[#235347] hover:bg-[#235347]/10'
+                      : 'cursor-default'
                   } transition-colors ${isMobile ? 'w-full' : 'w-1/3'}`}
                   onClick={() => handlePlanSelect(plan.id)}
                 >
+                  {/* Clean, subtle overlay for non-logged-in users */}
+                  {!user && plan.id === 'price_1SVdVlF6OYpAGuKxD9OKJYzD' && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-lg z-10 text-white text-center p-6">
+                      <div>
+                        <p className="font-medium text-lg mb-4">Please Sign Up or Sign In to Subscribe</p>
+                        <div className="flex flex-col gap-3">
+                          <Link
+                            to="/sign-up"
+                            className="block px-6 py-3 bg-white text-[#235347] font-semibold rounded-lg hover:bg-gray-100 transition"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Sign Up
+                          </Link>
+                          <Link
+                            to="/sign-in"
+                            className="block px-6 py-3 border border-white text-white font-semibold rounded-lg hover:bg-white hover:text-[#235347] transition"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Sign In
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <img
                     src={plan.bannerImage}
                     alt={`${plan.name} Plan Banner`}
@@ -232,7 +247,6 @@ const SubscriptionForm = () => {
                       </p>
                     )}
                   </div>
-
                   {isUserSubscribedToThisPlan && (
                     <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 border-2 border-[#235347] rounded-lg">
                       <p className="text-[#235347] font-semibold text-[18px] sm:text-sm">Current Subscription</p>
@@ -250,7 +264,6 @@ const SubscriptionForm = () => {
             <p className="text-gray-700 mb-4">
               Selected Plan: {plans.find((p) => p.id === selectedPlan)?.name || 'None'}
             </p>
-
             {/* Promo Code Field + Apply Button */}
             <div className="mb-6">
               <div className="flex gap-3">
@@ -273,7 +286,6 @@ const SubscriptionForm = () => {
                   Apply Code
                 </button>
               </div>
-
               {isValidPromo && (
                 <p className="text-green-600 font-semibold mt-3">
                   Promo applied! You’re getting Insider for <strong>$15/month</strong>
@@ -283,13 +295,10 @@ const SubscriptionForm = () => {
                 <p className="text-red-500 mt-3 text-sm">{promoError}</p>
               )}
             </div>
-
             <div className="p-3 border border-gray-300 rounded mb-6">
               <CardElement className="text-sm sm:text-base" />
             </div>
-
             {error && <p className="text-red-500 mb-6 text-sm sm:text-base">{error}</p>}
-
             <button
               type="submit"
               disabled={!stripe || !user || loading || (selectedPlan && planIdToKey[selectedPlan] === currentPlan)}
