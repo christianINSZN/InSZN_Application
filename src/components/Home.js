@@ -9,7 +9,7 @@ function Home() {
   return (
     <div className="max-w-8xl mx-auto p-2 sm:p-0 mt-0 sm:mt-10">
       {/* Games of the Week */}
-      <WeeklyGames year="2025" week={11} />
+      <WeeklyGames year="2025" week={13} />
 
       {/* 3-Column Layout */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
