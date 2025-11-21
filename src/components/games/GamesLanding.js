@@ -31,7 +31,7 @@ function GamesComponent({ year = '2025' }) {
   const [showConvictionHelp, setShowConvictionHelp] = useState(false); // Global help modal
 
   const subscriptionPlan = user?.publicMetadata?.subscriptionPlan;
-  const isProOrPremium = subscriptionPlan === 'pro' || subscriptionPlan === 'premium' || !subscriptionPlan;
+  const isProOrPremium = subscriptionPlan === 'pro' || subscriptionPlan === 'premium';
 
   useEffect(() => {
     setShowProbabilities(isProOrPremium);
