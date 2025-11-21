@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom'; // ← add this if not already there
 import { useClerk } from '@clerk/clerk-react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
@@ -22,6 +23,7 @@ const SubscriptionForm = () => {
   const paymentRef = useRef(null);
   const isMobile = window.innerWidth < 640;
   const currentPlan = user?.publicMetadata?.subscriptionPlan || null;
+  const navigate = useNavigate();
 
   const planIdToKey = {
     'price_1SVdVlF6OYpAGuKxD9OKJYzD': 'pro',
@@ -156,7 +158,7 @@ const SubscriptionForm = () => {
           setError(confirmError.message || 'Payment failed. Please try again.');
         } else if (paymentIntent?.status === 'succeeded') {
           alert('Subscription successful! Welcome to INSZN Insider');
-          window.location.href = '/';
+          navigate('/');
         } else {
           setError('Payment requires additional verification. Please complete the bank popup.');
         }
