@@ -158,11 +158,12 @@ const SubscriptionForm = () => {
           setError(confirmError.message || 'Payment failed. Please try again.');
         } else if (paymentIntent?.status === 'succeeded') {
           window.location.href = '/';
-          //alert('Subscription successful! Welcome to INSZN Insider');
+          alert('Subscription successful! Welcome to INSZN Insider');
         } else {
           setError('Payment requires additional verification. Please complete the bank popup.');
         }
       } else if (data.status === 'active') {
+        window.location.href = '/';
         alert('Subscription successful! Welcome to INSZN Insider');
       } else {
         setError(data.message || 'Something went wrong.');
