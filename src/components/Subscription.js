@@ -157,8 +157,8 @@ const SubscriptionForm = () => {
           console.error('Payment confirmation failed:', confirmError);
           setError(confirmError.message || 'Payment failed. Please try again.');
         } else if (paymentIntent?.status === 'succeeded') {
-          navigate('/');
-          alert('Subscription successful! Welcome to INSZN Insider');
+          window.location.href = '/';
+          //alert('Subscription successful! Welcome to INSZN Insider');
         } else {
           setError('Payment requires additional verification. Please complete the bank popup.');
         }
