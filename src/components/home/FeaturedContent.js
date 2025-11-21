@@ -3,33 +3,33 @@ function FeaturedContent() {
   const items = [
     {
       image: '/Home_1.jpg',
-      videoUrl: 'https://www.youtube.com/watch?v=IG7tNp4vhkU',
-      title: 'INSZN College Football Show: Week 10 Preview',
+      videoUrl: 'https://www.youtube.com/watch?v=DlHHh66Qxug&t',
+      title: 'INSZN College Football Show: Week 13 Preview',
       desc: 'Welcome to the first episode of the INSZN College Football Show.  In this video, we preview six 6 matchups to watch out for in Week 10 with a deep dive into the data and analytics.'
     },
     {
       image: '/Home_2.jpg',
-      videoUrl: 'https://www.youtube.com/watch?v=0g6lgdQqJak&t=62s',
-      title: 'Oklahoma vs Tennessee: INSZN\'s Week 10 Scouting Report',
-      desc: 'We preview the Oklahoma Sooners contest against the Tennessee Volunteers and discuss how the Sooners\' defense can slow down Joey Aguilar and the high-powered Volunteers\' offense.'
+      videoUrl: 'https://www.youtube.com/watch?v=0g6lgdQqJak&t',
+      title: 'INSZN College Football Show: AQR Rankings',
+      desc: 'In this video, we recap the most-recent College Football Playoff Rankings, highlight the objectives, and discussed unbiased rankings system provided by INSZN with the Adjusted-Quadrant Resume (AQR) Rankings.'
     },
     {
       image: '/Home_3.jpg',
-      videoUrl: 'https://www.youtube.com/watch?v=jX1Icc6fDLE',
-      title: 'Vanderbilt vs. Texas: INSZN\'s Week 10 Scouting Report',
-      desc: 'We preview the Vanderbilt Commodores matchup against the Texas Longhorns and discuss how the Longhorns\' defense can slow down Diego Pavia and the Commodores\' offense, as well as what to expect out of Arch Manning and the Longhorns\' offense in Austin on Saturday.'
+      videoUrl: 'https://www.youtube.com/watch?v=kIAEe9N11uE&t',
+      title: 'Missouri vs. Oklahoma: INSZN\'s Week 13 Scouting Report',
+      desc: 'In this video, we preview a key matchup in the SEC, as the Oklahoma Sooners\' play host to the Missouri Tigers.'
     },
     {
       image: '/Home_4.jpg',
-      videoUrl: 'https://www.youtube.com/watch?v=x8eJuyOMSkQ',
-      title: 'Georgia vs. Florida: INSZN\'s Week 10 Scouting Report',
-      desc: 'We preview a premiere SEC Week 10 contest and a rivalry game as the Georgia Bulldogs traveling to Florida to take on the Florida Gators.  We discuss the vaunted Georgia defense, how DJ Lagway and the Gators\' offense need to sustain drives and protect the ball, and how the advanced analytics show that this could be a much closer game than many expect.'
+      videoUrl: 'https://www.youtube.com/watch?v=U_CPvYBle5o',
+      title: 'USC vs. Oregon: INSZN\'s Week 13 Scouting Report',
+      desc: 'In this video, we preview a matchup between two Big Ten teams trying to make a late season push to qualify for both the Big Ten Championship Game and the College Football Playoff.'
     },
     {
       image: '/Home_5.jpg',
-      videoUrl: 'https://www.youtube.com/watch?v=Kxx0Ao78bIg',
-      title: 'Miami vs. SMU: INSZN\'s Week 10 Scouting Report',
-      desc: 'We preview the a quality ACC Week 10 matchup as the Miami Hurricanes travel to Dallas to take on the SMU Mustangs.  We discuss the efficiency by which Miami has played on both sides of the ball this year, and how Miami can come out of Dallas with a victory.'
+      videoUrl: 'https://www.youtube.com/watch?v=C4RPgK0gbHg',
+      title: 'BYU vs. Cincinnati: INSZN\'s Week 13 Scouting Report',
+      desc: 'In this video, we preview a matchup with perhaps the biggest College Football Playoff implications in the Big 12 with the BYU Cougars traveling to Ohio to take on the Cincinnati Bearcats.'
     },
   ];
 
