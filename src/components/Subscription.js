@@ -30,7 +30,7 @@ const SubscriptionForm = () => {
     'price_elite': 'elite',
   };
 
-  const validPromoCodes = ['MILESINSZN'];
+  const validPromoCodes = ['MILESINSZN', 'MIGUEL25'];
 
   const plans = [
     {

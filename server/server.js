@@ -557,7 +557,7 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
     }
 
     // Promo → sales rep
-    const salesRepMap = { 'MILESINSZN': 'Miles Emery', 'MilesINSZN': 'Miles Emery' };
+    const salesRepMap = { 'MILESINSZN': 'Miles Emery', 'MilesINSZN': 'Miles Emery', 'MIGUEL25': 'Miguel Jacome'};
     const salesRep = salesRepMap[promoCode?.toUpperCase()] || null;
     const metadataToAttach = {
       promoCode: promoCode || null,
