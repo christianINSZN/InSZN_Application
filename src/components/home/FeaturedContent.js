@@ -9,7 +9,7 @@ function FeaturedContent() {
     },
     {
       image: '/Home_2.jpg',
-      videoUrl: 'https://www.youtube.com/watch?v=0g6lgdQqJak&t',
+      videoUrl: 'https://www.youtube.com/watch?v=yDFhMyLGDp4&t',
       title: 'INSZN College Football Show: AQR Rankings',
       desc: 'In this video, we recap the most-recent College Football Playoff Rankings, highlight the objectives, and discussed unbiased rankings system provided by INSZN with the Adjusted-Quadrant Resume (AQR) Rankings.'
     },
