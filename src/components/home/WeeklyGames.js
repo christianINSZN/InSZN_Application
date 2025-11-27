@@ -5,7 +5,7 @@ import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import ScoutingReport from '../../components/games/ScoutingReport';
 import GameRecap from '../../components/games/GameRecap';
 
-const WeeklyGames = ({ year = '2025', week = 13 }) => {
+const WeeklyGames = ({ year = '2025', week = 14 }) => {
   const navigate = useNavigate();
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);

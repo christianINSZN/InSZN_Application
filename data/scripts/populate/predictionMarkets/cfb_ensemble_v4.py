@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-CFB Ensemble Model - Complete Version
-- Tests on weeks 11-12 (shows accuracy)
-- Predicts week 13 (upcoming games)
+CFB Ensemble Model - Week 14 Version
+- Tests on weeks 11-13 (shows accuracy)
+- Predicts week 14 (upcoming games)
 - Saves all to single database table
 """
 
@@ -32,18 +32,18 @@ DB_FILE = Path("/Users/christianberry/Desktop/Perennial Data/perennial-data-app/
 
 YEAR = 2025
 TRAIN_WEEKS = range(1, 11)  # Train on weeks 1-10
-TEST_WEEKS = [11, 12]  # Test (verify accuracy)
-PREDICT_WEEKS = [13]  # Predict (for website)
+TEST_WEEKS = [11, 12, 13]  # Test (verify accuracy)
+PREDICT_WEEKS = [14]  # Predict (for website)
 
 HOME_ADV = 2.5
 ELO_K = 32
 
 print("="*80)
-print("CFB ENSEMBLE MODEL - COMPLETE")
+print("CFB ENSEMBLE MODEL - WEEK 14")
 print("="*80)
 print(f"🎯 Train:   Weeks 1-10")
-print(f"📊 Test:    Weeks 11-12 (verify accuracy)")
-print(f"🔮 Predict: Week 13 (for website)")
+print(f"📊 Test:    Weeks 11-13 (verify accuracy)")
+print(f"🔮 Predict: Week 14 (for website)")
 print("="*80)
 
 conn = sqlite3.connect(DB_FILE)
@@ -330,7 +330,7 @@ nn_model.fit(X_train_scaled, y_train)
 log_progress("✓ Models trained")
 
 # ============================================================================
-# PREDICT ALL WEEKS (11, 12, 13)
+# PREDICT ALL WEEKS (11, 12, 13, 14)
 # ============================================================================
 
 print("\n" + "="*80)
@@ -392,7 +392,7 @@ for target_week in all_weeks:
         
         predicted_winner = "home" if win_prob > 0.5 else "away"
         
-        # Check if game completed (for weeks 11-12)
+        # Check if game completed (for weeks 11-13)
         actual_winner = None
         correct = None
         
@@ -423,10 +423,10 @@ print("="*80)
 
 df = pd.DataFrame(all_predictions)
 
-# Show accuracy for completed weeks (11-12)
+# Show accuracy for completed weeks (11-13)
 completed = df[df["correct"].notna()]
 if len(completed) > 0:
-    print(f"\n📊 WEEKS 11-12 ACCURACY (Completed Games):")
+    print(f"\n📊 WEEKS 11-13 ACCURACY (Completed Games):")
     print(f"   Total games: {len(completed)}")
     print(f"   Overall: {completed['correct'].mean()*100:.1f}%")
     
@@ -435,20 +435,20 @@ if len(completed) > 0:
         if len(week_df) > 0:
             print(f"   Week {week}: {week_df['correct'].mean()*100:.1f}% ({len(week_df)} games)")
     
-    print(f"\n📈 ACCURACY BY CONVICTION (Weeks 11-12):")
+    print(f"\n📈 ACCURACY BY CONVICTION (Weeks 11-13):")
     for threshold in [0.5, 0.6, 0.7, 0.8]:
         high_conv = completed[completed["conviction"] >= threshold]
         if len(high_conv) > 0:
             conv_acc = high_conv["correct"].mean() * 100
             print(f"   ≥{threshold*100:.0f}%: {len(high_conv):3d} games → {conv_acc:.1f}% accuracy")
 
-# Show week 13 predictions
-week13 = df[df["week"] == 13]
-if len(week13) > 0:
-    print(f"\n🔮 WEEK 13 PREDICTIONS (Upcoming):")
-    print(f"   Total games: {len(week13)}")
-    print(f"   High confidence (≥70%): {len(week13[week13['conviction'] >= 0.7])} games")
-    print(f"   Medium confidence (50-70%): {len(week13[(week13['conviction'] >= 0.5) & (week13['conviction'] < 0.7)])} games")
+# Show week 14 predictions
+week14 = df[df["week"] == 14]
+if len(week14) > 0:
+    print(f"\n🔮 WEEK 14 PREDICTIONS (Upcoming):")
+    print(f"   Total games: {len(week14)}")
+    print(f"   High confidence (≥70%): {len(week14[week14['conviction'] >= 0.7])} games")
+    print(f"   Medium confidence (50-70%): {len(week14[(week14['conviction'] >= 0.5) & (week14['conviction'] < 0.7)])} games")
 
 # ============================================================================
 # SAVE TO DATABASE
@@ -489,7 +489,7 @@ print("\n" + "="*80)
 print("COMPLETE")
 print("="*80)
 print(f"\n✓ Saved {len(all_predictions)} predictions to database")
-print(f"   - Weeks 11-12: {len(completed)} completed games")
-print(f"   - Week 13: {len(week13)} upcoming games")
+print(f"   - Weeks 11-13: {len(completed)} completed games")
+print(f"   - Week 14: {len(week14)} upcoming games")
 print(f"\nRun format_for_website.py to generate display-ready output")
 print("="*80)
