@@ -31,7 +31,20 @@ const SubscriptionForm = () => {
     'price_elite': 'elite',
   };
 
-  const validPromoCodes = ['MILESINSZN', 'MIGUEL25', 'FOUNDERSCLUB', 'BLAZE25', 'TARTER25', 'BRAXTONINSZN'];
+  const validPromoCodes = ['MILESINSZN', 'MIGUEL25', 'FOUNDERSCLUB', 'BLAZE25', 'TARTER25', 'BRAXTONINSZN', 
+          'CFBKINGS', 'INSZN_RBN','EMAW',
+      'INSZN_IRISH',
+      'SECBIAS', 
+      'INSZN_BYU', 
+      'POSITIONPICKS', 
+      'CFBTALK', 
+      'HEADGEAR', 
+      'INSZN_COUGS',
+      'INSZN_UTES',
+      'REDRAIDERS',
+      'INSZN_TTU',
+      'INSZN_STG',
+      'INSZN_VANDY'];
 
   const plans = [
     {

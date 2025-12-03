@@ -562,8 +562,23 @@ app.post('/api/subscriptions/create-subscription', async (req, res) => {
       'MIGUEL25': 'Miguel Jacome',
       'BLAZE25': 'Blake Brockman', 
       'TARTER25': 'Sam Tarter', 
-      'BRAXTONINSZN': 'Braxton Wilks'};
-    const salesRep = salesRepMap[promoCode?.toUpperCase()] || null;
+      'BRAXTONINSZN': 'Braxton Wilks',
+      'CFBKINGS': 'CFBKings', 
+      'INSZN_RBN': 'INSZN RBN',
+      'EMAW': 'EMAW',
+      'INSZN_IRISH': 'INSZN Irish' ,
+      'SECBIAS': 'SEC Bias', 
+      'INSZN_BYU': 'INSZN BYU', 
+      'POSITIONPICKS': 'Position Picks', 
+      'CFBTALK': 'CFB Talk', 
+      'HEADGEAR': 'Headgear CFB', 
+      'INSZN_COUGS': 'INSZN Cougs',
+      'INSZN_UTES': 'INSZN Utes',
+      'REDRAIDERS': 'Red Raiders',
+      'INSZN_TTU': 'INSZN TTU',
+      'INSZN_STG': 'INSZN STG',
+      'INSZN_VANDY': 'INSZN VANDY'};
+          const salesRep = salesRepMap[promoCode?.toUpperCase()] || null;
     const metadataToAttach = {
       promoCode: promoCode || null,
       referredBy: salesRep || null,
