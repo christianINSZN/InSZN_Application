@@ -1,0 +1,4 @@
+player,player_id,position,team_name,player_game_count,accuracy_percent,aimed_passes,attempts,avg_depth_of_target,avg_time_to_throw,bats,big_time_throws,btt_rate,completion_percent,completions,declined_penalties,def_gen_pressures,drop_rate,dropbacks,drops,first_downs,franchise_id,grades_hands_fumble,grades_offense,grades_pass,grades_run,hit_as_threw,interceptions,passing_snaps,penalties,pressure_to_sack_rate,qb_rating,sack_percent,sacks,scrambles,spikes,thrown_aways,touchdowns,turnover_worthy_plays,twp_rate,yards,ypa
+Jeff Undercuffler,78501,QB,AKRON,1,72.7,44,47,6.9,2.59,1,1,2.0,61.7,29,0,16,9.4,52,3,13,102,70.1,53.4,53.9,55.4,0,2,57,1,25.0,72.5,7.7,4,1,0,2,2,2,3.5,254,5.4
+Cole Snyder,97617,QB,BUFFALO,1,66.7,39,44,10.9,2.59,1,3,5.9,52.3,23,0,17,11.5,48,3,12,126,45.4,77.9,82.6,50.2,0,1,55,0,11.8,83.9,4.2,2,2,0,4,3,0,0.0,264,6.0
+Ryan Jankowski,145600,QB,AKRON,1,0.0,1,1,18.0,3.4,0,0,0.0,0.0,0,0,1,,1,0,0,102,60.3,53.5,53.7,,0,0,1,0,0.0,39.6,0.0,0,0,0,0,0,0,0.0,0,0.0

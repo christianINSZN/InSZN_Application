@@ -1,0 +1,33 @@
+player,player_id,position,team_name,player_game_count,coverage_snaps,coverage_snaps_per_reception,coverage_snaps_per_target,franchise_id,interceptions,qb_rating_against,receptions,targets,touchdowns,yards,yards_after_catch,yards_per_coverage_snap
+Isas Waxter,105977,CB,VILLANOVA,1,1,,1.0,334,0,39.6,0,1,0,0,0,0.0
+Troy Andersen,57317,LB,MONTANA ST,1,7,,7.0,233,0,39.6,0,1,0,0,0,0.0
+Diamonte Tucker-Dorsey,57885,LB,JAMES MAD,1,8,,8.0,197,0,39.6,0,1,0,0,0,0.0
+Michael Tutsie,66775,S,N DAK ST,1,10,,5.0,250,0,39.6,0,2,0,0,0,0.0
+Rayuan Lane III,144326,S,NAVY,1,2,,2.0,237,0,39.6,0,1,0,0,0,0.0
+Chris Chukwuneke,78703,CB,JAMES MAD,1,20,,20.0,197,0,39.6,0,1,0,0,0,0.0
+Wayne Davis,42787,S,JAMES MAD,1,6,,6.0,197,1,0.0,0,1,0,0,0,0.0
+Eavan Gibbons,85696,S,NAVY,1,5,,5.0,237,0,39.6,0,1,0,0,0,0.0
+James Kaczor,91426,LB,N DAK ST,1,7,,7.0,250,0,39.6,0,1,0,0,0,0.0
+Cale Reeder,138314,S,S DAK ST,1,3,,3.0,292,0,39.6,0,1,0,0,0,0.0
+Ty Okada,56089,CB,MONTANA ST,1,15,15.0,15.0,233,0,79.2,1,1,0,3,6,0.2
+Logan Backhaus,43777,LB,S DAK ST,1,13,13.0,6.5,292,0,95.8,1,2,0,28,3,2.15
+Nash Fouch,89460,S,MONTANA,1,11,11.0,11.0,232,0,91.7,1,1,0,6,8,0.55
+TraJon Cotton,52147,CB,MONTANA,1,11,11.0,11.0,232,0,158.3,1,1,1,82,72,7.45
+Tristin McCollum,66771,S,SM HOUSTON,1,9,9.0,4.5,281,0,56.3,1,2,0,5,10,0.56
+Robby Hauck,60710,S,MONTANA,1,8,8.0,8.0,232,0,87.5,1,1,0,5,-1,0.63
+Rylan Ortt,101877,S,MONTANA ST,1,32,8.0,6.4,233,0,158.3,4,5,1,95,77,2.97
+Tre Webb,43077,S,MONTANA ST,1,7,7.0,7.0,233,0,118.8,1,1,0,14,7,2.0
+Jasir Cox,91329,LB,N DAK ST,1,20,6.7,6.7,250,0,83.3,3,3,0,12,0,0.6
+Cole Wisniewski,125313,LB,N DAK ST,1,6,6.0,6.0,250,0,91.7,1,1,0,6,5,1.0
+Chris Hope,138995,S,E TENN ST,1,6,6.0,2.0,157,0,47.9,1,3,0,13,0,2.17
+Callahan O'Reilly,60467,LB,MONTANA ST,1,6,6.0,6.0,233,0,112.5,1,1,0,11,8,1.83
+MJ Hampton,60661,S,JAMES MAD,1,16,5.3,3.2,197,0,74.6,3,5,0,27,33,1.69
+Darrel Hawkins-Williams,103622,S,SM HOUSTON,1,5,5.0,5.0,281,0,158.3,1,1,1,31,0,6.2
+Sam Kidd,60663,S,JAMES MAD,1,5,5.0,2.5,197,0,56.3,1,2,0,5,0,1.0
+Isaiah Stalbird,83325,CB,S DAK ST,1,23,4.6,3.8,292,0,97.2,5,6,0,44,5,1.91
+Marquel Broughton,102671,S,ARMY,1,3,3.0,3.0,114,0,118.8,1,1,0,18,7,6.0
+Ethan Potter,142403,S,VILLANOVA,1,5,2.5,2.5,334,0,95.8,2,2,0,14,14,2.8
+Colby Huerter,148237,S,S DAK ST,1,2,2.0,2.0,292,0,158.3,1,1,1,36,7,18.0
+Qwahsin Townsel,79608,LB,VILLANOVA,1,1,1.0,1.0,334,0,87.5,1,1,0,5,8,5.0
+Michael Griffin II,78701,S,S DAK ST,1,1,1.0,1.0,292,0,118.8,1,1,0,14,4,14.0
+Miles Jackson,147676,CB,MONTANA ST,1,1,1.0,1.0,233,0,104.2,1,1,0,9,12,9.0

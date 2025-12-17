@@ -1,0 +1,5 @@
+player,player_id,position,team_name,player_game_count,accuracy_percent,aimed_passes,attempts,avg_depth_of_target,avg_time_to_throw,bats,big_time_throws,btt_rate,completion_percent,completions,declined_penalties,def_gen_pressures,drop_rate,dropbacks,drops,first_downs,franchise_id,grades_hands_fumble,grades_offense,grades_pass,grades_run,hit_as_threw,interceptions,passing_snaps,penalties,pressure_to_sack_rate,qb_rating,sack_percent,sacks,scrambles,spikes,thrown_aways,touchdowns,turnover_worthy_plays,twp_rate,yards,ypa
+Cade Ballard,102861,QB,ARMY,1,30.0,10,10,14.4,2.66,0,0,0.0,20.0,2,0,5,33.3,12,1,1,114,71.6,49.2,45.6,58.7,0,0,14,0,20.0,39.6,8.3,1,1,0,0,0,0,0.0,28,2.8
+Tyhier Tyler,82083,QB,ARMY,1,0.0,1,2,23.0,4.03,0,0,0.0,0.0,0,0,3,,3,0,0,114,77.0,66.5,54.3,66.2,0,0,3,0,33.3,39.6,33.3,1,0,0,1,0,0,0.0,0,0.0
+Maasai Maynor,101057,QB,NAVY,1,0.0,2,2,39.5,3.9,0,0,0.0,0.0,0,0,1,,2,0,0,237,61.8,50.3,50.3,,0,0,2,0,0.0,39.6,0.0,0,0,0,0,0,0,0.0,0,0.0
+Xavier Arline,121831,QB,NAVY,1,100.0,1,2,23.0,4.9,0,0,0.0,50.0,1,0,3,0.0,5,0,2,237,77.6,58.6,70.0,57.9,0,0,6,1,0.0,135.4,0.0,0,3,1,0,1,0,0.0,25,12.5

@@ -1,0 +1,10 @@
+player,player_id,position,team_name,player_game_count,avg_depth_of_target,avoided_tackles,caught_percent,contested_catch_rate,contested_receptions,contested_targets,declined_penalties,drop_rate,drops,first_downs,franchise_id,fumbles,grades_hands_drop,grades_hands_fumble,grades_offense,grades_pass_block,grades_pass_route,inline_rate,inline_snaps,interceptions,longest,pass_block_rate,pass_blocks,pass_plays,penalties,receptions,route_rate,routes,slot_rate,slot_snaps,targeted_qb_rating,targets,touchdowns,wide_rate,wide_snaps,yards,yards_after_catch,yards_after_catch_per_reception,yards_per_reception,yprr
+Braheam Murphy,102882,HB,ARMY,1,14.4,0,40.0,,0,0,0,0.0,0,1,114,0,70.7,68.2,62.9,70.8,63.9,0.0,0,0,26,6.7,1,15,0,2,86.7,13,60.0,9,58.8,5,0,6.7,1,28,18,9.0,14.0,2.15
+Isaiah Alston,121550,WR,ARMY,1,25.0,0,0.0,0.0,0,1,0,,0,0,114,0,,,49.2,,54.7,0.0,0,0,0,0.0,0,13,2,0,84.6,11,0.0,0,39.6,2,0,100.0,13,0,0,,,0.0
+Ay'Jaun Marshall,121589,HB,ARMY,1,2.0,0,0.0,,0,0,1,100.0,1,0,114,0,16.4,69.3,43.6,17.6,43.0,0.0,0,0,0,21.4,3,14,1,0,64.3,9,50.0,7,39.6,1,0,0.0,0,0,0,,,0.0
+Tyson Riley,121605,FB,ARMY,1,8.0,0,0.0,0.0,0,1,0,,0,0,114,0,,65.5,51.5,15.1,57.2,5.9,1,0,0,76.5,13,17,0,0,23.5,4,0.0,0,39.6,1,0,0.0,0,0,0,,,0.0
+Daniel Jones,121851,HB,NAVY,1,32.0,0,0.0,,0,0,0,,0,0,237,0,,65.5,53.2,,59.9,0.0,0,0,0,0.0,0,1,0,0,100.0,1,100.0,1,39.6,1,0,0.0,0,0,0,,,0.0
+Jayden Umbarger,121874,WR,NAVY,1,47.0,0,0.0,0.0,0,1,0,,0,0,237,0,,,60.2,66.6,56.5,0.0,0,0,0,20.0,1,5,0,0,80.0,4,40.0,2,39.6,1,0,40.0,2,0,0,,,0.0
+Tyhier Tyler,82083,QB,ARMY,1,2.0,0,0.0,,0,0,0,,0,0,114,0,,77.0,66.5,,58.0,0.0,0,0,0,0.0,0,6,0,0,50.0,3,33.3,2,39.6,1,0,0.0,0,0,0,,,0.0
+Maquel Haywood,144314,HB,NAVY,1,23.0,0,100.0,,0,0,0,0.0,0,1,237,0,66.7,68.9,73.7,,70.0,0.0,0,0,25,0.0,0,2,0,1,100.0,2,50.0,1,158.3,1,1,0.0,0,25,2,2.0,25.0,12.5
+Cole Caterbone,102943,WR,ARMY,1,33.0,0,0.0,0.0,0,1,0,,0,0,114,0,,,46.8,,56.2,14.3,1,0,0,0.0,0,7,1,0,85.7,6,0.0,0,39.6,1,0,85.7,6,0,0,,,0.0

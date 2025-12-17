@@ -7,108 +7,153 @@ DB_FILE = Path("/Users/christianberry/Desktop/Perennial Data/perennial-data-app/
 conn = sqlite3.connect(DB_FILE)
 cursor = conn.cursor()
 
-# Step 1: Dynamically fetch all columns from Players_RushingGrades_Weekly
-print("\nStep 1: Fetching table schema...")
+# ============================================================================
+# CONFIGURATION: Columns to exclude from final table
+# ============================================================================
+COLUMNS_TO_EXCLUDE = [
+    'position',
+    'opponent_id',
+    'playerId', 
+    'receptions'
+    'scramble_yards',
+    'grades_offense',
+    'grades_pass',
+    'targets',
+    'drops',
+    'grades_pass_route',
+    'routes',
+    'grades_pass_block',
+    'yprr',
+    'scrambles',
+    'designed_yards',
+    'rec_yards',
+    'grades_run_block',
+    'grades_run_adjusted',
+    'grades_offense_adjusted',
+    'grades_pass_adjusted',
+    'grades_offense_penalty_adjusted',
+    'grades_pass_route_adjusted',
+    'grades_pass_block_adjusted',
+    'grades_hands_fumble_adjusted',
+    'grades_run_block_adjusted',
+    'opponent_defense_rating'
+    # Add any other columns you want to exclude here
+]
+# ============================================================================
+
+# Fetch all columns from Players_RushingGrades_Weekly
 cursor.execute("PRAGMA table_info(Players_RushingGrades_Weekly)")
 columns = [row[1] for row in cursor.execute("PRAGMA table_info(Players_RushingGrades_Weekly)")]
-print(f"Step 1: Total columns in Players_RushingGrades_Weekly: {len(columns)}")
-print(f"Step 1: Column names: {columns}")
 
-# Step 1b: Fetch data with all columns and join with Teams_Games, including tg columns
-print("\nStep 1b: Executing Query with all columns...")
-# Qualify all columns from Players_RushingGrades_Weekly with table alias 'b' and add tg columns
 qualified_columns = [f"b.{col}" for col in columns]
 tg_columns = ['tg.id', 'tg.homeId', 'tg.awayId', "CASE WHEN b.teamID = tg.homeId THEN tg.awayId ELSE tg.homeId END AS opponent_id"]
+
+# Query individual player records for ALL years
 query = f"""
-    SELECT DISTINCT {', '.join(qualified_columns + tg_columns)}
+    SELECT {', '.join(qualified_columns + tg_columns)}
     FROM Players_RushingGrades_Weekly b
     JOIN Teams_Games tg ON b.year = tg.season AND b.week = tg.week AND b.seasonType = tg.seasonType
-    WHERE b.year = 2024 AND b.teamID IN (tg.homeId, tg.awayId)
-    GROUP BY b.playerId, b.teamID, b.year, b.week, b.seasonType, tg.id
+    WHERE b.teamID IN (tg.homeId, tg.awayId)
+    AND b.playerId IS NOT NULL
+    AND b.playerId > 0
 """
 df = pd.read_sql_query(query, conn)
-print(f"Step 1b: Raw Data shape: {df.shape}")
-print("Step 1b: Raw Data sample (first 5 rows):")
-print(df.head())
-print(f"Step 1b: Raw Data columns: {df.columns.tolist()}")
 
-# Step 2: Define aggregation logic with default sum and manual overrides
-print("\nStep 2: Defining aggregation logic...")
-# Exclude groupby columns from aggregation
+# Filter out any team-level rows if 'player' column contains team indicators
+if 'player' in df.columns:
+    team_indicators = df['player'].str.lower().str.contains('team|total|aggregate', case=False, na=False)
+    if team_indicators.any():
+        df = df[~team_indicators]
+
+# Remove duplicate player records
+duplicate_check_cols = ['playerId', 'teamID', 'year', 'week', 'seasonType']
+df = df.drop_duplicates(subset=duplicate_check_cols, keep='first')
+
+# Define aggregation columns
 groupby_cols = ['year', 'week', 'seasonType', 'teamID']
-# Default all aggregations to sum for non-groupby columns
-agg_dict = {col: 'sum' for col in df.columns if col not in groupby_cols + ['player', 'team']}
-# Manual overrides for specific fields
-agg_overrides = {
-    'yco_attempt': lambda x: (x * df.loc[x.index, 'attempts']).sum() / df.loc[x.index, 'attempts'].sum() if df.loc[x.index, 'attempts'].sum() > 0 else 0,
-    'ypa': lambda x: (x * df.loc[x.index, 'attempts']).sum() / df.loc[x.index, 'attempts'].sum() if df.loc[x.index, 'attempts'].sum() > 0 else 0,
+exclude_from_sum = groupby_cols + ['player', 'team', 'id', 'homeId', 'awayId', 'opponent_id', 'opponentID', 'playerId', 'opponent_defense_rating', 'longest']
+sum_cols = [col for col in df.columns if col not in exclude_from_sum]
+first_cols = ['id', 'homeId', 'awayId', 'opponent_id', 'opponentID', 'opponent_defense_rating']
+max_cols_special = ['longest']  # longest should use max, not sum
 
-    'breakaway_percent': lambda x: (x * df.loc[x.index, 'attempts']).sum() / df.loc[x.index, 'attempts'].sum() if df.loc[x.index, 'attempts'].sum() > 0 else 0,
+# Note: 'attempts' is a count column, so we'll sum it normally (no max needed)
 
-    'grades_hands_fumble': lambda x: (x * df.loc[x.index, 'attempts']).sum() / df.loc[x.index, 'attempts'].sum() if df.loc[x.index, 'attempts'].sum() > 0 else 0,
+# Create weighted columns for grade calculations (all weighted by attempts)
+weighted_avg_configs = [
+    ('yco_attempt', 'attempts'),
+    ('ypa', 'attempts'),
+    ('breakaway_percent', 'attempts'),
+    ('grades_hands_fumble', 'attempts'),
+    ('elusive_rating', 'attempts'),
+    ('explosive', 'attempts'),
+    ('grades_offense_penalty', 'attempts'),
+    ('grades_run', 'attempts'),
+    ('grades_offense', 'attempts'),
+    ('grades_hands_fumble_adjusted', 'attempts'),
+    ('grades_offense_penalty_adjusted', 'attempts'),
+    ('grades_run_adjusted', 'attempts'),
+    ('grades_offense_adjusted', 'attempts'), 
     
-    'elusive_rating': lambda x: (x * df.loc[x.index, 'attempts']).sum() / df.loc[x.index, 'attempts'].sum() if df.loc[x.index, 'attempts'].sum() > 0 else 0,
-    'explosive': lambda x: (x * df.loc[x.index, 'attempts']).sum() / df.loc[x.index, 'attempts'].sum() if df.loc[x.index, 'attempts'].sum() > 0 else 0,
-    'grades_offense_penalty': lambda x: (x * df.loc[x.index, 'attempts']).sum() / df.loc[x.index, 'attempts'].sum() if df.loc[x.index, 'attempts'].sum() > 0 else 0,
-    'grades_run': lambda x: (x * df.loc[x.index, 'attempts']).sum() / df.loc[x.index, 'attempts'].sum() if df.loc[x.index, 'attempts'].sum() > 0 else 0,
-    'grades_offense': lambda x: (x * df.loc[x.index, 'attempts']).sum() / df.loc[x.index, 'attempts'].sum() if df.loc[x.index, 'attempts'].sum() > 0 else 0,
-    'grades_hands_fumble_adjusted': lambda x: (x * df.loc[x.index, 'attempts']).sum() / df.loc[x.index, 'attempts'].sum() if df.loc[x.index, 'attempts'].sum() > 0 else 0,
-    'grades_offense_penalty_adjusted': lambda x: (x * df.loc[x.index, 'attempts']).sum() / df.loc[x.index, 'attempts'].sum() if df.loc[x.index, 'attempts'].sum() > 0 else 0,
-    'grades_run_adjusted': lambda x: (x * df.loc[x.index, 'attempts']).sum() / df.loc[x.index, 'attempts'].sum() if df.loc[x.index, 'attempts'].sum() > 0 else 0,
-    'grades_offense_adjusted': lambda x: (x * df.loc[x.index, 'attempts']).sum() / df.loc[x.index, 'attempts'].sum() if df.loc[x.index, 'attempts'].sum() > 0 else 0,
-    'opponent_defense_rating': 'first',
-    'id': 'first',
-    'homeId': 'first',
-    'awayId': 'first',
-    'opponent_id': 'first',
-    'longest': 'max',
-    'opponentID': 'first'
+]
+
+weighted_cols = []
+for grade_col, snap_col in weighted_avg_configs:
+    if grade_col in df.columns and snap_col in df.columns:
+        # Create weighted numerator column (grade * attempts for each player)
+        weighted_col_name = f'{grade_col}_weighted'
+        df[weighted_col_name] = df[grade_col] * df[snap_col]
+        weighted_cols.append(weighted_col_name)
+
+sum_cols_with_weighted = sum_cols + weighted_cols
+
+# Aggregate to team level (grouped by year, week, seasonType, teamID)
+agg_dict = {
+    **{col: 'sum' for col in sum_cols_with_weighted if col in df.columns},
+    **{col: 'first' for col in first_cols if col in df.columns},
+    **{col: 'max' for col in max_cols_special if col in df.columns}
 }
-# Combine default and overrides
-agg_dict.update(agg_overrides)
-print(f"Step 2: Aggregation dictionary keys: {list(agg_dict.keys())}")
 
-# Step 3: Aggregate data
-print("\nStep 3: Aggregating data...")
-team_df = df.groupby(['year', 'week', 'seasonType', 'teamID']).agg(agg_dict).reset_index()
-# Drop any duplicate columns caused by reset_index
-team_df = team_df.loc[:, ~team_df.columns.duplicated()]
-print(f"Step 3: Team_df shape: {team_df.shape}")
-print("Step 3: Team_df sample (first 5 rows):")
-print(team_df.head())
+team_df = df.groupby(groupby_cols).agg(agg_dict).reset_index()
 
-# Debug: Inspect aggregated data for Auburn Week 1
-auburn_week1 = team_df[(team_df['teamID'] == 2) & (team_df['week'] == 1) & (team_df['seasonType'] == 'regular')]
-print("\nStep 3: Auburn Week 1 Aggregated Data:")
-print(auburn_week1)
+# Calculate final weighted averages
+# We need the sum of (grade * attempts) divided by sum of attempts
+for grade_col, snap_col in weighted_avg_configs:
+    weighted_col_name = f'{grade_col}_weighted'
+    
+    if grade_col in team_df.columns and snap_col in team_df.columns and weighted_col_name in team_df.columns:
+        # Calculate sum of attempts for this grade (re-aggregate from original df)
+        snap_sums = df.groupby(groupby_cols)[snap_col].sum().reset_index()
+        snap_sums = snap_sums.rename(columns={snap_col: f'{snap_col}_for_calc'})
+        
+        # Merge the attempts sum for calculation
+        team_df = team_df.merge(snap_sums, on=groupby_cols, how='left')
+        
+        # Calculate weighted average
+        team_df[grade_col] = team_df.apply(
+            lambda row: row[weighted_col_name] / row[f'{snap_col}_for_calc'] if row[f'{snap_col}_for_calc'] > 0 else 0,
+            axis=1
+        )
+        
+        # Drop temporary columns
+        team_df = team_df.drop(columns=[weighted_col_name, f'{snap_col}_for_calc'])
 
-# Debug: Check for duplicates
-print("\nStep 3: Duplicates in team_df by ['year', 'week', 'seasonType', 'teamID']:", team_df.duplicated(subset=['year', 'week', 'seasonType', 'teamID']).sum())
+# Drop excluded columns
+team_df = team_df.drop(columns=COLUMNS_TO_EXCLUDE, errors='ignore')
+excluded_found = [col for col in COLUMNS_TO_EXCLUDE if col in df.columns or col in team_df.columns]
 
-# Step 3b: Drop unwanted columns
-columns_to_drop = ['opponent_id', 'playerId']  # Replace with actual column names
-team_df = team_df.drop(columns=columns_to_drop, errors='ignore')
-print(f"Step 3b: Dropped columns: {columns_to_drop}")
-print(f"Step 3b: Updated team_df shape: {team_df.shape}")
+# Create and populate SQL table
+cursor.execute("DROP TABLE IF EXISTS Team_RushingGrades_Weekly;")
 
-# Step 4: Generate SQL to create and populate Team_RushingGrades_Weekly
-print("\nStep 4: Creating and populating SQL table...")
-drop_table_sql = """
-DROP TABLE IF EXISTS Team_RushingGrades_Weekly;
-"""
-cursor.execute(drop_table_sql)
-# Dynamically generate CREATE TABLE statement based on team_df columns
 create_table_columns = []
 for col in team_df.columns:
     if col in ['seasonType', 'player', 'team']:
         dtype = 'TEXT'
     elif col in ['year', 'week', 'teamID', 'playerId', 'id', 'homeId', 'awayId', 'opponent_id', 'opponentID']:
         dtype = 'INTEGER'
-    elif col in ['opponent_defense_rating']:
-        dtype = 'REAL'
     else:
-        dtype = 'REAL'  # Default to REAL for numeric fields
+        dtype = 'REAL'
     create_table_columns.append(f"{col} {dtype}")
+
 create_table_sql = f"""
 CREATE TABLE Team_RushingGrades_Weekly (
     {', '.join(create_table_columns)},
@@ -117,23 +162,26 @@ CREATE TABLE Team_RushingGrades_Weekly (
 """
 cursor.execute(create_table_sql)
 
-# Step 5: Convert team_df to SQL and insert data
-print("\nStep 5: Inserting data into SQL table...")
-# Dynamically generate dtype for to_sql based on team_df columns
+# Insert data
 to_sql_dtype = {}
 for col in team_df.columns:
     if col in ['seasonType', 'player', 'team']:
         to_sql_dtype[col] = 'TEXT'
     elif col in ['year', 'week', 'teamID', 'playerId', 'id', 'homeId', 'awayId', 'opponent_id', 'opponentID']:
         to_sql_dtype[col] = 'INTEGER'
-    elif col in ['opponent_defense_rating']:
-        to_sql_dtype[col] = 'REAL'
     else:
-        to_sql_dtype[col] = 'REAL'  # Default to REAL for numeric fields
+        to_sql_dtype[col] = 'REAL'
+
 team_df.to_sql('Team_RushingGrades_Weekly', conn, if_exists='replace', index=False, dtype=to_sql_dtype)
-print("\nStep 5: Data insertion completed.")
 
 # Commit and close
 conn.commit()
-print("\nStep 6: Connection committed and closed.")
 conn.close()
+
+# Get year range for reporting
+years = sorted(team_df['year'].unique())
+year_range = f"{years[0]}-{years[-1]}" if len(years) > 1 else str(years[0])
+
+print(f"✓ Team_RushingGrades_Weekly table created with {len(team_df)} records ({year_range})")
+if excluded_found:
+    print(f"✓ Excluded columns: {', '.join(excluded_found)}")

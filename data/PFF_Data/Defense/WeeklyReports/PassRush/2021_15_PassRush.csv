@@ -1,0 +1,20 @@
+player,player_id,position,team_name,player_game_count,batted_passes,declined_penalties,franchise_id,grades_pass_rush_defense,hits,hurries,pass_rush_opp,pass_rush_percent,pass_rush_win_rate,pass_rush_wins,penalties,prp,sacks,snap_counts_pass_play,snap_counts_pass_rush,total_pressures,true_pass_set_batted_passes,true_pass_set_grades_pass_rush_defense,true_pass_set_hits,true_pass_set_hurries,true_pass_set_pass_rush_opp,true_pass_set_pass_rush_percent,true_pass_set_pass_rush_win_rate,true_pass_set_pass_rush_wins,true_pass_set_prp,true_pass_set_sacks,true_pass_set_snap_counts_pass_play,true_pass_set_snap_counts_pass_rush,true_pass_set_total_pressures
+Diego Fagot,77563,LB,NAVY,1,0,1,237,60.3,2,0,7,43.8,0.0,0,1,14.3,0,16,7,2,0,,0,0,0,,,0,,0,0,0,0
+Arik Smith,81190,LB,ARMY,1,0,0,114,58.4,0,1,2,25.0,0.0,0,0,25.0,0,8,2,1,0,,0,0,0,,,0,,0,0,0,0
+Nolan Cockrill,82232,DI,ARMY,1,0,0,114,64.2,0,1,8,100.0,12.5,1,0,18.8,1,8,8,2,0,,0,0,0,,,0,,0,0,0,0
+Ryan Duran III,82233,ED,ARMY,1,0,0,114,60.0,0,0,1,100.0,0.0,0,0,0.0,0,1,1,0,0,,0,0,0,,,0,,0,0,0,0
+Kwabena Bonsu,82237,DI,ARMY,1,0,0,114,61.8,0,1,7,100.0,14.3,1,0,7.1,0,7,7,1,0,,0,0,0,,,0,,0,0,0,0
+Malkelm Morrison,83164,LB,ARMY,1,0,0,114,63.1,0,0,5,71.4,20.0,1,0,0.0,0,7,5,0,0,,0,0,0,,,0,,0,0,0,0
+J'arius Warren,100960,ED,NAVY,1,0,0,237,54.2,0,0,16,100.0,0.0,0,0,0.0,0,16,16,0,0,,0,0,0,,,0,,0,0,0,0
+Nicholas Straw,100994,ED,NAVY,1,0,0,237,55.4,0,0,9,56.3,0.0,0,0,0.0,0,16,9,0,0,,0,0,0,,,0,,0,0,0,0
+Terrell Adams,101080,LB,NAVY,1,0,0,237,59.2,0,0,1,100.0,0.0,0,0,0.0,0,1,1,0,0,,0,0,0,,,0,,0,0,0,0
+John Marshall,101082,LB,NAVY,1,0,0,237,62.8,2,1,6,37.5,0.0,0,0,25.0,0,16,6,3,0,,0,0,0,,,0,,0,0,0,0
+Chris Frey,102720,DI,ARMY,1,0,0,114,61.8,0,0,7,100.0,14.3,1,0,0.0,0,7,7,0,0,,0,0,0,,,0,,0,0,0,0
+Andre Carter II,102780,ED,ARMY,1,0,0,114,67.0,0,1,3,37.5,33.3,1,0,16.7,0,8,3,1,0,,0,0,0,,,0,,0,0,0,0
+Austin Hill,121576,DI,ARMY,1,0,0,114,59.8,0,0,1,100.0,0.0,0,0,0.0,0,1,1,0,0,,0,0,0,,,0,,0,0,0,0
+Jaylen Jacobs,121579,ED,ARMY,1,0,0,114,63.0,0,0,1,100.0,100.0,1,0,0.0,0,1,1,0,0,,0,0,0,,,0,,0,0,0,0
+Donald Berniard Jr.,121832,DI,NAVY,1,0,0,237,66.5,1,0,16,100.0,12.5,2,0,3.1,0,16,16,1,0,,0,0,0,,,0,,0,0,0,0
+Jacob Busic,121837,ED,NAVY,1,0,0,237,59.0,0,0,16,100.0,6.3,1,0,0.0,0,16,16,0,0,,0,0,0,,,0,,0,0,0,0
+Clay Cromwell,121840,DI,NAVY,1,0,0,237,59.0,0,0,4,100.0,0.0,0,0,0.0,0,4,4,0,0,,0,0,0,,,0,,0,0,0,0
+Tyler Fletcher,144304,LB,NAVY,1,0,0,237,58.5,0,0,3,75.0,0.0,0,0,0.0,0,4,3,0,0,,0,0,0,,,0,,0,0,0,0
+Colin Ramos,144338,LB,NAVY,1,0,0,237,67.2,0,1,5,45.5,20.0,1,0,10.0,0,11,5,1,0,,0,0,0,,,0,,0,0,0,0

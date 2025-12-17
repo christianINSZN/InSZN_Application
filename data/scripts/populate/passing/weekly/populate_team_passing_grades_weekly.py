@@ -5,137 +5,218 @@ from pathlib import Path
 # Database connection
 DB_FILE = Path("/Users/christianberry/Desktop/Perennial Data/perennial-data-app/server/data/db/cfb_database.db")
 conn = sqlite3.connect(DB_FILE)
-cursor = conn.cursor()
 
-# Step 1: Dynamically fetch all columns from Players_PassingGrades_Weekly
-print("\nStep 1: Fetching table schema...")
-cursor.execute("PRAGMA table_info(Players_PassingGrades_Weekly)")
-columns = [row[1] for row in cursor.execute("PRAGMA table_info(Players_PassingGrades_Weekly)")]
-print(f"Step 1: Total columns in Players_PassingGrades_Weekly: {len(columns)}")
-print(f"Step 1: Column names: {columns}")
+print("=" * 80)
+print("TEAM PASSING GRADES AGGREGATION - CLEANED VERSION")
+print("=" * 80)
 
-# Step 1b: Fetch data with all columns and join with Teams_Games, including tg columns
-print("\nStep 1b: Executing Query with all columns...")
-# Qualify all columns from Players_PassingGrades_Weekly with table alias 'b' and add tg columns
-qualified_columns = [f"b.{col}" for col in columns]
-tg_columns = ['tg.id', 'tg.homeId', 'tg.awayId', "CASE WHEN b.teamID = tg.homeId THEN tg.awayId ELSE tg.homeId END AS opponent_id"]
-query = f"""
-    SELECT DISTINCT {', '.join(qualified_columns + tg_columns)}
-    FROM Players_PassingGrades_Weekly b
-    JOIN Teams_Games tg ON b.year = tg.season AND b.week = tg.week AND b.seasonType = tg.seasonType
-    WHERE b.year = 2024 AND b.teamID IN (tg.homeId, tg.awayId)
-    GROUP BY b.playerId, b.teamID, b.year, b.week, b.seasonType, tg.id
+# ============================================================================
+# CONFIGURATION - Columns to exclude from aggregation
+# ============================================================================
+EXCLUDE_COLUMNS = [
+    'playerId',           # Player identifier (not aggregated)
+    'player_id_PFF',      # PFF player ID (not aggregated)
+    'player',             # Player name (not aggregated)
+    'team'                # Team name (not aggregated, we have teamID)
+]
+
+# ============================================================================
+# STEP 1: Load data with proper filtering
+# ============================================================================
+print("\n[STEP 1] Loading player-level passing data...")
+
+query = """
+    SELECT *
+    FROM Players_PassingGrades_Weekly
+    WHERE playerId IS NOT NULL 
+      AND playerId > 0
+    ORDER BY year, seasonType, week, teamID, playerId
 """
+
 df = pd.read_sql_query(query, conn)
-print(f"Step 1b: Raw Data shape: {df.shape}")
-print("Step 1b: Raw Data sample (first 5 rows):")
-print(df.head())
-print(f"Step 1b: Raw Data columns: {df.columns.tolist()}")
+print(f"  ✓ Loaded {len(df)} player-week records")
+print(f"  ✓ Years: {sorted(df['year'].unique())}")
+print(f"  ✓ Teams: {df['teamID'].nunique()}")
 
-# Step 2: Define aggregation logic with default sum and manual overrides
-print("\nStep 2: Defining aggregation logic...")
-# Exclude groupby columns from aggregation
+# ============================================================================
+# STEP 2: Remove duplicates
+# ============================================================================
+print("\n[STEP 2] Removing duplicate records...")
+
+initial_count = len(df)
+df = df.drop_duplicates(subset=['playerId', 'teamID', 'year', 'week', 'seasonType'])
+duplicate_count = initial_count - len(df)
+
+print(f"  ✓ Removed {duplicate_count} duplicate records")
+print(f"  ✓ Clean dataset: {len(df)} records")
+
+# ============================================================================
+# STEP 3: Remove excluded columns
+# ============================================================================
+print("\n[STEP 3] Removing non-aggregatable columns...")
+
+cols_to_drop = [col for col in EXCLUDE_COLUMNS if col in df.columns]
+df = df.drop(columns=cols_to_drop)
+
+print(f"  ✓ Dropped columns: {cols_to_drop}")
+print(f"  ✓ Remaining columns: {len(df.columns)}")
+
+# ============================================================================
+# STEP 4: Prepare weighted averages
+# ============================================================================
+print("\n[STEP 4] Creating weighted columns for averages...")
+
+# Identify columns to weight
+# For passing: weight by attempts (most metrics) or passing_snaps (snap-based metrics)
+
+attempt_weighted_cols = [
+    'accuracy_percent',
+    'avg_depth_of_target', 
+    'avg_time_to_throw',
+    'btt_rate',
+    'completion_percent',
+    'drop_rate',
+    'grades_hands_fumble',
+    'grades_offense',
+    'grades_pass',
+    'qb_rating'
+]
+
+snap_weighted_cols = [
+    'grades_run',
+    'pressure_to_sack_rate',
+    'sack_percent',
+    'thrown_aways',
+    'twp_rate'
+]
+
+# Create weighted columns for attempt-based metrics
+for col in attempt_weighted_cols:
+    if col in df.columns and 'attempts' in df.columns:
+        df[f'{col}_weighted'] = df[col] * df['attempts']
+
+# Create weighted columns for snap-based metrics
+for col in snap_weighted_cols:
+    if col in df.columns and 'passing_snaps' in df.columns:
+        df[f'{col}_weighted'] = df[col] * df['passing_snaps']
+
+print(f"  ✓ Created {len(attempt_weighted_cols)} attempt-weighted columns")
+print(f"  ✓ Created {len(snap_weighted_cols)} snap-weighted columns")
+
+# ============================================================================
+# STEP 5: Define aggregation logic
+# ============================================================================
+print("\n[STEP 5] Defining aggregation logic...")
+
 groupby_cols = ['year', 'week', 'seasonType', 'teamID']
-# Default all aggregations to sum for non-groupby columns
-agg_dict = {col: 'sum' for col in df.columns if col not in groupby_cols + ['player', 'team']}
-# Manual overrides for specific fields
-agg_overrides = {
 
-    'accuracy_percent':lambda x: (x * df.loc[x.index, 'attempts']).sum() / df.loc[x.index, 'attempts'].sum() if df.loc[x.index, 'attempts'].sum() > 0 else 0,
-    'avg_depth_of_target':lambda x: (x * df.loc[x.index, 'attempts']).sum() / df.loc[x.index, 'attempts'].sum() if df.loc[x.index, 'attempts'].sum() > 0 else 0,
-    'avg_time_to_throw':lambda x: (x * df.loc[x.index, 'attempts']).sum() / df.loc[x.index, 'attempts'].sum() if df.loc[x.index, 'attempts'].sum() > 0 else 0,
-    'btt_rate':lambda x: (x * df.loc[x.index, 'attempts']).sum() / df.loc[x.index, 'attempts'].sum() if df.loc[x.index, 'attempts'].sum() > 0 else 0,
-    'completion_percent':lambda x: (x * df.loc[x.index, 'attempts']).sum() / df.loc[x.index, 'attempts'].sum() if df.loc[x.index, 'attempts'].sum() > 0 else 0,
-    'drop_rate':lambda x: (x * df.loc[x.index, 'attempts']).sum() / df.loc[x.index, 'attempts'].sum() if df.loc[x.index, 'attempts'].sum() > 0 else 0,
-    'grades_hands_fumble':lambda x: (x * df.loc[x.index, 'attempts']).sum() / df.loc[x.index, 'attempts'].sum() if df.loc[x.index, 'attempts'].sum() > 0 else 0,
-    'grades_offense':lambda x: (x * df.loc[x.index, 'attempts']).sum() / df.loc[x.index, 'attempts'].sum() if df.loc[x.index, 'attempts'].sum() > 0 else 0,
-    'grades_pass':lambda x: (x * df.loc[x.index, 'attempts']).sum() / df.loc[x.index, 'attempts'].sum() if df.loc[x.index, 'attempts'].sum() > 0 else 0,
-    'qb_rating':lambda x: (x * df.loc[x.index, 'attempts']).sum() / df.loc[x.index, 'attempts'].sum() if df.loc[x.index, 'attempts'].sum() > 0 else 0,
+# Build aggregation dictionary
+agg_dict = {}
 
-    'grades_run':lambda x: (x * df.loc[x.index, 'passing_snaps']).sum() / df.loc[x.index, 'passing_snaps'].sum() if df.loc[x.index, 'passing_snaps'].sum() > 0 else 0,
-    'pressure_to_sack_rate':lambda x: (x * df.loc[x.index, 'passing_snaps']).sum() / df.loc[x.index, 'passing_snaps'].sum() if df.loc[x.index, 'passing_snaps'].sum() > 0 else 0,
-    'sack_percent':lambda x: (x * df.loc[x.index, 'passing_snaps']).sum() / df.loc[x.index, 'passing_snaps'].sum() if df.loc[x.index, 'passing_snaps'].sum() > 0 else 0,
-    'thrown_aways':lambda x: (x * df.loc[x.index, 'passing_snaps']).sum() / df.loc[x.index, 'passing_snaps'].sum() if df.loc[x.index, 'passing_snaps'].sum() > 0 else 0,
-    'twp_rate':lambda x: (x * df.loc[x.index, 'passing_snaps']).sum() / df.loc[x.index, 'passing_snaps'].sum() if df.loc[x.index, 'passing_snaps'].sum() > 0 else 0,
-
-    'ypa':'mean',
-
-    'id': 'first',
-    'homeId': 'first',
-    'awayId': 'first',
-    'opponent_id': 'first',
-    'opponentID': 'first'
-}
-# Combine default and overrides
-agg_dict.update(agg_overrides)
-print(f"Step 2: Aggregation dictionary keys: {list(agg_dict.keys())}")
-
-# Step 3: Aggregate data
-print("\nStep 3: Aggregating data...")
-team_df = df.groupby(['year', 'week', 'seasonType', 'teamID']).agg(agg_dict).reset_index()
-# Drop any duplicate columns caused by reset_index
-team_df = team_df.loc[:, ~team_df.columns.duplicated()]
-print(f"Step 3: Team_df shape: {team_df.shape}")
-print("Step 3: Team_df sample (first 5 rows):")
-print(team_df.head())
-
-# Debug: Inspect aggregated data for Auburn Week 1
-auburn_week1 = team_df[(team_df['teamID'] == 2) & (team_df['week'] == 1) & (team_df['seasonType'] == 'regular')]
-print("\nStep 3: Auburn Week 1 Aggregated Data:")
-print(auburn_week1)
-
-# Debug: Check for duplicates
-print("\nStep 3: Duplicates in team_df by ['year', 'week', 'seasonType', 'teamID']:", team_df.duplicated(subset=['year', 'week', 'seasonType', 'teamID']).sum())
-
-# Step 3b: Drop unwanted columns
-columns_to_drop = ['opponent_id', 'playerId']  # Replace with actual column names
-team_df = team_df.drop(columns=columns_to_drop, errors='ignore')
-print(f"Step 3b: Dropped columns: {columns_to_drop}")
-print(f"Step 3b: Updated team_df shape: {team_df.shape}")
-
-# Step 4: Generate SQL to create and populate Team_PassingGrades_Weekly
-print("\nStep 4: Creating and populating SQL table...")
-drop_table_sql = """
-DROP TABLE IF EXISTS Team_PassingGrades_Weekly;
-"""
-cursor.execute(drop_table_sql)
-# Dynamically generate CREATE TABLE statement based on team_df columns
-create_table_columns = []
-for col in team_df.columns:
-    if col in ['seasonType', 'player', 'team']:
-        dtype = 'TEXT'
-    elif col in ['year', 'week', 'teamID', 'playerId', 'id', 'homeId', 'awayId', 'opponent_id', 'opponentID']:
-        dtype = 'INTEGER'
-    elif col in ['opponent_defense_rating']:
-        dtype = 'REAL'
+for col in df.columns:
+    if col in groupby_cols:
+        continue
+    
+    # Snap counts: use max (represents actual play count, not sum across 11 players)
+    if 'snap' in col.lower() and '_weighted' not in col:
+        agg_dict[col] = 'max'
+    
+    # Weighted columns: sum them
+    elif '_weighted' in col:
+        agg_dict[col] = 'sum'
+    
+    # Everything else: sum
     else:
-        dtype = 'REAL'  # Default to REAL for numeric fields
-    create_table_columns.append(f"{col} {dtype}")
-create_table_sql = f"""
-CREATE TABLE Team_PassingGrades_Weekly (
-    {', '.join(create_table_columns)},
-    PRIMARY KEY (year, week, seasonType, teamID)
-);
-"""
-cursor.execute(create_table_sql)
+        agg_dict[col] = 'sum'
 
-# Step 5: Convert team_df to SQL and insert data
-print("\nStep 5: Inserting data into SQL table...")
-# Dynamically generate dtype for to_sql based on team_df columns
-to_sql_dtype = {}
-for col in team_df.columns:
-    if col in ['seasonType', 'player', 'team']:
-        to_sql_dtype[col] = 'TEXT'
-    elif col in ['year', 'week', 'teamID', 'playerId', 'id', 'homeId', 'awayId', 'opponent_id', 'opponentID']:
-        to_sql_dtype[col] = 'INTEGER'
-    elif col in ['opponent_defense_rating']:
-        to_sql_dtype[col] = 'REAL'
-    else:
-        to_sql_dtype[col] = 'REAL'  # Default to REAL for numeric fields
-team_df.to_sql('Team_PassingGrades_Weekly', conn, if_exists='replace', index=False, dtype=to_sql_dtype)
-print("\nStep 5: Data insertion completed.")
+print(f"  ✓ Aggregation rules defined for {len(agg_dict)} columns")
 
-# Commit and close
-conn.commit()
-print("\nStep 6: Connection committed and closed.")
+# ============================================================================
+# STEP 6: Aggregate to team level
+# ============================================================================
+print("\n[STEP 6] Aggregating to team level...")
+
+team_df = df.groupby(groupby_cols).agg(agg_dict).reset_index()
+
+print(f"  ✓ Aggregated to {len(team_df)} team-week records")
+
+# ============================================================================
+# STEP 7: Calculate weighted averages
+# ============================================================================
+print("\n[STEP 7] Calculating weighted averages...")
+
+# For attempt-weighted metrics
+for col in attempt_weighted_cols:
+    weighted_col = f'{col}_weighted'
+    if weighted_col in team_df.columns and 'attempts' in team_df.columns:
+        team_df[col] = team_df[weighted_col] / team_df['attempts'].replace(0, 1)
+        team_df = team_df.drop(columns=[weighted_col])
+
+# For snap-weighted metrics  
+for col in snap_weighted_cols:
+    weighted_col = f'{col}_weighted'
+    if weighted_col in team_df.columns and 'passing_snaps' in team_df.columns:
+        team_df[col] = team_df[weighted_col] / team_df['passing_snaps'].replace(0, 1)
+        team_df = team_df.drop(columns=[weighted_col])
+
+print(f"  ✓ Calculated weighted averages")
+print(f"  ✓ Final columns: {len(team_df.columns)}")
+
+# ============================================================================
+# STEP 8: Replace snap counts with max values
+# ============================================================================
+print("\n[STEP 8] Fixing snap counts to use max values...")
+
+snap_columns = [col for col in df.columns if 'snap' in col.lower()]
+
+for snap_col in snap_columns:
+    if snap_col in df.columns:
+        max_snaps = df.groupby(groupby_cols)[snap_col].max()
+        team_df[snap_col] = team_df[groupby_cols].apply(
+            lambda row: max_snaps.get(tuple(row), 0), axis=1
+        )
+
+print(f"  ✓ Updated {len(snap_columns)} snap count columns to use max values")
+
+# ============================================================================
+# STEP 9: Save to database
+# ============================================================================
+print("\n[STEP 9] Saving to database...")
+
+team_df.to_sql('Team_PassingGrades_Weekly', conn, if_exists='replace', index=False)
+
+print(f"  ✓ Saved to Team_PassingGrades_Weekly table")
+
+# ============================================================================
+# STEP 10: Verification
+# ============================================================================
+print("\n[STEP 10] Verification...")
+
+verification = pd.read_sql_query("""
+    SELECT year, COUNT(*) as records, COUNT(DISTINCT teamID) as teams
+    FROM Team_PassingGrades_Weekly
+    GROUP BY year
+    ORDER BY year
+""", conn)
+
+print("\n  Summary by year:")
+print(verification.to_string(index=False))
+
+# Sample data check
+sample = pd.read_sql_query("""
+    SELECT year, week, seasonType, teamID, attempts, completions, yards, touchdowns, 
+           grades_pass, qb_rating, passing_snaps
+    FROM Team_PassingGrades_Weekly
+    WHERE year = 2024 AND week = 1
+    ORDER BY yards DESC
+    LIMIT 5
+""", conn)
+
+print("\n  Sample (Top 5 passing teams, 2024 Week 1):")
+print(sample.to_string(index=False))
+
 conn.close()
+
+print("\n" + "=" * 80)
+print("✓ AGGREGATION COMPLETE")
+print("=" * 80)

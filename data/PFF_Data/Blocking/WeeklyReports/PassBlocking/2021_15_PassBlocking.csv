@@ -1,0 +1,23 @@
+player,player_id,position,team_name,player_game_count,declined_penalties,franchise_id,grades_pass_block,hits_allowed,hurries_allowed,non_spike_pass_block,non_spike_pass_block_percentage,pass_block_percent,pbe,penalties,pressures_allowed,sacks_allowed,snap_counts_pass_block,snap_counts_pass_play,true_pass_set_grades_pass_block,true_pass_set_hits_allowed,true_pass_set_hurries_allowed,true_pass_set_non_spike_pass_block,true_pass_set_non_spike_pass_block_percentage,true_pass_set_pass_block_percent,true_pass_set_pbe,true_pass_set_pressures_allowed,true_pass_set_sacks_allowed,true_pass_set_snap_counts_pass_block,true_pass_set_snap_counts_pass_play
+Noah Knapp,81582,G,ARMY,1,0,114,57.6,0,0,16,100.0,100.0,100.0,0,0,0,16,16,,0,0,0,,,,0,0,0,0
+Connor Bishop,102830,C,ARMY,1,0,114,31.1,0,1,16,100.0,100.0,96.9,0,1,0,16,16,,0,0,0,,,,0,0,0,0
+Connor Finucane,121569,G,ARMY,1,0,114,52.6,1,0,13,100.0,100.0,96.2,0,1,0,13,13,,0,0,0,,,,0,0,0,0
+Mason Kolinchak,81577,T,ARMY,1,0,114,81.7,0,0,13,100.0,100.0,100.0,0,0,0,13,13,,0,0,0,,,,0,0,0,0
+Jordyn Law,121583,T,ARMY,1,0,114,82.5,0,0,13,100.0,100.0,100.0,0,0,0,13,13,,0,0,0,,,,0,0,0,0
+Cade Barnard,83625,FB,ARMY,1,0,114,79.6,0,0,9,75.0,75.0,100.0,0,0,0,9,12,,0,0,0,,,,0,0,0,0
+Bryce Texeira,77388,T,NAVY,1,0,237,66.0,0,0,8,100.0,100.0,87.5,0,1,1,8,8,,0,0,0,,,,0,0,0,0
+Nick Bernacchi,77385,G,NAVY,1,0,237,83.9,0,0,8,100.0,100.0,100.0,0,0,0,8,8,,0,0,0,,,,0,0,0,0
+Kip Frankland,100901,T,NAVY,1,0,237,37.0,0,0,8,100.0,100.0,100.0,0,0,0,8,8,,0,0,0,,,,0,0,0,0
+Jamie Romo,101029,T,NAVY,1,0,237,26.9,0,2,8,100.0,100.0,87.5,0,2,0,8,8,,0,0,0,,,,0,0,0,0
+Pierce Banbury,77384,C,NAVY,1,0,237,82.1,0,0,8,100.0,100.0,100.0,0,0,0,8,8,,0,0,0,,,,0,0,0,0
+James Harris II,77030,FB,NAVY,1,0,237,29.5,0,0,6,100.0,100.0,100.0,0,0,0,6,6,,0,0,0,,,,0,0,0,0
+Kamaron Holloway,81586,T,ARMY,1,0,114,82.2,0,0,6,100.0,100.0,100.0,0,0,0,6,6,,0,0,0,,,,0,0,0,0
+Jakobi Buchanan,102884,FB,ARMY,1,0,114,84.0,0,0,5,100.0,100.0,100.0,0,0,0,5,5,,0,0,0,,,,0,0,0,0
+Dean Powell,81583,G,ARMY,1,0,114,75.0,0,0,3,100.0,100.0,100.0,0,0,0,3,3,,0,0,0,,,,0,0,0,0
+Cole Caterbone,102943,WR,ARMY,1,0,114,66.6,0,0,2,33.3,33.3,100.0,0,0,0,2,6,,0,0,0,,,,0,0,0,0
+Tyger Goslin,77634,FB,NAVY,1,0,237,67.8,0,0,1,50.0,50.0,100.0,0,0,0,1,2,,0,0,0,,,,0,0,0,0
+Joshua Lingenfelter,121584,TE,ARMY,1,0,114,65.5,0,0,1,20.0,20.0,100.0,0,0,0,1,5,,0,0,0,,,,0,0,0,0
+Sam Glover,121844,T,NAVY,1,0,237,74.1,0,0,1,100.0,100.0,100.0,0,0,0,1,1,,0,0,0,,,,0,0,0,0
+Kai Puailoa-Rojas,121867,FB,NAVY,1,0,237,73.9,0,0,1,100.0,100.0,100.0,0,0,0,1,1,,0,0,0,,,,0,0,0,0
+Mychal Cooper,78029,WR,NAVY,1,0,237,67.8,0,0,1,14.3,14.3,100.0,0,0,0,1,7,,0,0,0,,,,0,0,0,0
+Carlinos Acie,77866,HB,NAVY,1,0,237,70.8,0,0,1,20.0,20.0,100.0,0,0,0,1,5,,0,0,0,,,,0,0,0,0

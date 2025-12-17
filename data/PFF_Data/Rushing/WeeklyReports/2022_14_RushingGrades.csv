@@ -1,0 +1,9 @@
+player,player_id,position,team_name,player_game_count,attempts,avoided_tackles,breakaway_attempts,breakaway_percent,breakaway_yards,declined_penalties,designed_yards,drops,elu_recv_mtf,elu_rush_mtf,elu_yco,elusive_rating,explosive,first_downs,franchise_id,fumbles,gap_attempts,grades_hands_fumble,grades_offense,grades_offense_penalty,grades_pass,grades_pass_block,grades_pass_route,grades_run,grades_run_block,longest,penalties,rec_yards,receptions,routes,run_plays,scramble_yards,scrambles,targets,total_touches,touchdowns,yards,yards_after_contact,yco_attempt,ypa,yprr,zone_attempts
+Clyde Price,99493,HB,AKRON,1,18,6,3,64.2,52,0,81,1,1,6,43,76.0,4,4,102,1,5,32.7,61.6,77.2,,48.5,50.3,65.9,60.0,19,0,14,4,36,19,0,0,5,22,1,81,43,2.39,4.5,0.39,13
+Mike Washington Jr.,145672,HB,BUFFALO,1,10,2,0,0.0,0,0,16,0,1,2,5,8.3,0,0,126,1,3,27.6,48.2,0.0,,21.9,78.8,43.6,48.8,5,1,58,8,27,18,0,0,11,18,0,16,5,0.5,1.6,2.15,7
+Cole Snyder,97617,QB,BUFFALO,1,7,2,0,0.0,0,0,-2,0,0,0,1,0.0,0,1,126,1,1,45.4,77.9,77.4,82.6,,,50.2,60.0,7,0,0,0,0,22,12,2,0,5,0,10,18,2.57,1.4,,1
+Mark-Anthony Scott Jr.,157945,HB,BUFFALO,1,4,0,0,0.0,0,0,19,0,0,0,7,0.0,1,1,126,0,3,68.6,57.0,69.5,,31.9,58.9,58.7,,13,0,0,0,2,4,0,0,0,4,0,19,7,1.75,4.8,0.0,1
+Jeff Undercuffler,78501,QB,AKRON,1,2,0,0,0.0,0,0,-2,0,0,0,0,0.0,0,0,102,1,0,70.1,53.4,77.3,53.9,,,55.4,60.0,6,1,0,0,0,19,6,1,0,1,0,4,0,0.0,2.0,,1
+Brian Plummer,145681,QB,BUFFALO,1,1,0,0,0.0,0,0,-2,0,0,0,1,0.0,0,0,126,0,0,62.5,58.0,63.6,,,,59.2,,-2,0,0,0,0,1,0,0,0,1,0,-2,1,1.0,-2.0,,1
+Tajay Ahmed,97622,HB,BUFFALO,1,1,0,0,0.0,0,0,4,0,0,0,3,0.0,0,0,126,0,0,62.5,54.0,70.0,,53.2,57.8,57.7,60.0,4,0,0,0,3,3,0,0,1,1,0,4,3,3.0,4.0,0.0,1
+Anthony Venneri,157949,K,BUFFALO,1,1,0,0,,0,0,0,0,0,0,0,0.0,0,0,126,1,0,11.1,44.5,70.3,,,,44.8,,0,0,0,0,0,1,0,0,0,1,0,0,0,0.0,0.0,,0

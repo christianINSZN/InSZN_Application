@@ -1,0 +1,25 @@
+player,player_id,position,team_name,player_game_count,declined_penalties,franchise_id,grades_pass_block,hits_allowed,hurries_allowed,non_spike_pass_block,non_spike_pass_block_percentage,pass_block_percent,pbe,penalties,pressures_allowed,sacks_allowed,snap_counts_pass_block,snap_counts_pass_play,true_pass_set_grades_pass_block,true_pass_set_hits_allowed,true_pass_set_hurries_allowed,true_pass_set_non_spike_pass_block,true_pass_set_non_spike_pass_block_percentage,true_pass_set_pass_block_percent,true_pass_set_pbe,true_pass_set_pressures_allowed,true_pass_set_sacks_allowed,true_pass_set_snap_counts_pass_block,true_pass_set_snap_counts_pass_play
+Connor Finucane,121569,G,ARMY,1,0,114,75.5,0,0,15,100.0,100.0,100.0,0,0,0,17,17,79.7,0,0,5,100.0,100.0,100.0,0,0,5,5
+Connor Bishop,102830,C,ARMY,1,0,114,65.3,0,1,15,100.0,100.0,96.7,0,1,0,17,17,77.5,0,0,5,100.0,100.0,100.0,0,0,5,5
+Jordyn Law,121583,T,ARMY,1,0,114,86.8,0,0,15,100.0,100.0,100.0,0,0,0,17,17,81.1,0,0,5,100.0,100.0,100.0,0,0,5,5
+Shayne Buckingham,102911,T,ARMY,1,0,114,69.3,1,0,15,100.0,100.0,96.7,0,1,0,17,17,41.3,1,0,5,100.0,100.0,90.0,1,0,5,5
+Jackson Filipowicz,121567,G,ARMY,1,0,114,48.7,1,0,13,100.0,100.0,96.2,0,1,0,15,15,10.6,1,0,3,100.0,100.0,83.3,1,0,3,3
+Tyson Riley,121605,FB,ARMY,1,0,114,15.1,2,1,11,73.3,76.5,86.4,0,3,0,13,17,9.4,1,0,4,80.0,80.0,87.5,1,0,4,5
+Kip Frankland,100901,T,NAVY,1,0,237,86.4,0,0,6,100.0,100.0,100.0,0,0,0,8,8,,0,0,0,,,,0,0,0,0
+Sam Glover,121844,T,NAVY,1,0,237,89.1,0,0,6,100.0,100.0,100.0,0,0,0,8,8,,0,0,0,,,,0,0,0,0
+Lirion Murtezi,121861,C,NAVY,1,0,237,86.6,0,0,6,100.0,100.0,100.0,0,0,0,8,8,,0,0,0,,,,0,0,0,0
+Connor McMahon,144330,G,NAVY,1,0,237,90.1,0,0,6,100.0,100.0,100.0,0,0,0,8,8,,0,0,0,,,,0,0,0,0
+Ahmad Bradley,121835,G,NAVY,1,0,237,60.7,1,0,5,100.0,100.0,90.0,0,1,0,6,6,,0,0,0,,,,0,0,0,0
+Anton Hall Jr.,144311,FB,NAVY,1,0,237,84.3,0,0,4,100.0,83.3,100.0,0,0,0,5,6,,0,0,0,,,,0,0,0,0
+Joshua Lingenfelter,121584,TE,ARMY,1,0,114,69.9,0,0,2,33.3,42.9,100.0,0,0,0,3,7,67.4,0,0,1,50.0,50.0,100.0,0,0,1,2
+Ay'Jaun Marshall,121589,HB,ARMY,1,0,114,17.6,0,0,3,25.0,21.4,66.7,0,1,1,3,14,0.0,0,0,1,25.0,25.0,0.0,1,1,1,4
+Sam Barczak,102831,G,ARMY,1,0,114,76.2,0,0,2,100.0,100.0,100.0,0,0,0,2,2,76.2,0,0,2,100.0,100.0,100.0,0,0,2,2
+Hayden Reed,163213,FB,ARMY,1,0,114,36.9,0,0,2,100.0,100.0,50.0,0,1,1,2,2,22.1,0,0,1,100.0,100.0,0.0,1,1,1,1
+Joshua Pena,121864,G,NAVY,1,0,237,90.6,0,0,1,100.0,100.0,100.0,0,0,0,2,2,,0,0,0,,,,0,0,0,0
+Daba Fofana,144305,FB,NAVY,1,0,237,74.4,0,0,2,100.0,100.0,100.0,0,0,0,2,2,,0,0,0,,,,0,0,0,0
+Amin Hassan,144313,HB,NAVY,1,0,237,74.7,0,0,2,50.0,50.0,100.0,0,0,0,2,4,,0,0,0,,,,0,0,0,0
+Vincent Terrell II,121872,HB,NAVY,1,0,237,65.5,0,0,0,0.0,25.0,,0,0,0,1,4,,0,0,0,,,,0,0,0,0
+Akalea Kapono,121852,WR,NAVY,1,0,237,63.9,0,0,0,,100.0,,0,0,0,1,1,,0,0,0,,,,0,0,0,0
+Braheam Murphy,102882,HB,ARMY,1,0,114,70.8,0,0,0,0.0,6.7,,0,0,0,1,15,,0,0,0,0.0,0.0,,0,0,0,4
+Jayden Umbarger,121874,WR,NAVY,1,0,237,66.6,0,0,1,25.0,20.0,100.0,0,0,0,1,5,,0,0,0,,,,0,0,0,0
+Campbell Speights,144347,HB,NAVY,1,0,237,72.7,0,0,1,100.0,100.0,100.0,0,0,0,1,1,,0,0,0,,,,0,0,0,0

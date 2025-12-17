@@ -1,0 +1,4 @@
+player,player_id,position,team_name,player_game_count,accuracy_percent,aimed_passes,attempts,avg_depth_of_target,avg_time_to_throw,bats,big_time_throws,btt_rate,completion_percent,completions,declined_penalties,def_gen_pressures,drop_rate,dropbacks,drops,first_downs,franchise_id,grades_hands_fumble,grades_offense,grades_pass,grades_run,hit_as_threw,interceptions,passing_snaps,penalties,pressure_to_sack_rate,qb_rating,sack_percent,sacks,scrambles,spikes,thrown_aways,touchdowns,turnover_worthy_plays,twp_rate,yards,ypa
+Christian Anderson,60339,QB,ARMY,1,61.5,13,15,13.0,2.45,0,0,0.0,46.7,7,0,6,12.5,15,1,5,114,72.1,71.8,68.1,67.4,1,0,15,0,0.0,71.0,0.0,0,0,0,1,0,1,6.7,108,7.2
+Tai Lavatai,121854,QB,NAVY,1,80.0,5,6,9.4,2.91,0,1,16.7,66.7,4,0,4,0.0,7,0,3,237,77.0,81.1,84.3,69.2,0,0,7,1,25.0,109.7,14.3,1,0,0,1,0,0,0.0,82,13.7
+Tyrell Robinson,121607,HB,ARMY,1,0.0,1,1,25.0,3.1,0,0,0.0,0.0,0,0,0,,1,0,0,114,72.7,51.8,51.9,55.6,0,0,1,0,,39.6,0.0,0,0,0,0,0,0,0.0,0,0.0

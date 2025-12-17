@@ -1,0 +1,24 @@
+player,player_id,position,team_name,player_game_count,declined_penalties,franchise_id,grades_pass_block,hits_allowed,hurries_allowed,non_spike_pass_block,non_spike_pass_block_percentage,pass_block_percent,pbe,penalties,pressures_allowed,sacks_allowed,snap_counts_pass_block,snap_counts_pass_play,true_pass_set_grades_pass_block,true_pass_set_hits_allowed,true_pass_set_hurries_allowed,true_pass_set_non_spike_pass_block,true_pass_set_non_spike_pass_block_percentage,true_pass_set_pass_block_percent,true_pass_set_pbe,true_pass_set_pressures_allowed,true_pass_set_sacks_allowed,true_pass_set_snap_counts_pass_block,true_pass_set_snap_counts_pass_play
+Connor McMahon,144330,T,NAVY,1,0,237,84.1,0,0,34,100.0,100.0,100.0,0,0,0,35,35,80.2,0,0,3,100.0,100.0,100.0,0,0,3,3
+Ben Purvis,162577,G,NAVY,1,0,237,58.6,1,1,34,100.0,100.0,97.1,0,2,0,35,35,77.5,0,0,3,100.0,100.0,100.0,0,0,3,3
+Joshua Pena,121864,G,NAVY,1,0,237,38.8,0,2,34,100.0,100.0,97.1,0,2,0,35,35,77.5,0,0,3,100.0,100.0,100.0,0,0,3,3
+Brent Self,144344,C,NAVY,1,0,237,51.8,0,1,34,100.0,100.0,95.6,0,2,1,35,35,17.1,0,0,3,100.0,100.0,66.7,1,1,3,3
+Trey Cummings,144299,T,NAVY,1,0,237,73.3,1,0,27,100.0,100.0,98.1,0,1,0,28,28,,0,0,0,,,,0,0,0,0
+Lucas Scott,147358,G,ARMY,1,0,114,81.0,0,0,15,100.0,100.0,100.0,0,0,0,15,15,77.1,0,0,3,100.0,100.0,100.0,0,0,3,3
+Alex Tecza,162587,FB,NAVY,1,0,237,81.7,0,0,15,51.7,50.0,100.0,0,0,0,15,30,71.8,0,0,1,33.3,33.3,100.0,0,0,1,3
+Connor Finucane,121569,T,ARMY,1,0,114,77.8,0,0,15,100.0,100.0,100.0,0,0,0,15,15,75.3,0,0,3,100.0,100.0,100.0,0,0,3,3
+Shayne Buckingham,102911,T,ARMY,1,0,114,81.7,0,0,15,100.0,100.0,100.0,0,0,0,15,15,77.7,0,0,3,100.0,100.0,100.0,0,0,3,3
+Brady Small,171015,C,ARMY,1,0,114,79.2,0,0,15,100.0,100.0,100.0,0,0,0,15,15,75.5,0,0,3,100.0,100.0,100.0,0,0,3,3
+Jackson Filipowicz,121567,G,ARMY,1,0,114,79.8,0,0,10,100.0,100.0,100.0,0,0,0,10,10,76.2,0,0,2,100.0,100.0,100.0,0,0,2,2
+Sam Glover,121844,T,NAVY,1,0,237,81.1,0,0,7,100.0,100.0,100.0,0,0,0,7,7,78.5,0,0,3,100.0,100.0,100.0,0,0,3,3
+Tyson Riley,121605,FB,ARMY,1,0,114,73.3,0,0,7,46.7,46.7,100.0,0,0,0,7,15,71.0,0,0,2,66.7,66.7,100.0,0,0,2,3
+Cody Howard,162556,TE,NAVY,1,0,237,87.8,0,0,6,46.2,46.2,100.0,0,0,0,6,13,,0,0,0,0.0,0.0,,0,0,0,1
+Sam Barczak,102831,G,ARMY,1,0,114,75.1,0,0,5,100.0,100.0,100.0,0,0,0,5,5,70.0,0,0,1,100.0,100.0,100.0,0,0,1,1
+Joshua Lingenfelter,121584,TE,ARMY,1,0,114,71.6,0,0,4,80.0,80.0,100.0,0,0,0,4,5,71.0,0,0,2,100.0,100.0,100.0,0,0,2,2
+Daba Fofana,144305,FB,NAVY,1,0,237,72.0,0,0,3,75.0,75.0,100.0,0,0,0,3,4,,0,0,0,,,,0,0,0,0
+Jakobi Buchanan,102884,HB,ARMY,1,0,114,75.3,0,0,2,100.0,100.0,100.0,0,0,0,2,2,,0,0,0,,,,0,0,0,0
+Seth Reece,171008,TE,ARMY,1,0,114,65.5,0,0,1,100.0,100.0,100.0,0,0,0,1,1,,0,0,0,,,,0,0,0,0
+Markel Johnson,147308,HB,ARMY,1,0,114,70.0,0,0,1,50.0,50.0,100.0,0,0,0,1,2,,0,0,0,,,,0,0,0,0
+Kanye Udoh,171024,HB,ARMY,1,0,114,70.3,0,0,1,100.0,100.0,100.0,0,0,0,1,1,,0,0,0,,,,0,0,0,0
+Xavier Arline,121831,QB,NAVY,1,0,237,62.2,0,0,1,25.0,25.0,100.0,0,0,0,1,4,,0,0,0,0.0,0.0,,0,0,0,3
+Tyrell Robinson,121607,HB,ARMY,1,0,114,74.6,0,0,1,11.1,11.1,100.0,0,0,0,1,9,74.6,0,0,1,33.3,33.3,100.0,0,0,1,3

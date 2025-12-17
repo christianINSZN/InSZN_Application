@@ -1,0 +1,19 @@
+player,player_id,position,team_name,player_game_count,declined_penalties,franchise_id,grades_pass_block,hits_allowed,hurries_allowed,non_spike_pass_block,non_spike_pass_block_percentage,pass_block_percent,pbe,penalties,pressures_allowed,sacks_allowed,snap_counts_pass_block,snap_counts_pass_play,true_pass_set_grades_pass_block,true_pass_set_hits_allowed,true_pass_set_hurries_allowed,true_pass_set_non_spike_pass_block,true_pass_set_non_spike_pass_block_percentage,true_pass_set_pass_block_percent,true_pass_set_pbe,true_pass_set_pressures_allowed,true_pass_set_sacks_allowed,true_pass_set_snap_counts_pass_block,true_pass_set_snap_counts_pass_play
+Andrew Vorhees,60818,G,USC,1,0,326,81.9,0,2,44,100.0,100.0,97.7,0,2,0,47,47,72.4,0,2,15,100.0,100.0,93.3,2,0,15,15
+Liam Jimmons,44413,G,USC,1,0,326,78.8,0,0,44,100.0,100.0,100.0,0,0,0,47,47,60.5,0,0,15,100.0,100.0,100.0,0,0,15,15
+Brett Neilon,55555,C,USC,1,0,326,82.7,0,1,44,100.0,100.0,98.9,0,1,0,47,47,73.3,0,1,15,100.0,100.0,96.7,1,0,15,15
+Justin Dedich,83018,G,USC,1,0,326,85.0,0,0,44,100.0,100.0,100.0,0,0,0,47,47,74.9,0,0,15,100.0,100.0,100.0,0,0,15,15
+Jonah Monheim,86461,T,USC,1,0,326,85.9,0,0,31,100.0,100.0,100.0,0,0,0,32,32,81.4,0,0,10,100.0,100.0,100.0,0,0,10,10
+Valentino Daltoso,40467,T,CAL,1,0,130,68.2,0,1,26,100.0,100.0,98.1,0,1,0,27,27,51.7,0,1,5,100.0,100.0,90.0,1,0,6,6
+Matthew Cindric,81604,C,CAL,1,0,130,65.7,0,1,26,100.0,100.0,98.1,0,1,0,27,27,43.8,0,1,5,100.0,100.0,90.0,1,0,6,6
+Ben Coleman,100518,G,CAL,1,0,130,69.1,0,1,26,100.0,100.0,98.1,0,1,0,27,27,35.0,0,1,5,100.0,100.0,90.0,1,0,6,6
+Brayden Rohme,100535,T,CAL,1,0,130,52.1,0,1,26,100.0,100.0,94.2,1,2,1,27,27,49.3,0,0,5,100.0,100.0,100.0,0,0,6,6
+McKade Mettauer,100537,G,CAL,1,0,130,69.1,0,1,26,100.0,100.0,98.1,0,1,0,27,27,35.0,0,1,5,100.0,100.0,90.0,1,0,6,6
+Jalen McKenzie,60817,T,USC,1,0,326,67.3,1,1,13,100.0,100.0,92.3,1,2,0,15,15,66.0,0,1,5,100.0,100.0,90.0,1,0,5,5
+Chris Brooks,83644,HB,CAL,1,0,130,15.9,0,2,7,46.7,43.8,71.4,0,3,1,7,16,41.2,0,1,2,66.7,50.0,75.0,1,0,2,4
+Darwin Barlow,99482,HB,USC,1,0,326,79.3,0,0,4,25.0,22.2,100.0,0,0,0,4,18,78.7,0,0,3,75.0,75.0,100.0,0,0,3,4
+Jake Tonges,60864,TE,CAL,1,0,130,70.8,0,0,3,11.5,11.1,100.0,0,0,0,3,27,,0,0,0,0.0,0.0,,0,0,0,6
+Vavae Malepeai,40626,HB,USC,1,0,326,75.8,0,0,3,17.6,17.6,100.0,0,0,0,3,17,71.5,0,0,1,12.5,12.5,100.0,0,0,1,8
+Erik Krommenhoek,61056,TE,USC,1,0,326,34.4,2,0,3,7.1,6.7,66.7,0,2,0,3,45,,0,0,0,0.0,0.0,,0,0,0,13
+Brandon Campbell,146414,HB,USC,1,0,326,73.1,0,0,1,9.1,16.7,100.0,0,0,0,2,12,,0,0,0,0.0,0.0,,0,0,0,3
+Marcel Dancy,83642,HB,CAL,1,0,130,72.5,0,0,1,12.5,12.5,100.0,0,0,0,1,8,72.5,0,0,1,50.0,50.0,100.0,0,0,1,2
