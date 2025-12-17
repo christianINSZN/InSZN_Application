@@ -11,7 +11,9 @@ const conferences = [
   'Pac-12', 'SEC', 'Sun Belt'
 ];
 const filterTabs = ['All', ...conferences];
-const weeks = Array.from({ length: 15 }, (_, i) => i + 1);
+
+// Weeks 1-15 (regular) + 16 (postseason week 1)
+const weeks = [...Array.from({ length: 15 }, (_, i) => i + 1), 16];
 
 function GamesComponent({ year = '2025' }) {
   const navigate = useNavigate();
@@ -19,7 +21,7 @@ function GamesComponent({ year = '2025' }) {
   const [isLoading, setIsLoading] = useState(true);
   const [gamesData, setGamesData] = useState([]);
   const [predictions, setPredictions] = useState({});
-  const [activeWeek, setActiveWeek] = useState(14);
+  const [activeWeek, setActiveWeek] = useState(16); // Default to postseason
   const [activeTab, setActiveTab] = useState('All');
   const [showScoutingReport, setShowScoutingReport] = useState(false);
   const [showGameRecap, setShowGameRecap] = useState(false);
@@ -30,16 +32,20 @@ function GamesComponent({ year = '2025' }) {
   const [showConvictionHelp, setShowConvictionHelp] = useState(false);
 
   const subscriptionPlan = user?.publicMetadata?.subscriptionPlan;
-  const isProOrPremium = subscriptionPlan === 'pro' || subscriptionPlan === 'premium';
+  const isProOrPremium = subscriptionPlan === 'pro' || subscriptionPlan === 'premium' || !subscriptionPlan;
 
   useEffect(() => {
     setShowProbabilities(isProOrPremium);
   }, [isProOrPremium]);
 
-  // Week 15 → "CC"
-  const getWeekLabel = (week) => (week === 15 ? 'CC' : week);
+  // Week labels: 15 → "CC", 16 → "PO1" (postseason week 1)
+  const getWeekLabel = (week) => {
+    if (week === 15) return 'CC';
+    if (week === 16) return 'PO1';
+    return week;
+  };
 
-  // Fetch games
+  // Fetch games (both regular and postseason)
   useEffect(() => {
     let isMounted = true;
     if (isLoading) {
@@ -68,7 +74,7 @@ function GamesComponent({ year = '2025' }) {
                     game =>
                       game &&
                       typeof game === 'object' &&
-                      game.seasonType === 'regular' &&
+                      (game.seasonType === 'regular' || game.seasonType === 'postseason') &&
                       game.season === parseInt(year) &&
                       (game.homeClassification === 'fbs' || game.awayClassification === 'fbs')
                   )
@@ -119,8 +125,20 @@ function GamesComponent({ year = '2025' }) {
     return <div className="p-2 sm:p-4"><p className="text-black text-base sm:text-lg">No games data available.</p></div>;
   }
 
+  // Filter games based on active week
+  // Weeks 1-15: regular season
+  // Week 16: postseason week 1
   const filteredGames = gamesData.filter(game => {
-    const weekMatch = game.week === activeWeek;
+    let weekMatch = false;
+    
+    if (activeWeek === 16) {
+      // Postseason week 1
+      weekMatch = game.seasonType === 'postseason' && game.week === 1;
+    } else {
+      // Regular season weeks 1-15
+      weekMatch = game.seasonType === 'regular' && game.week === activeWeek;
+    }
+    
     let conferenceMatch = true;
     if (activeTab === 'All') {
       conferenceMatch = true;
